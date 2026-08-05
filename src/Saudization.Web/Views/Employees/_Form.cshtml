@@ -1,0 +1,78 @@
+@model Employee
+@{
+    var fac = ViewBag.Facility as Facility;
+    var nats = ViewBag.Nationalities as List<Nationality> ?? new();
+    var occs = ViewBag.Occupations as List<string> ?? new();
+    var currentNat = nats.FirstOrDefault(n => n.Id == Model.NationalityId)?.NameAr;
+}
+<form asp-action="@ViewData["Action"]" method="post" class="stack card">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="FacilityId" />
+    <input type="hidden" asp-for="SnapshotId" />
+
+    <div class="row3">
+        <div class="field">
+            <label asp-for="WorkerNo">@T["Emp_WorkerNo"]</label>
+            <input asp-for="WorkerNo" />
+        </div>
+        <div class="field" style="grid-column: span 2">
+            <label asp-for="Name">@T["Emp_Name"]</label>
+            <input asp-for="Name" />
+            <span asp-validation-for="Name"></span>
+        </div>
+    </div>
+
+    <div class="row3">
+        <div class="field">
+            <label>@T["Emp_Nationality"]</label>
+            <input name="nationalityName" list="natlist" value="@currentNat" dir="rtl" />
+            <datalist id="natlist">
+                @foreach (var n in nats) { <option value="@n.NameAr"></option> }
+            </datalist>
+            <span class="hint">@T["Dash_Saudi"] = «سعودي»</span>
+        </div>
+        <div class="field" style="grid-column: span 2">
+            <label asp-for="OccupationRaw">@T["Emp_Occupation"]</label>
+            <input asp-for="OccupationRaw" list="occlist" dir="rtl" />
+            <datalist id="occlist">
+                @foreach (var o in occs.Take(600)) { <option value="@o"></option> }
+            </datalist>
+        </div>
+    </div>
+
+    <div class="row3">
+        <div class="field">
+            <label asp-for="Location">@T["Facility_Location"]</label>
+            <input asp-for="Location" />
+        </div>
+        <div class="field">
+            <label asp-for="BorderNo">@T["Emp_Border"]</label>
+            <input asp-for="BorderNo" />
+        </div>
+        <div class="field">
+            <label asp-for="IqamaNo">@T["Emp_Iqama"]</label>
+            <input asp-for="IqamaNo" />
+        </div>
+    </div>
+
+    <div class="row3">
+        <div class="field">
+            <label asp-for="IqamaExpiry">@T["Emp_IqamaExpiry"]</label>
+            <input asp-for="IqamaExpiry" placeholder="1448/03/13هـ" />
+        </div>
+        <div class="field">
+            <label asp-for="EntryDate">@T["Emp_EntryDate"]</label>
+            <input asp-for="EntryDate" placeholder="1442/05/21هـ" />
+        </div>
+        <div class="field">
+            <label asp-for="WorkerType">@T["Emp_Type"]</label>
+            <input asp-for="WorkerType" />
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["Common_Save"]</button>
+        <a class="btn btn-soft" asp-action="Index" asp-route-facilityId="@Model.FacilityId">@T["Common_Cancel"]</a>
+    </div>
+</form>

@@ -1,0 +1,53 @@
+@model List<Saudization.Web.Controllers.EmpRow>
+@{
+    var heading = ViewBag.Heading as string ?? "";
+    bool isUnclassified = (bool)(ViewBag.IsUnclassified ?? false);
+    var snaps = ViewBag.Snapshots as List<Snapshot> ?? new();
+    var sid = (int)(ViewBag.SnapshotId ?? 0);
+    var snap = snaps.FirstOrDefault(s => s.Id == sid);
+    var displayHeading = isUnclassified ? T["Occ_Unclassified"].Value : heading;
+    ViewData["Title"] = displayHeading;
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Occ_Employees"]: <span dir="auto">@displayHeading</span></h1>
+        <div class="subtle">@Model.Count @T["Occ_TotalEmp"] · @(snap?.Label) @if (snap != null) { <text>(@snap.WeekDate.ToString("yyyy-MM-dd"))</text> }</div>
+    </div>
+    <a class="btn btn-soft btn-sm" asp-action="Index" asp-route-snapshotId="@sid">← @T["Occ_Title"]</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card"><p class="subtle">—</p></div>
+}
+else
+{
+    <div class="card" style="padding:0">
+    <div class="table-scroll" style="max-height:70vh;overflow:auto">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th style="width:120px">@T["Emp_WorkerNo"]</th>
+                <th>@T["Emp_Name"]</th>
+                <th>@T["Emp_Nationality"]</th>
+                <th>@T["Dash_Registration"]</th>
+                <th>@T["Occ_Name"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.WorkerNo</td>
+                    <td dir="rtl">@e.Name</td>
+                    <td><span class="zonebadge @(e.IsSaudi ? "zone-highgreen" : "zone-unknown")">@e.Nationality</span></td>
+                    <td>@e.Registration</td>
+                    <td dir="rtl">@e.Occupation</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+    </div>
+}

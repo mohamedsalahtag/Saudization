@@ -1,0 +1,36 @@
+@model List<RecordListItem>
+@{ ViewData["Title"] = T["Records_Title"].Value; }
+
+<div class="page-head">
+    <h1>@T["Records_Title"]</h1>
+    <a class="btn" asp-action="Create">+ @T["Records_New"]</a>
+</div>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Records_Label"]</th>
+            <th>@T["Records_NameAr"]</th>
+            <th class="num">@T["Facility_Title"]</th>
+            <th class="num">@T["Emp_Title"]</th>
+            <th class="center">@T["Common_Actions"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var it in Model)
+    {
+        <tr>
+            <td><a asp-action="Details" asp-route-id="@it.Record.Id"><strong>@it.Record.RegistrationLabel</strong></a></td>
+            <td>@it.Record.NameAr</td>
+            <td class="num">@it.Facilities</td>
+            <td class="num">@it.Employees</td>
+            <td class="center">
+                <a class="btn btn-sm btn-soft" asp-action="Details" asp-route-id="@it.Record.Id">@T["Common_Actions"]</a>
+                <a class="btn btn-sm btn-soft" asp-action="Edit" asp-route-id="@it.Record.Id">@T["Common_Edit"]</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

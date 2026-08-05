@@ -1,0 +1,53 @@
+@using System.Globalization
+@{
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var isRtl = culture == "ar";
+    var dir = isRtl ? "rtl" : "ltr";
+    string ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    bool Active(string c) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase);
+    var otherCulture = isRtl ? "en" : "ar";
+    var req = Context.Request;
+    var returnUrl = req.Path + req.QueryString;
+}
+<!DOCTYPE html>
+<html lang="@culture" dir="@dir">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · @T["AppTitle"]</title>
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="@(isRtl ? "rtl" : "ltr")">
+    <header class="topbar">
+        <div class="brand">@T["AppTitle"]</div>
+        <nav class="mainnav">
+            <a class="@(Active("Dashboard") ? "on" : "")" asp-controller="Dashboard" asp-action="Index">@T["Nav_Dashboard"]</a>
+            <a class="@(Active("Saudization") ? "on" : "")" asp-controller="Saudization" asp-action="Index">@T["Nav_Saudization"]</a>
+            <a class="@(Active("Records") ? "on" : "")" asp-controller="Records" asp-action="Index">@T["Nav_Records"]</a>
+            <a class="@(Active("Versions") ? "on" : "")" asp-controller="Versions" asp-action="Index">@T["Nav_Versions"]</a>
+            <a class="@(Active("Restructure") ? "on" : "")" asp-controller="Restructure" asp-action="Index">@T["Nav_Restructure"]</a>
+            <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Chart" ? "on" : "")" asp-controller="OrgView" asp-action="Chart">@T["Nav_OrgChart"]</a>
+            <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Analysis" ? "on" : "")" asp-controller="OrgView" asp-action="Analysis">@T["Nav_OrgAnalysis"]</a>
+            <a class="@(Active("Occupations") ? "on" : "")" asp-controller="Occupations" asp-action="Index">@T["Nav_Occupations"]</a>
+            <a class="@(Active("Import") ? "on" : "")" asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a>
+            <a class="@(Active("Audit") ? "on" : "")" asp-controller="Audit" asp-action="Index">@T["Nav_Audit"]</a>
+            <a class="@(Active("Settings") ? "on" : "")" asp-controller="Settings" asp-action="Index">@T["Nav_Settings"]</a>
+        </nav>
+        <form class="langswitch" asp-controller="Home" asp-action="SetLanguage" method="post">
+            <input type="hidden" name="culture" value="@otherCulture" />
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <button type="submit" class="btn btn-ghost">@(isRtl ? T["Lang_English"] : T["Lang_Arabic"])</button>
+        </form>
+    </header>
+
+    <main class="container">
+        @if (TempData["ok"] is string ok) { <div class="alert ok">@ok</div> }
+        @if (TempData["err"] is string er) { <div class="alert err">@er</div> }
+        @RenderBody()
+    </main>
+
+    <footer class="foot"><span>@T["AppTitle"]</span></footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

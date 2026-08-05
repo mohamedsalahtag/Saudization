@@ -1,0 +1,80 @@
+@using Saudization.Web.Models
+@{
+    ViewData["Title"] = T["OrgAnalysis_Title"].Value;
+    var versions = ViewBag.Versions as List<OrgVersion> ?? new List<OrgVersion>();
+    var vid = ViewBag.VersionId as int?;
+    var empRaw = ViewBag.EmpRaw as string;
+    var chartUrl = Url.Action("Chart", "OrgView", new { versionId = vid });
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/orgview.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <h1>@T["OrgAnalysis_Title"]</h1>
+    <form method="get" class="inline-form">
+        <label class="muted">@T["OrgView_Version"]</label>
+        <select name="versionId" onchange="this.form.submit()">
+            @foreach (var v in versions)
+            {
+                <option value="@v.Id" selected="@(v.Id == vid)">@v.Label</option>
+            }
+        </select>
+        <a class="btn btn-ghost" asp-action="Chart" asp-route-versionId="@vid">@T["Nav_OrgChart"] →</a>
+    </form>
+</div>
+
+@if (empRaw is null)
+{
+    <div class="card"><p class="muted">@T["OrgView_NoData"]</p></div>
+}
+else
+{
+    <div class="orgv">
+        <div class="card" id="scopebar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;margin-bottom:14px">
+            <b>@T["OrgAnalysis_Analyze"]</b>
+            <select id="scopeBranch"><option value="">@T["OrgChart_AllBranches"]</option></select>
+            <select id="scopeSite"><option value="">@T["OrgChart_AllSites"]</option></select>
+            <select id="scopeDiv"><option value="">@T["OrgChart_AllDivisions"]</option></select>
+            <span class="muted" id="scopeHint"></span>
+        </div>
+
+        <div class="kpis" id="kpis"></div>
+
+        <div class="section-title">@T["OrgAnalysis_Distribution"]</div>
+        <div class="grid2">
+            <div class="card chart-block"><h3>@T["OrgAnalysis_ByDivision"]</h3><div id="cDiv"></div></div>
+            <div class="card chart-block"><h3>@T["OrgAnalysis_BySite"]</h3><div id="cSite"></div></div>
+            <div class="card chart-block"><h3>@T["OrgAnalysis_ByPosition"]</h3><div id="cPos"></div></div>
+            <div class="card chart-block"><h3>@T["OrgAnalysis_ByDepartment"]</h3><div id="cDept"></div></div>
+            <div class="card chart-block"><h3>@T["OrgAnalysis_ByNationality"]</h3><div id="cNat"></div></div>
+        </div>
+
+        <div class="section-title">@T["OrgAnalysis_Breakdowns"]</div>
+        <div class="grid2">
+            <div class="card"><h3>@T["OrgAnalysis_ByPosDept"]</h3><div id="byPosTree" class="grouptree"></div></div>
+            <div class="card"><h3>@T["OrgAnalysis_ByManager"]</h3><div id="byMgrTree" class="grouptree"></div></div>
+        </div>
+
+        <div class="section-title">@T["OrgAnalysis_Issues"]
+            <span class="pill danger" id="issuePill"></span>
+            <button class="btn btn-sm btn-primary" id="exportAll" style="margin-inline-start:auto" title="@T["OrgAnalysis_ExportTip"]">⭳ @T["OrgAnalysis_ExportAll"]</button>
+        </div>
+        <div class="muted" style="margin:-4px 0 12px">@T["OrgAnalysis_IssuesHint"]</div>
+        <div id="anomalies"></div>
+    </div>
+}
+
+@section Scripts {
+    @if (empRaw is not null)
+    {
+        <script>
+            window.EMP_RAW = @Html.Raw(empRaw);
+            window.ORGV_CHART_URL = "@Html.Raw(chartUrl)";
+        </script>
+        <script src="~/lib/xlsx.full.min.js"></script>
+        <script src="~/js/orgview/dataloader.js" asp-append-version="true"></script>
+        <script src="~/js/orgview/analysis.js" asp-append-version="true"></script>
+    }
+}

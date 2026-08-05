@@ -1,0 +1,90 @@
+@model SimulatorViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = T["Sim_Title"].Value;
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = null };
+    var recordsJson = JsonSerializer.Serialize(Model.Records, jsonOpts);
+    var catsJson = JsonSerializer.Serialize(Model.Categories, jsonOpts);
+    var cfgJson = JsonSerializer.Serialize(new
+    {
+        band = Model.LightGreenBand,
+        zones = new[] { T["Zone_Unknown"].Value, T["Zone_Red"].Value, T["Zone_LowGreen"].Value,
+                        T["Zone_MediumGreen"].Value, T["Zone_HighGreen"].Value, T["Zone_Platinum"].Value },
+        zoneCss = new[] { "zone-unknown", "zone-red", "zone-lowgreen", "zone-medgreen", "zone-highgreen", "zone-platinum" },
+        statusCss = new[] { "", "cell-red", "cell-lightgreen", "cell-highgreen" },
+        overall = T["Ver_Overall"].Value, needHint = T["Sim_Need"].Value
+    });
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Sim_Title"]</h1>
+        <div class="subtle">@T["Sim_Intro"]</div>
+    </div>
+    <a class="btn btn-soft" asp-controller="Saudization" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">← @T["Dash_Title"]</a>
+</div>
+
+<div class="toolbar">
+    <div class="seg">
+        <a href="#" class="on" data-tab="reg" id="tabReg">@T["Sim_ByReg"]</a>
+        <a href="#" data-tab="job" id="tabJob">@T["Sim_ByJob"]</a>
+    </div>
+    <button class="btn btn-soft" id="simReset" type="button">@T["Sim_Reset"]</button>
+</div>
+
+<!-- ===== By registration ===== -->
+<div id="paneReg">
+    <div class="card">
+        <strong>@T["Sim_Transfer"]</strong>
+        <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:10px">
+            <div class="field" style="gap:2px"><label class="subtle">@T["Tr_From"]</label><select id="rFrom" class="btn-soft" style="padding:6px 10px;border-radius:8px"></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Tr_To"]</label><select id="rTo" class="btn-soft" style="padding:6px 10px;border-radius:8px"></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Emp_Nationality"]</label>
+                <select id="rKind" class="btn-soft" style="padding:6px 10px;border-radius:8px"><option value="saudi">@T["Dash_Saudi"]</option><option value="non">@T["Dash_NonSaudi"]</option></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Common_Count"]</label><input id="rCount" type="number" min="1" value="1" class="btn-soft" style="padding:6px 10px;border-radius:8px;width:80px" /></div>
+            <button class="btn" id="rMove" type="button">@T["Sim_Move"]</button>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table class="grid">
+            <thead><tr><th>@T["Dash_Filter"]</th><th class="num">@T["Dash_NonSaudi"]</th><th class="num">@T["Dash_Saudi"]</th><th class="num">@T["Dash_Total"]</th><th class="num">@T["Dash_Pct"]</th><th class="center">@T["Dash_Zone"]</th><th class="num">@T["Ver_Delta"]</th></tr></thead>
+            <tbody id="rBody"></tbody>
+            <tfoot id="rFoot"></tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- ===== By job / occupation ===== -->
+<div id="paneJob" style="display:none">
+    <div class="card">
+        <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+            <div class="field" style="gap:2px"><label class="subtle">@T["Dash_Category"]</label><select id="jCat" class="btn-soft" style="padding:6px 10px;border-radius:8px;min-width:220px"></select></div>
+            <div class="subtle" id="jMeta"></div>
+            <div style="flex:1"></div>
+            <button class="btn" id="jFill" type="button" title="@T["Sim_FillHint"]">@T["Sim_Fill"]</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:12px">
+            <strong style="width:100%">@T["Sim_Transfer"]</strong>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Tr_From"]</label><select id="jFrom" class="btn-soft" style="padding:6px 10px;border-radius:8px"></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Tr_To"]</label><select id="jTo" class="btn-soft" style="padding:6px 10px;border-radius:8px"></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Emp_Nationality"]</label>
+                <select id="jKind" class="btn-soft" style="padding:6px 10px;border-radius:8px"><option value="saudi">@T["Dash_Saudi"]</option><option value="non">@T["Dash_NonSaudi"]</option></select></div>
+            <div class="field" style="gap:2px"><label class="subtle">@T["Common_Count"]</label><input id="jCount" type="number" min="1" value="1" class="btn-soft" style="padding:6px 10px;border-radius:8px;width:80px" /></div>
+            <button class="btn" id="jMove" type="button">@T["Sim_Move"]</button>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table class="grid">
+            <thead><tr><th>@T["Dash_Filter"]</th><th class="num">@T["Dash_NonSaudi"]</th><th class="num">@T["Dash_Saudi"]</th><th class="num">@T["Dash_Total"]</th><th class="num">@T["Dash_Pct"]</th><th class="num">@T["Sim_Need"]</th></tr></thead>
+            <tbody id="jBody"></tbody>
+            <tfoot id="jFoot"></tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="subtle" style="margin-top:8px">@T["Sim_Note"]</div>
+
+<script id="sim-records" type="application/json">@Html.Raw(recordsJson)</script>
+<script id="sim-cats" type="application/json">@Html.Raw(catsJson)</script>
+<script id="sim-cfg" type="application/json">@Html.Raw(cfgJson)</script>
+<script src="~/js/simulator.js" asp-append-version="true"></script>

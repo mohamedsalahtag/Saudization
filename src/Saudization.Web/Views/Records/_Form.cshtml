@@ -1,0 +1,62 @@
+@model Saudization.Web.Models.Record
+<form asp-action="@ViewData["Action"]" method="post" class="stack card">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="row3">
+        <div class="field">
+            <label asp-for="RegistrationLabel">@T["Records_Label"]</label>
+            <input asp-for="RegistrationLabel" />
+            <span asp-validation-for="RegistrationLabel"></span>
+        </div>
+        <div class="field">
+            <label asp-for="RegistrationNumber">@T["Records_Number"]</label>
+            <input asp-for="RegistrationNumber" />
+        </div>
+        <div class="field">
+            <label asp-for="RequiredPct">@T["Records_Required"]</label>
+            <input asp-for="RequiredPct" type="number" step="0.0001" min="0" max="1" />
+            <span class="hint">0–1 (e.g. 0.10 = 10%)</span>
+        </div>
+    </div>
+    <div class="field">
+        <label asp-for="NameAr">@T["Records_NameAr"]</label>
+        <input asp-for="NameAr" dir="rtl" />
+    </div>
+    <div class="field">
+        <label asp-for="NameEn">@T["Records_NameEn"]</label>
+        <input asp-for="NameEn" dir="ltr" />
+    </div>
+
+    <div><strong>@T["Records_Thresholds"]</strong> <span class="hint">— 0–1 fractions, ascending</span></div>
+    <div class="row4">
+        <div class="field">
+            <label asp-for="LowGreenMin">@T["Field_LowGreenMin"]</label>
+            <input asp-for="LowGreenMin" type="number" step="0.0001" min="0" max="1" />
+            <input name="LowGreenColor" type="color" value="@(Model.LowGreenColor ?? ZoneDisplay.DefaultColor(NitaqatZone.LowGreen))" />
+        </div>
+        <div class="field">
+            <label asp-for="MediumGreenMin">@T["Field_MediumGreenMin"]</label>
+            <input asp-for="MediumGreenMin" type="number" step="0.0001" min="0" max="1" />
+            <input name="MediumGreenColor" type="color" value="@(Model.MediumGreenColor ?? ZoneDisplay.DefaultColor(NitaqatZone.MediumGreen))" />
+        </div>
+        <div class="field">
+            <label asp-for="HighGreenMin">@T["Field_HighGreenMin"]</label>
+            <input asp-for="HighGreenMin" type="number" step="0.0001" min="0" max="1" />
+            <input name="HighGreenColor" type="color" value="@(Model.HighGreenColor ?? ZoneDisplay.DefaultColor(NitaqatZone.HighGreen))" />
+        </div>
+        <div class="field">
+            <label asp-for="PlatinumMin">@T["Field_PlatinumMin"]</label>
+            <input asp-for="PlatinumMin" type="number" step="0.0001" min="0" max="1" />
+            <input name="PlatinumColor" type="color" value="@(Model.PlatinumColor ?? ZoneDisplay.DefaultColor(NitaqatZone.Platinum))" />
+        </div>
+    </div>
+    <div class="field" style="max-width:200px">
+        <label>@T["Zone_Red"]</label>
+        <input name="RedColor" type="color" value="@(Model.RedColor ?? ZoneDisplay.DefaultColor(NitaqatZone.Red))" />
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["Common_Save"]</button>
+        <a class="btn btn-soft" asp-action="Index">@T["Common_Cancel"]</a>
+    </div>
+</form>

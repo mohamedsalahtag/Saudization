@@ -1,0 +1,165 @@
+@model DashboardOverviewViewModel
+@using System.Globalization
+@using System.Text
+@{
+    ViewData["Title"] = T["Nav_Dashboard"].Value;
+    var inv = CultureInfo.InvariantCulture;
+    string Pct(decimal p) => (p * 100).ToString("0.#", inv) + "%";
+
+    IHtmlContent FindingText(Finding f)
+    {
+        string s = f.Kind switch
+        {
+            FindingKind.RedRegistration => string.Format(T["Find_RedReg"].Value, f.Name, Pct(f.Pct)),
+            FindingKind.RedCategoryCell => string.Format(T["Find_RedCell"].Value, f.Name, f.Name2, f.Count),
+            FindingKind.UnmappedOccupations => string.Format(T["Find_Unmapped"].Value, f.Count),
+            FindingKind.RegistrationNoRequired => string.Format(T["Find_NoReq"].Value, f.Name),
+            _ => ""
+        };
+        return new HtmlString(System.Net.WebUtility.HtmlEncode(s));
+    }
+
+    // overall-% trend across versions (inline SVG)
+    string BuildTrend()
+    {
+        var t = Model.OverallTrend; var snaps = Model.TrendSnaps;
+        if (t == null || snaps.Count == 0) return "";
+        int n = snaps.Count;
+        double W = Math.Max(360, 70 * Math.Max(n, 2)), H = 180, padL = 34, padR = 34, padT = 12, padB = 30;
+        double innerW = W - padL - padR, innerH = H - padT - padB;
+        double X(int i) => padL + (n <= 1 ? innerW / 2 : innerW * i / (n - 1));
+        double Y(decimal p) => padT + innerH * (1 - (double)p);
+        string F(double v) => v.ToString("0.##", inv);
+        var sb = new StringBuilder();
+        sb.Append($"<svg viewBox='0 0 {F(W)} {F(H)}' width='100%' style='max-width:{F(W)}px' font-family='Segoe UI,Tahoma,sans-serif'>");
+        for (int g = 0; g <= 2; g++) { double y = padT + innerH * g / 2; sb.Append($"<line x1='{F(padL)}' x2='{F(padL + innerW)}' y1='{F(y)}' y2='{F(y)}' stroke='#e2e8f0'/>"); }
+        var pts = string.Join(" ", t.Points.Select((p, i) => $"{F(X(i))},{F(Y(p.Pct))}"));
+        sb.Append($"<polyline points='{pts}' fill='none' stroke='#0b6b3a' stroke-width='2.5' stroke-linejoin='round'/>");
+        for (int i = 0; i < t.Points.Count; i++)
+        {
+            sb.Append($"<circle cx='{F(X(i))}' cy='{F(Y(t.Points[i].Pct))}' r='3.5' fill='#0b6b3a'/>");
+            sb.Append($"<text x='{F(X(i))}' y='{F(Y(t.Points[i].Pct) - 8)}' text-anchor='middle' font-size='10' fill='#1b2733'>{(t.Points[i].Pct * 100).ToString("0.#", inv)}%</text>");
+            sb.Append($"<text x='{F(X(i))}' y='{F(padT + innerH + 16)}' text-anchor='middle' font-size='10' fill='#6b7a8d'>{System.Net.WebUtility.HtmlEncode(snaps[i].Label)}</text>");
+        }
+        sb.Append("</svg>");
+        return sb.ToString();
+    }
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Nav_Dashboard"]</h1>
+        @if (Model.Snapshot != null) { <div class="subtle">@T["Dash_Version"]: <strong>@Model.Snapshot.Label</strong> · @Model.Snapshot.WeekDate.ToString("yyyy-MM-dd")</div> }
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        @if (Model.HasData)
+        {
+            <form method="get" asp-action="Index"><select name="snapshotId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+                @foreach (var s in Model.Snapshots) { <option value="@s.Id" selected="@(Model.SnapshotId == s.Id)">@s.Label (@s.WeekDate.ToString("yyyy-MM-dd"))</option> }
+            </select></form>
+            <a class="btn btn-soft" asp-action="Export" asp-route-snapshotId="@Model.SnapshotId">⭳ @T["Dash_ExportExcel"]</a>
+            <a class="btn" asp-controller="Saudization" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Title"] →</a>
+        }
+    </div>
+</div>
+
+@if (!Model.HasData)
+{
+    <div class="card">@T["Import_Intro"] <a asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a></div>
+    return;
+}
+
+<!-- KPI tiles -->
+<div class="kpis">
+    @foreach (var k in Model.Kpis)
+    {
+        <div class="kpi @k.Tone">
+            <div class="k-val">@k.Value</div>
+            <div class="k-lbl">@T[k.LabelKey]</div>
+            @if (!string.IsNullOrEmpty(k.Sub)) { <div class="k-sub">@k.Sub</div> }
+        </div>
+    }
+</div>
+
+<div class="grid2">
+    <div>
+        <div class="card">
+            <div class="page-head" style="margin-bottom:12px"><h2 style="font-size:15px;margin:0">@T["Ov_ByRegistration"]</h2>
+                <a class="subtle" asp-controller="Saudization" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Title"] →</a></div>
+            @foreach (var rc in Model.Records)
+            {
+                <div class="regbar">
+                    <div class="regbar-head">
+                        <span><strong>@rc.Label</strong> <span class="zonebadge @ZoneDisplay.Css(rc.Zone)">@T[ZoneDisplay.Key(rc.Zone)]</span></span>
+                        <span>@Pct(rc.Pct)</span>
+                    </div>
+                    <div class="regbar-track">
+                        <div class="regbar-fill" style="width:@((rc.Pct * 100).ToString("0.#", inv))%;background:@rc.ZoneColor"></div>
+                        @if (rc.RequiredPct > 0) { <div class="regbar-req" style="inset-inline-start:@((rc.RequiredPct * 100).ToString("0.#", inv))%" title="@T["Dash_Required"] @Pct(rc.RequiredPct)"></div> }
+                    </div>
+                    <div class="regbar-val">@rc.SaudiCountedGeneral @T["Dash_Saudi"] / @rc.Headcount @T["Dash_Total"] · @T["Dash_Disabled"] @Pct(rc.DisabledPct)</div>
+                </div>
+            }
+        </div>
+
+        @if (Model.TrendSnaps.Count > 0)
+        {
+            <div class="card">
+                <div class="page-head" style="margin-bottom:8px"><h2 style="font-size:15px;margin:0">@T["Ver_Trend"]</h2>
+                    <a class="subtle" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"] →</a></div>
+                <div class="table-scroll">@Html.Raw(BuildTrend())</div>
+            </div>
+        }
+    </div>
+
+    <div>
+        <div class="card">
+            <h2 style="font-size:15px;margin:0 0 10px">@T["Ov_Findings"]</h2>
+            @if (Model.Findings.Count == 0)
+            {
+                <p class="subtle">✓ @T["Ov_NoFindings"]</p>
+            }
+            else
+            {
+                <ul class="findings">
+                    @foreach (var f in Model.Findings)
+                    {
+                        <li>
+                            <span class="dot @f.Severity"></span>
+                            <span dir="auto">
+                                @FindingText(f)
+                                @if (f.Kind == FindingKind.UnmappedOccupations) { <a asp-controller="Occupations" asp-action="Index">@T["Ver_View"]</a> }
+                                else if (f.RecordId != null) { <a asp-controller="Saudization" asp-action="Index" asp-route-recordId="@f.RecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Ver_View"]</a> }
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <div class="card">
+            <div class="page-head" style="margin-bottom:10px"><h2 style="font-size:15px;margin:0">@T["Ov_Suggestions"]</h2>
+                <a class="subtle" asp-controller="Transfers" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">@T["Tr_Title"] →</a></div>
+            @if (Model.Suggestions.Count == 0)
+            {
+                <p class="subtle">@T["Tr_None"]</p>
+            }
+            else
+            {
+                @foreach (var s in Model.Suggestions)
+                {
+                    <div class="sugg" style="padding:6px 0;border-bottom:1px solid var(--line)">
+                        <span dir="auto">@s.CategoryName</span> —
+                        @(s.BringSaudi ? T["Tr_BringSaudi"].Value : T["Tr_MoveNonSaudi"].Value):
+                        <strong>@s.FromLabel</strong> <span class="arrow">→</span> <strong>@s.ToLabel</strong>
+                        <span class="subtle">(@Pct(s.ToPctBefore) → @Pct(s.ToPctAfter))</span>
+                    </div>
+                }
+            }
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn btn-sm" asp-controller="Simulator" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">@T["Sim_Title"]</a>
+                <a class="btn btn-sm btn-soft" asp-controller="Saudization" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Title"]</a>
+            </div>
+        </div>
+    </div>
+</div>

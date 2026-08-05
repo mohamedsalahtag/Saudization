@@ -1,0 +1,39 @@
+@model ConsistencyResult
+@{
+    ViewData["Title"] = T["Org_Inconsistent"].Value;
+    bool divisionOnly = (bool)(ViewBag.DivisionOnly ?? false);
+    int vid = (int)(ViewBag.VersionId ?? 0);
+}
+<div class="page-head">
+    <div>
+        <h1>@T["Org_Inconsistent"]</h1>
+        <div class="subtle">@Model.Inconsistent.Count / @Model.Total · @T["Org_Consistent"]: @Model.Consistent · @T["Org_NoManager"]: @Model.NoManager · @T["Org_Dangling"]: @Model.Dangling</div>
+    </div>
+    <a class="btn btn-soft" asp-action="Index" asp-route-versionId="@vid" asp-route-divisionOnly="@divisionOnly">← @T["Org_Title"]</a>
+</div>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Emp_Name"]</th><th>@T["Org_Division"]</th><th>@T["Org_Department"]</th>
+            <th>@T["Org_Manager"]</th><th>@T["Org_Division"] (@T["Org_Manager"])</th><th>@T["Org_Department"] (@T["Org_Manager"])</th>
+            <th>@T["Org_Status"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model.Inconsistent)
+    {
+        <tr>
+            <td>@r.EmpName <span class="muted small">#@r.EmpCode</span></td>
+            <td>@r.EmpDivision</td>
+            <td>@r.EmpDepartment</td>
+            <td>@r.ManagerName <span class="muted small">#@r.ManagerCode</span></td>
+            <td>@r.ManagerDivision</td>
+            <td>@r.ManagerDepartment</td>
+            <td><span class="ic-bad">@r.Reason</span></td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

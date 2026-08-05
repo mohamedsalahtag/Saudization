@@ -1,0 +1,4 @@
+@model Saudization.Web.Models.Record
+@{ ViewData["Title"] = T["Records_New"].Value; ViewData["Action"] = "Create"; }
+<div class="page-head"><h1>@T["Records_New"]</h1></div>
+@await Html.PartialAsync("_Form", Model)

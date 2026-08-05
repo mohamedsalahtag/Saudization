@@ -1,0 +1,52 @@
+@model List<Saudization.Web.Controllers.VersionListItem>
+@{ ViewData["Title"] = T["Ver_Title"].Value; }
+
+<div class="page-head">
+    <h1>@T["Ver_Title"]</h1>
+    <div>
+        <a class="btn btn-soft" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
+        <a class="btn" asp-controller="Import" asp-action="Index">+ @T["Nav_Import"]</a>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card">@T["Ver_NeedTwo"] <a asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a></div>
+}
+else
+{
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Ver_Label"]</th>
+            <th>@T["Ver_Week"]</th>
+            <th class="num">@T["Ver_Employees"]</th>
+            <th>@T["Ver_Note"]</th>
+            <th>@T["Ver_Created"]</th>
+            <th class="center">@T["Common_Actions"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var it in Model)
+    {
+        <tr>
+            <td><strong>@it.Snapshot.Label</strong></td>
+            <td>@it.Snapshot.WeekDate.ToString("yyyy-MM-dd")</td>
+            <td class="num">@it.Employees</td>
+            <td>@it.Snapshot.Note</td>
+            <td class="subtle">@it.Snapshot.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") · @it.Snapshot.CreatedByUser</td>
+            <td class="center">
+                <a class="btn btn-sm btn-soft" asp-controller="Dashboard" asp-action="Index" asp-route-snapshotId="@it.Snapshot.Id">@T["Ver_View"]</a>
+                <form asp-action="Delete" asp-route-id="@it.Snapshot.Id" method="post" style="display:inline"
+                      onsubmit="return confirm('@T["Common_Confirm"].Value')">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-danger" type="submit">@T["Common_Delete"]</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+}

@@ -1,0 +1,70 @@
+@model List<Employee>
+@{
+    var fac = ViewBag.Facility as Facility;
+    ViewData["Title"] = T["Emp_Title"].Value;
+    var q = ViewBag.Query as string;
+    var sid = (int)(ViewBag.SnapshotId ?? 0);
+    var snaps = ViewBag.Snapshots as List<Snapshot> ?? new();
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Emp_Title"] — @fac?.Code</h1>
+        <div class="subtle">@fac?.NameAr</div>
+    </div>
+    <div>
+        <a class="btn btn-soft" asp-controller="Records" asp-action="Details" asp-route-id="@fac?.RecordId">← @T["Common_Back"]</a>
+        <a class="btn" asp-action="Create" asp-route-facilityId="@fac?.Id" asp-route-snapshotId="@sid">+ @T["Emp_New"]</a>
+    </div>
+</div>
+
+<form method="get" class="toolbar">
+    <input type="hidden" name="facilityId" value="@fac?.Id" />
+    <label class="subtle">@T["Dash_Version"]:</label>
+    <select name="snapshotId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+        @foreach (var s in snaps)
+        {
+            <option value="@s.Id" selected="@(sid == s.Id)">@s.Label (@s.WeekDate.ToString("yyyy-MM-dd"))</option>
+        }
+    </select>
+    <input name="q" value="@q" placeholder="@T["Common_Search"]" class="btn-soft" style="padding:7px 10px;border-radius:8px;min-width:200px" />
+    <button class="btn btn-soft" type="submit">@T["Common_Search"]</button>
+</form>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Emp_WorkerNo"]</th>
+            <th>@T["Emp_Name"]</th>
+            <th>@T["Emp_Nationality"]</th>
+            <th>@T["Emp_Occupation"]</th>
+            <th>@T["Emp_Iqama"]</th>
+            <th class="center">@T["Common_Actions"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var e in Model)
+    {
+        <tr>
+            <td>@e.WorkerNo</td>
+            <td>@e.Name</td>
+            <td>@(e.Nationality?.NameAr)
+                @if (e.Nationality?.IsSaudi == true) { <span class="pill" style="background:var(--highgreen-bg);color:#1e6b2b">@T["Dash_Saudi"]</span> }
+            </td>
+            <td>@e.OccupationRaw</td>
+            <td>@e.IqamaNo</td>
+            <td class="center">
+                <a class="btn btn-sm btn-soft" asp-action="Edit" asp-route-id="@e.Id">@T["Common_Edit"]</a>
+                <form asp-action="Delete" asp-route-id="@e.Id" method="post" style="display:inline"
+                      onsubmit="return confirm('@T["Common_Confirm"].Value')">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-danger" type="submit">@T["Common_Delete"]</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+@if (Model.Count >= 1000) { <p class="subtle">Showing first 1000 rows — refine with search.</p> }

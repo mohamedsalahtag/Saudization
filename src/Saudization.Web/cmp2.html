@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compare versions · Saudization Dashboard</title>
+    <link rel="stylesheet" href="/css/app.css?v=g4TyKaKvfYzDO4LaRMPAHkRm3-NBASAbBkAwmN_a_EU" />
+</head>
+<body class="ltr">
+    <header b-ok14y1ssuc class="topbar">
+        <div b-ok14y1ssuc class="brand">Saudization Dashboard</div>
+        <nav b-ok14y1ssuc class="mainnav">
+            <a class="" href="/">Dashboard</a>
+            <a class="" href="/Saudization">Saudization</a>
+            <a class="" href="/Records">Records</a>
+            <a class="" href="/Versions">Versions</a>
+            <a class="on" href="/Restructure">Restructure</a>
+            <a class="" href="/Occupations">Occupations</a>
+            <a class="" href="/Import">Import Excel</a>
+            <a class="" href="/Audit">Change history</a>
+            <a class="" href="/Settings">Settings</a>
+        </nav>
+        <form class="langswitch" method="post" action="/Home/SetLanguage">
+            <input b-ok14y1ssuc type="hidden" name="culture" value="ar" />
+            <input b-ok14y1ssuc type="hidden" name="returnUrl" value="/Restructure/Compare?versionId=2&amp;baseId=1&amp;culture=en" />
+            <button b-ok14y1ssuc type="submit" class="btn btn-ghost">العربية</button>
+        <input name="__RequestVerificationToken" type="hidden" value="CfDJ8A3rWO7n_2lBqCc1GT-q5x2WesfPL0XUCUTMauCkcubEbnwW62QM7QmiAAexfh4qSMpi8K1DOWHFKh9qAburHGx2RZ8mTEZXKGlYhKHVgmthA6rkwtcfvfcgqwr_J-ITQKxzAm53FhmG3uINKH7wJjc" /></form>
+    </header>
+
+    <main b-ok14y1ssuc class="container">
+        
+<div class="page-head">
+    <div>
+        <h1>Compare versions</h1>
+        <div class="subtle">Original → Adjusted-Test · 5 microsoft.aspnetcore.mvc.localization.localizedhtmlstring</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <form method="get" style="display:flex;gap:8px;align-items:center" action="/Restructure/Compare">
+            <input type="hidden" name="versionId" value="2" />
+            <label class="subtle">From</label>
+            <select name="baseId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+ <option value="1" selected="selected">Original</option>  <option value="2">Adjusted-Test</option>             </select>
+        </form>
+        <a class="btn btn-soft" href="/Restructure?versionId=2">← Org restructuring</a>
+    </div>
+</div>
+
+<div class="kpis">
+    <div class="kpi"><div class="k-val">5</div><div class="k-lbl">Employees</div></div>
+    <div class="kpi warn"><div class="k-val">5</div><div class="k-lbl">Division</div></div>
+    <div class="kpi "><div class="k-val">0</div><div class="k-lbl">Department</div></div>
+    <div class="kpi"><div class="k-val">0</div><div class="k-lbl">Job</div></div>
+</div>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead><tr><th>Name</th><th>Division</th><th>Department</th><th>Job</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>Abdelmajed Saaed Osman Mohamed <span class="muted small">#100838</span></td>
+            <td><span class='muted'>Owners_Villas</span> <span class='ic-bad'>→</span> <strong>Legal</strong></td>
+            <td>(No Department)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Abdulrahman Mohammed Abdo Almaisari <span class="muted small">#100024</span></td>
+            <td><span class='muted'>Owners_Villas</span> <span class='ic-bad'>→</span> <strong>Legal</strong></td>
+            <td>(No Department)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Ali Ahmad Abdo Hard <span class="muted small">#104688</span></td>
+            <td><span class='muted'>(No Division)</span> <span class='ic-bad'>→</span> <strong>Treasury</strong></td>
+            <td>(No Department)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Muawia Mohamed Satti Bakhit <span class="muted small">#103875</span></td>
+            <td><span class='muted'>Owners_Villas</span> <span class='ic-bad'>→</span> <strong>Legal</strong></td>
+            <td>(No Department)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>خالد حسن محمد الخير حامد <span class="muted small">#104786</span></td>
+            <td><span class='muted'>Owners_Villas</span> <span class='ic-bad'>→</span> <strong>Legal</strong></td>
+            <td>(No Department)</td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+    </main>
+
+    <footer b-ok14y1ssuc class="foot"><span b-ok14y1ssuc>Saudization Dashboard</span></footer>
+    
+</body>
+</html>

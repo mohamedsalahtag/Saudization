@@ -1,0 +1,21 @@
+@{ ViewData["Title"] = T["Org_Import"].Value; }
+<div class="page-head"><h1>@T["Org_Import"]</h1></div>
+<div class="card">
+    <p class="subtle">@T["Org_ImportIntro"]</p>
+    <div style="margin:10px 0">
+        <a class="btn btn-soft" asp-action="Template">⭳ @T["Import_Download"]</a>
+        <span class="hint">@T["Org_TemplateHelp"]</span>
+    </div>
+    <form asp-action="Import" method="post" enctype="multipart/form-data" class="stack">
+        @Html.AntiForgeryToken()
+        <div class="field" style="max-width:420px">
+            <label>@T["Import_Label"]</label>
+            <input name="label" placeholder="Original" />
+        </div>
+        <div class="field">
+            <label>@T["Import_Choose"]</label>
+            <input type="file" name="file" accept=".xlsx" required />
+        </div>
+        <div class="form-actions"><button class="btn" type="submit">@T["Import_Run"]</button></div>
+    </form>
+</div>

@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" /><xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" /><xsd:attribute ref="xml:space" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType><xsd:attribute name="alias" type="xsd:string" /><xsd:attribute name="name" type="xsd:string" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" /><xsd:attribute ref="xml:space" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" /></xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="AppTitle"><value>Saudization Dashboard</value></data>
+  <data name="Nav_Dashboard"><value>Dashboard</value></data>
+  <data name="Nav_Records"><value>Records</value></data>
+  <data name="Nav_Import"><value>Import Excel</value></data>
+  <data name="Nav_Occupations"><value>Occupations</value></data>
+  <data name="Nav_Audit"><value>Change history</value></data>
+  <data name="Lang_Arabic"><value>العربية</value></data>
+  <data name="Lang_English"><value>English</value></data>
+
+  <data name="Dash_Title"><value>Nationalization</value></data>
+  <data name="Dash_Current"><value>Current state</value></data>
+  <data name="Dash_Plan"><value>Improvement plan</value></data>
+  <data name="Dash_Category"><value>Category</value></data>
+  <data name="Dash_Required"><value>Required %</value></data>
+  <data name="Dash_MinCalc"><value>Min for calc</value></data>
+  <data name="Dash_NonSaudi"><value>Non-Saudi</value></data>
+  <data name="Dash_Saudi"><value>Saudi</value></data>
+  <data name="Dash_Total"><value>Total</value></data>
+  <data name="Dash_Pct"><value>%</value></data>
+  <data name="Dash_Gap"><value>Gap</value></data>
+  <data name="Dash_GrandTotal"><value>Grand Total</value></data>
+  <data name="Dash_Zone"><value>Zone</value></data>
+  <data name="Dash_Filter"><value>Registration</value></data>
+  <data name="Dash_AllRecords"><value>All registrations</value></data>
+  <data name="Dash_GapHint"><value>+ = Saudis to hire · − = surplus</value></data>
+
+  <data name="Zone_Red"><value>Red</value></data>
+  <data name="Zone_LowGreen"><value>Low Green</value></data>
+  <data name="Zone_MediumGreen"><value>Medium Green</value></data>
+  <data name="Zone_HighGreen"><value>High Green</value></data>
+  <data name="Zone_Platinum"><value>Platinum</value></data>
+  <data name="Zone_Unknown"><value>—</value></data>
+
+  <data name="Dash_Action"><value>Action</value></data>
+  <data name="Dash_Disabled"><value>Disabled</value></data>
+  <data name="Dash_Replace"><value>Replace (non-Saudi → Saudi)</value></data>
+  <data name="Dash_Hire"><value>Hire Saudis</value></data>
+  <data name="Dash_Counted"><value>Counted Saudi</value></data>
+  <data name="Dash_CountedNote"><value>Registration % includes special categories and the capped disability weighting.</value></data>
+  <data name="Sim_Title"><value>What-if simulator</value></data>
+  <data name="Sim_Intro"><value>Experiment with employee counts and transfers between registrations — results are live and never saved.</value></data>
+  <data name="Sim_Transfer"><value>Transfer between registrations</value></data>
+  <data name="Sim_Move"><value>Move</value></data>
+  <data name="Sim_Reset"><value>Reset to actual</value></data>
+  <data name="Sim_Note"><value>This is a simulation only. Nothing here changes the actual data; reload the page to restore it.</value></data>
+  <data name="Sim_ByReg"><value>By registration</value></data>
+  <data name="Sim_ByJob"><value>By job</value></data>
+  <data name="Sim_Need"><value>To reach target</value></data>
+  <data name="Sim_Fill"><value>Fill red → green</value></data>
+  <data name="Sim_FillHint"><value>Replace non-Saudis with Saudis in every red registration so each reaches its required %.</value></data>
+  <data name="Tr_Title"><value>Transfer opportunities</value></data>
+  <data name="Tr_Intro"><value>Where an occupation sits below its Saudization headcount floor (decision inactive), moving an employee between registrations can improve overall compliance.</value></data>
+  <data name="Tr_None"><value>No transfer opportunities found for this version.</value></data>
+  <data name="Tr_Move"><value>Move</value></data>
+  <data name="Tr_From"><value>From</value></data>
+  <data name="Tr_To"><value>To</value></data>
+  <data name="Tr_FromImpact"><value>From registration %</value></data>
+  <data name="Tr_ToImpact"><value>To registration %</value></data>
+  <data name="Tr_BringSaudi"><value>Bring a Saudi in</value></data>
+  <data name="Tr_MoveNonSaudi"><value>Move a non-Saudi out</value></data>
+  <data name="Tr_Note"><value>Each row is a single suggested one-employee move, with its before → after effect on both registrations.</value></data>
+  <data name="Nav_Settings"><value>Settings</value></data>
+  <data name="Nav_Saudization"><value>Saudization</value></data>
+  <data name="Nav_Restructure"><value>Restructure</value></data>
+  <data name="Org_Title"><value>Org restructuring</value></data>
+  <data name="Org_Intro"><value>Regroup the hierarchy and fix manager consistency; save adjusted states as versions.</value></data>
+  <data name="Org_Import"><value>Import master data</value></data>
+  <data name="Org_ImportIntro"><value>Upload the master-data workbook (Division, Department, Direct Manager Code…). The first import becomes the immutable original.</value></data>
+  <data name="Org_TemplateHelp"><value>Template includes an optional Job column and is pre-filled with the current version.</value></data>
+  <data name="Org_Empty"><value>No org data yet.</value></data>
+  <data name="Org_Tree"><value>Hierarchy</value></data>
+  <data name="Org_Departments"><value>Departments</value></data>
+  <data name="Org_Division"><value>Division</value></data>
+  <data name="Org_Department"><value>Department</value></data>
+  <data name="Org_ResultTable"><value>Result</value></data>
+  <data name="Org_Employees"><value>Employees</value></data>
+  <data name="Org_Job"><value>Job</value></data>
+  <data name="Org_NoJob"><value>(no job)</value></data>
+  <data name="Org_Manager"><value>Manager</value></data>
+  <data name="Org_Status"><value>Status</value></data>
+  <data name="Org_Consistent"><value>Consistent</value></data>
+  <data name="Org_Inconsistent"><value>Inconsistent managers</value></data>
+  <data name="Org_NoManager"><value>No manager</value></data>
+  <data name="Org_Dangling"><value>Missing manager</value></data>
+  <data name="Org_DivisionOnly"><value>Match on division only</value></data>
+  <data name="Org_Save"><value>Save as version</value></data>
+  <data name="Org_VersionName"><value>Version name…</value></data>
+  <data name="Org_NewDept"><value>New department…</value></data>
+  <data name="Org_Add"><value>Add</value></data>
+  <data name="Org_Saved"><value>Saved as a new version.</value></data>
+  <data name="Org_Unsaved"><value>Unsaved changes</value></data>
+  <data name="Org_ChangeTo"><value>Move to</value></data>
+  <data name="Org_DragHint"><value>Drag a department onto a division, a job onto a department, or an employee onto a department/job. Or click an employee to reassign.</value></data>
+  <data name="Org_RenameThis"><value>This block only</value></data>
+  <data name="Org_RenameAll"><value>All blocks with this name</value></data>
+  <data name="Org_RenamePrompt"><value>Apply the rename to…</value></data>
+  <data name="Org_Branch"><value>Branch</value></data>
+  <data name="Org_Directory"><value>Directory</value></data>
+  <data name="Org_Transfer"><value>Transfer</value></data>
+  <data name="Org_GoToManager"><value>Go to manager</value></data>
+  <data name="Org_EmployeeDetails"><value>Employee</value></data>
+  <data name="Org_Changed"><value>Unsaved change</value></data>
+  <data name="Org_DeleteDept"><value>Delete empty department</value></data>
+  <data name="Org_DragJobHint"><value>Drag this job (with its employees) onto another department</value></data>
+  <data name="Org_AllDivisions"><value>All divisions</value></data>
+  <data name="Kpi_Overall"><value>Overall Saudization</value></data>
+  <data name="Kpi_Headcount"><value>Employees (non-Saudi + Saudi)</value></data>
+  <data name="Kpi_RedRegs"><value>Registrations in red</value></data>
+  <data name="Kpi_RedCells"><value>Occupations below target</value></data>
+  <data name="Kpi_Special"><value>Special-category</value></data>
+  <data name="Kpi_Disabled"><value>Disability-weighted</value></data>
+  <data name="Ov_ByRegistration"><value>Saudization by registration</value></data>
+  <data name="Ov_Findings"><value>Findings &amp; issues</value></data>
+  <data name="Ov_NoFindings"><value>No issues detected for this version.</value></data>
+  <data name="Ov_Suggestions"><value>Suggestions</value></data>
+  <data name="Find_RedReg"><value>{0} is in the RED zone ({1})</value></data>
+  <data name="Find_RedCell"><value>{0} at {1}: {2} Saudi(s) needed to reach target</value></data>
+  <data name="Find_Unmapped"><value>{0} occupation(s) are not mapped to a category</value></data>
+  <data name="Find_NoReq"><value>{0} has no required % set</value></data>
+  <data name="Set_Title"><value>Settings</value></data>
+  <data name="Set_DisabilityCap"><value>Disability weighting cap</value></data>
+  <data name="Set_DisabilityCapHint"><value>0–1. The disability bonus added to a registration's Saudi count cannot exceed this fraction of its Saudis (default 0.10 = 10%).</value></data>
+  <data name="Set_LightBand"><value>Light-green band</value></data>
+  <data name="Set_LightBandHint"><value>0–1. How far above the required % a category may sit and still be light-green (default 0.05 = 5pp).</value></data>
+
+  <data name="Records_Title"><value>Records (commercial registrations)</value></data>
+  <data name="Records_New"><value>New record</value></data>
+  <data name="Records_Edit"><value>Edit record</value></data>
+  <data name="Records_Label"><value>Registration label</value></data>
+  <data name="Records_NameAr"><value>Commercial name (Arabic)</value></data>
+  <data name="Records_NameEn"><value>Name (English)</value></data>
+  <data name="Records_Thresholds"><value>Nitaqat zone thresholds (Saudi ratio)</value></data>
+  <data name="Field_LowGreenMin"><value>Low-green from</value></data>
+  <data name="Field_MediumGreenMin"><value>Medium-green from</value></data>
+  <data name="Field_HighGreenMin"><value>High-green from</value></data>
+  <data name="Field_PlatinumMin"><value>Platinum from</value></data>
+  <data name="Records_Number"><value>Registration number</value></data>
+  <data name="Records_Required"><value>Required Saudization %</value></data>
+
+  <data name="Facility_Title"><value>Facilities</value></data>
+  <data name="Facility_New"><value>New facility</value></data>
+  <data name="Facility_Code"><value>Facility code</value></data>
+  <data name="Facility_Name"><value>Facility name</value></data>
+  <data name="Facility_Location"><value>Location</value></data>
+  <data name="Facility_Employees"><value>Employees</value></data>
+
+  <data name="Emp_Title"><value>Employees</value></data>
+  <data name="Emp_New"><value>New employee</value></data>
+  <data name="Emp_WorkerNo"><value>Worker no.</value></data>
+  <data name="Emp_Name"><value>Name</value></data>
+  <data name="Emp_Nationality"><value>Nationality</value></data>
+  <data name="Emp_Occupation"><value>Occupation</value></data>
+  <data name="Emp_Border"><value>Border no.</value></data>
+  <data name="Emp_Iqama"><value>Iqama / ID</value></data>
+  <data name="Emp_IqamaExpiry"><value>Iqama expiry</value></data>
+  <data name="Emp_EntryDate"><value>Entry date</value></data>
+  <data name="Emp_Type"><value>Worker type</value></data>
+
+  <data name="Common_Save"><value>Save</value></data>
+  <data name="Common_Cancel"><value>Cancel</value></data>
+  <data name="Common_Edit"><value>Edit</value></data>
+  <data name="Common_Delete"><value>Delete</value></data>
+  <data name="Common_Create"><value>Create</value></data>
+  <data name="Common_Back"><value>Back</value></data>
+  <data name="Common_Actions"><value>Actions</value></data>
+  <data name="Common_Confirm"><value>Are you sure?</value></data>
+  <data name="Common_Count"><value>Count</value></data>
+  <data name="Common_Search"><value>Search</value></data>
+
+  <data name="Import_Title"><value>Import Excel workbook</value></data>
+  <data name="Import_Intro"><value>Upload a dashboard.xlsx-shaped workbook. Reference sheets and one sheet per facility code are read and merged into the database.</value></data>
+  <data name="Import_Choose"><value>Choose file</value></data>
+  <data name="Import_Run"><value>Import</value></data>
+  <data name="Import_Result"><value>Import summary</value></data>
+  <data name="Import_Rule"><value>Sheet rule</value></data>
+  <data name="Import_RulePerFacility"><value>One sheet per facility (by facility number)</value></data>
+  <data name="Import_RulePerReg"><value>One sheet per registration / company (by commercial registration)</value></data>
+  <data name="Import_RuleHelp"><value>How your employee worksheets are organized. Reference sheets (Records, categories, occupation guide, special, disability) are always read the same way. In the per-registration mode each employee is placed into its facility using the رقم المنشأة column.</value></data>
+  <data name="Import_Download"><value>Download template</value></data>
+  <data name="Import_TemplateHelp"><value>Get a ready-to-fill workbook matching the selected rule, pre-filled with current data — edit it and upload as the new week.</value></data>
+  <data name="Import_Unmatched"><value>employees had an occupation not found in the guide</value></data>
+  <data name="Import_Unmatched2"><value>unmatched</value></data>
+  <data name="Import_SpecialMatched"><value>Special-category employees matched</value></data>
+  <data name="Import_DisabilityMatched"><value>Disability employees matched</value></data>
+
+  <data name="Occ_Title"><value>Occupation → category map</value></data>
+  <data name="Occ_Unmapped"><value>Unmapped occupations (in employees, missing a category)</value></data>
+  <data name="Occ_Code"><value>Code</value></data>
+  <data name="Occ_Name"><value>Occupation</value></data>
+  <data name="Occ_Category"><value>Category</value></data>
+
+  <data name="Audit_Title"><value>Change history</value></data>
+  <data name="Audit_When"><value>When (UTC)</value></data>
+  <data name="Audit_User"><value>User</value></data>
+  <data name="Audit_Entity"><value>Entity</value></data>
+  <data name="Audit_Action"><value>Action</value></data>
+  <data name="Audit_Field"><value>Field</value></data>
+  <data name="Audit_Old"><value>Old value</value></data>
+  <data name="Audit_New"><value>New value</value></data>
+
+  <data name="Nav_Versions"><value>Versions</value></data>
+  <data name="Dash_Version"><value>Version</value></data>
+  <data name="Ver_Title"><value>Versions (weekly snapshots)</value></data>
+  <data name="Ver_Label"><value>Version label</value></data>
+  <data name="Ver_Week"><value>Week</value></data>
+  <data name="Ver_Note"><value>Note</value></data>
+  <data name="Ver_Created"><value>Created</value></data>
+  <data name="Ver_Employees"><value>Employees</value></data>
+  <data name="Ver_Compare"><value>Compare versions</value></data>
+  <data name="Ver_Overall"><value>Overall</value></data>
+  <data name="Ver_Delta"><value>Change</value></data>
+  <data name="Ver_Trend"><value>Saudization % over time</value></data>
+  <data name="Ver_Select"><value>Choose versions to compare</value></data>
+  <data name="Ver_Apply"><value>Compare</value></data>
+  <data name="Ver_NeedTwo"><value>Import at least two versions to see progress over time.</value></data>
+  <data name="Ver_From"><value>From</value></data>
+  <data name="Ver_To"><value>To</value></data>
+  <data name="Ver_ByDate"><value>Compare by date range</value></data>
+  <data name="Ver_View"><value>View</value></data>
+  <data name="Import_Label"><value>Version label</value></data>
+  <data name="Import_Week"><value>Week date</value></data>
+  <data name="Import_Note"><value>Note (optional)</value></data>
+  <data name="Nav_OrgChart"><value>Org Chart</value></data>
+  <data name="Nav_OrgAnalysis"><value>HR Analysis</value></data>
+  <data name="OrgChart_Title"><value>Org Chart</value></data>
+  <data name="OrgAnalysis_Title"><value>HR Analysis</value></data>
+  <data name="OrgView_Version"><value>Version</value></data>
+  <data name="OrgView_NoData"><value>No org data yet. Import a structure in Restructure first.</value></data>
+  <data name="OrgChart_TabChart"><value>Hierarchy Chart</value></data>
+  <data name="OrgChart_TabOrg"><value>Org Structure</value></data>
+  <data name="OrgChart_SelectHint"><value>Select an employee to see their details, reporting chain, and direct reports.</value></data>
+  <data name="OrgChart_ViewBy"><value>View by</value></data>
+  <data name="OrgChart_Dim_Manager"><value>Manager (reporting line)</value></data>
+  <data name="OrgChart_Dim_Division"><value>Division › Position</value></data>
+  <data name="OrgChart_Dim_Department"><value>Department › Position</value></data>
+  <data name="OrgChart_Dim_DivDept"><value>Division › Department</value></data>
+  <data name="OrgChart_Dim_Position"><value>Position (by level)</value></data>
+  <data name="OrgChart_Layout"><value>Layout</value></data>
+  <data name="OrgChart_Layout_Vertical"><value>Vertical (root left → down)</value></data>
+  <data name="OrgChart_Layout_Horizontal"><value>Horizontal (root top → across)</value></data>
+  <data name="OrgChart_SearchPlaceholder"><value>Search name or code, then press Enter…</value></data>
+  <data name="OrgChart_AllBranches"><value>All branches</value></data>
+  <data name="OrgChart_AllSites"><value>All sites</value></data>
+  <data name="OrgChart_AllDivisions"><value>All divisions</value></data>
+  <data name="OrgChart_AllDepartments"><value>All departments</value></data>
+  <data name="OrgChart_FocusTip"><value>When on, opening a branch automatically collapses the other open branches at the same level, so you focus on one reporting path at a time. Turn off to keep several branches open.</value></data>
+  <data name="OrgChart_FocusOne"><value>Focus one branch</value></data>
+  <data name="OrgChart_Collapse"><value>Collapse to top</value></data>
+  <data name="OrgChart_ZoomIn"><value>Zoom in</value></data>
+  <data name="OrgChart_ZoomOut"><value>Zoom out</value></data>
+  <data name="OrgChart_Fit"><value>Fit to screen</value></data>
+  <data name="OrgChart_ChartHint"><value>Click a node to expand / collapse · drag to pan · scroll to zoom</value></data>
+  <data name="OrgAnalysis_Analyze"><value>Analyze:</value></data>
+  <data name="OrgAnalysis_Distribution"><value>Workforce distribution</value></data>
+  <data name="OrgAnalysis_ByDivision"><value>Headcount by Division</value></data>
+  <data name="OrgAnalysis_BySite"><value>Headcount by Site</value></data>
+  <data name="OrgAnalysis_ByNationality"><value>Headcount by Nationality</value></data>
+  <data name="OrgAnalysis_ByDepartment"><value>Headcount by Department</value></data>
+  <data name="OrgAnalysis_Issues"><value>Hierarchy issues to review</value></data>
+  <data name="OrgAnalysis_ExportTip"><value>Download every finding below as one Excel workbook — a summary sheet plus one sheet per issue list</value></data>
+  <data name="OrgAnalysis_ExportAll"><value>Export all findings</value></data>
+  <data name="OrgAnalysis_IssuesHint"><value>Each list can be downloaded to Excel or CSV for the HR team to action. Click any row to open that person in the reporting chart.</value></data>
+  <data name="Dash_Original"><value>Original</value></data>
+  <data name="Dash_Enhanced"><value>Enhanced</value></data>
+  <data name="Dash_Editable"><value>Editable plan (what-if)</value></data>
+  <data name="Dash_Reset"><value>Reset</value></data>
+  <data name="Dash_SaveScenario"><value>Save scenario</value></data>
+  <data name="Dash_LoadScenario"><value>Load scenario</value></data>
+  <data name="Dash_ExportBoth"><value>Export both</value></data>
+  <data name="Dash_Shed"><value>shed non-Saudi</value></data>
+  <data name="Dash_Absorb"><value>can add non-Saudi</value></data>
+  <data name="Dash_Surplus"><value>Saudi surplus</value></data>
+  <data name="Dash_Exempt"><value>exempt</value></data>
+  <data name="Dash_AddBeforeCalc"><value>before it counts</value></data>
+  <data name="Dash_Transfer"><value>Suggested transfers (same category)</value></data>
+  <data name="Dash_ApplyAll"><value>Apply all</value></data>
+  <data name="Dash_Apply"><value>Apply</value></data>
+  <data name="Dash_Move"><value>Move</value></data>
+  <data name="Dash_ScenarioSaved"><value>Scenario saved.</value></data>
+  <data name="Dash_NoTransfers"><value>No cross-registration transfers needed.</value></data>
+  <data name="Dash_TransferHint"><value>Move surplus non-Saudis from a deficit registration to one with headroom, within the same category.</value></data>
+  <data name="Dash_EditableHint"><value>Edit Saudi / non-Saudi counts to see the effect on the percentage, zone and required action.</value></data>
+  <data name="Dash_ScenarioName"><value>Scenario name</value></data>
+  <data name="Dash_SaudiPct"><value>Saudization %</value></data>
+  <data name="Dash_SaudiPctTip"><value>Overall Saudi ratio = counted Saudis (incl. special categories + the capped disability bonus) ÷ total employees.</value></data>
+  <data name="Dash_DisabledTip"><value>Share of the workforce who are people of determination (disability). Each adds a capped bonus to the counted Saudi total.</value></data>
+  <data name="Dash_ToGreen"><value>To green</value></data>
+  <data name="Dash_ToGreenTip"><value>Saudis to hire to lift this registration out of Red into the green zone.</value></data>
+  <data name="Dash_CurrentTip"><value>Current requirement — the Saudization % each occupation must meet right now.</value></data>
+  <data name="Dash_PlanTip"><value>Improvement plan — the upcoming (future-decision) Saudization %, so you can plan before it takes effect.</value></data>
+  <data name="Dash_ResetCell"><value>Reset this cell to original</value></data>
+  <data name="Dash_Changes"><value>Changes (enhanced vs original)</value></data>
+  <data name="Dash_Registration"><value>Registration</value></data>
+  <data name="Dash_Was"><value>was</value></data>
+  <data name="Dash_Now"><value>now</value></data>
+  <data name="Dash_NoChanges"><value>No changes.</value></data>
+  <data name="Dash_ExportExcel"><value>Export Excel</value></data>
+  <data name="Ov_Kpis"><value>Key indicators</value></data>
+  <data name="Occ_Import"><value>Import occupation guide</value></data>
+  <data name="Occ_Apply"><value>Apply</value></data>
+  <data name="Occ_ImportHint"><value>Excel with columns: code / occupation / category (any sheet).</value></data>
+  <data name="Occ_Guide"><value>Occupation guide by category</value></data>
+  <data name="Occ_AssignAll"><value>Assign all unmapped to</value></data>
+  <data name="Occ_NewCategory"><value>new category name</value></data>
+  <data name="Occ_Or"><value>or</value></data>
+  <data name="Occ_All"><value>All occupations</value></data>
+  <data name="Occ_Mapped"><value>mapped</value></data>
+  <data name="Occ_TotalEmp"><value>Employees</value></data>
+  <data name="Occ_Classified"><value>Classified</value></data>
+  <data name="Occ_Unclassified"><value>Unclassified</value></data>
+  <data name="Occ_Employees"><value>Employees</value></data>
+  <data name="Occ_ByCatHint"><value>click a category to see its employees</value></data>
+  <data name="OrgChart_Dim_DivDeptPos"><value>Division › Department › Position</value></data>
+  <data name="OrgChart_Dim_DivDeptMgr"><value>Division › Department › Manager</value></data>
+  <data name="OrgAnalysis_ByPosition"><value>Headcount by Position</value></data>
+  <data name="OrgAnalysis_Breakdowns"><value>Breakdowns (drill to employees)</value></data>
+  <data name="OrgAnalysis_ByPosDept"><value>Division › Department › Position</value></data>
+  <data name="OrgAnalysis_ByManager"><value>Employees by direct manager</value></data>
+</root>

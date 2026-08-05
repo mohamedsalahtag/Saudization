@@ -1,0 +1,74 @@
+@model Saudization.Web.Models.Record
+@using System.Globalization
+@{
+    ViewData["Title"] = Model.RegistrationLabel;
+    string Pct(decimal p) => (p * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+    var empCounts = ViewBag.EmpCounts as Dictionary<int, int> ?? new();
+}
+
+<div class="page-head">
+    <div>
+        <h1>@Model.RegistrationLabel</h1>
+        <div class="subtle">@Model.NameAr</div>
+    </div>
+    <div>
+        <a class="btn btn-soft" asp-action="Index">← @T["Records_Title"]</a>
+        <a class="btn" asp-action="Edit" asp-route-id="@Model.Id">@T["Common_Edit"]</a>
+    </div>
+</div>
+
+<div class="card">
+    <strong>@T["Records_Thresholds"]</strong>
+    <div class="subtle" style="margin-top:6px">
+        @T["Zone_Red"]: &lt; @Pct(Model.LowGreenMin) ·
+        @T["Zone_LowGreen"]: @Pct(Model.LowGreenMin) – @Pct(Model.MediumGreenMin) ·
+        @T["Zone_MediumGreen"]: @Pct(Model.MediumGreenMin) – @Pct(Model.HighGreenMin) ·
+        @T["Zone_HighGreen"]: @Pct(Model.HighGreenMin) – @Pct(Model.PlatinumMin) ·
+        @T["Zone_Platinum"]: ≥ @Pct(Model.PlatinumMin)
+    </div>
+</div>
+
+<div class="page-head">
+    <h2 style="font-size:16px;margin:0">@T["Facility_Title"]</h2>
+    <a class="btn btn-sm" asp-controller="Facilities" asp-action="Create" asp-route-recordId="@Model.Id">+ @T["Facility_New"]</a>
+</div>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Facility_Code"]</th>
+            <th>@T["Facility_Name"]</th>
+            <th>@T["Facility_Location"]</th>
+            <th class="num">@T["Emp_Title"]</th>
+            <th class="center">@T["Common_Actions"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var f in Model.Facilities.OrderBy(f => f.Code))
+    {
+        <tr>
+            <td>@f.Code</td>
+            <td>@f.NameAr</td>
+            <td>@f.Location</td>
+            <td class="num">@(empCounts.TryGetValue(f.Id, out var cc) ? cc : 0)</td>
+            <td class="center">
+                <a class="btn btn-sm btn-soft" asp-controller="Employees" asp-action="Index" asp-route-facilityId="@f.Id">@T["Facility_Employees"]</a>
+                <a class="btn btn-sm btn-soft" asp-controller="Facilities" asp-action="Edit" asp-route-id="@f.Id">@T["Common_Edit"]</a>
+                <form asp-controller="Facilities" asp-action="Delete" asp-route-id="@f.Id" method="post" style="display:inline"
+                      onsubmit="return confirm('@T["Common_Confirm"].Value')">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-danger" type="submit">@T["Common_Delete"]</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="margin-top:16px"
+      onsubmit="return confirm('@T["Common_Confirm"].Value')">
+    @Html.AntiForgeryToken()
+    <button class="btn btn-danger" type="submit">@T["Common_Delete"] — @Model.RegistrationLabel</button>
+</form>

@@ -1,0 +1,54 @@
+@{ ViewData["Title"] = T["Import_Title"].Value; }
+<div class="page-head"><h1>@T["Import_Title"]</h1></div>
+
+<div class="card">
+    <p class="subtle">@T["Import_Intro"]</p>
+
+    <div class="field" style="max-width:520px">
+        <label>@T["Import_Rule"]</label>
+        <select id="ruleSel" name="rule" form="importForm" class="btn-soft" style="padding:8px 10px;border-radius:8px">
+            <option value="PerFacility">@T["Import_RulePerFacility"]</option>
+            <option value="PerRegistration">@T["Import_RulePerReg"]</option>
+        </select>
+        <span class="hint">@T["Import_RuleHelp"]</span>
+    </div>
+
+    <div style="margin:12px 0">
+        <button type="button" class="btn btn-soft" id="dlTemplate">⭳ @T["Import_Download"]</button>
+        <span class="hint">@T["Import_TemplateHelp"]</span>
+    </div>
+
+    <form id="importForm" asp-action="Index" method="post" enctype="multipart/form-data" class="stack" style="margin-top:8px">
+        @Html.AntiForgeryToken()
+        <div class="row3">
+            <div class="field">
+                <label>@T["Import_Label"]</label>
+                <input name="label" value="@ViewBag.DefaultLabel" />
+            </div>
+            <div class="field">
+                <label>@T["Import_Week"]</label>
+                <input name="weekDate" type="date" value="@ViewBag.DefaultWeek" />
+            </div>
+            <div class="field">
+                <label>@T["Import_Note"]</label>
+                <input name="note" />
+            </div>
+        </div>
+        <div class="field">
+            <label>@T["Import_Choose"]</label>
+            <input type="file" name="file" accept=".xlsx" required />
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">@T["Import_Run"]</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+  document.getElementById("dlTemplate").addEventListener("click", function () {
+    var rule = document.getElementById("ruleSel").value;
+    window.location = "@Url.Action("Template")?rule=" + encodeURIComponent(rule);
+  });
+</script>
+}

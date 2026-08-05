@@ -1,0 +1,122 @@
+@model RestructureViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = T["Org_Title"].Value;
+    bool divisionOnly = (bool)(ViewBag.DivisionOnly ?? false);
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = null };
+    var modelJson = JsonSerializer.Serialize(Model.Model, jsonOpts);
+    var cfgJson = JsonSerializer.Serialize(new
+    {
+        divisionOnly,
+        t = new
+        {
+            employees = T["Org_Employees"].Value,
+            division = T["Org_Division"].Value,
+            department = T["Org_Department"].Value,
+            job = T["Org_Job"].Value,
+            consistent = T["Org_Consistent"].Value,
+            inconsistent = T["Org_Inconsistent"].Value,
+            unassignedJob = T["Org_NoJob"].Value,
+            resultTable = T["Org_ResultTable"].Value,
+            emp = T["Emp_Name"].Value,
+            mgr = T["Org_Manager"].Value,
+            status = T["Org_Status"].Value,
+            palette = T["Org_Departments"].Value,
+            noManager = T["Org_NoManager"].Value,
+            changeTo = T["Org_ChangeTo"].Value,
+            dragHint = T["Org_DragHint"].Value,
+            unsaved = T["Org_Unsaved"].Value,
+            renameThis = T["Org_RenameThis"].Value,
+            renameAll = T["Org_RenameAll"].Value,
+            renamePrompt = T["Org_RenamePrompt"].Value,
+            code = T["Emp_WorkerNo"].Value,
+            site = T["Facility_Location"].Value,
+            branch = T["Org_Branch"].Value,
+            directory = T["Org_Directory"].Value,
+            transfer = T["Org_Transfer"].Value,
+            apply = T["Common_Save"].Value,
+            goToManager = T["Org_GoToManager"].Value,
+            close = T["Common_Cancel"].Value,
+            empDetails = T["Org_EmployeeDetails"].Value,
+            managerTitle = T["Org_Manager"].Value,
+            noneLabel = T["Zone_Unknown"].Value,
+            changed = T["Org_Changed"].Value,
+            deleteDept = T["Org_DeleteDept"].Value,
+            dragJobHint = T["Org_DragJobHint"].Value,
+            allDivisions = T["Org_AllDivisions"].Value
+        }
+    }, jsonOpts);
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Org_Title"]</h1>
+        <div class="subtle">@T["Org_Intro"]</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        @if (Model.HasData)
+        {
+            <form method="get" asp-action="Index" style="display:flex;gap:8px;align-items:center">
+                <select name="versionId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+                    @foreach (var v in Model.Versions)
+                    {
+                        <option value="@v.Id" selected="@(Model.Model.VersionId == v.Id)">@v.Label @(v.IsOriginal ? "★" : "")</option>
+                    }
+                </select>
+                <label class="subtle" style="display:flex;gap:4px;align-items:center">
+                    <input type="checkbox" name="divisionOnly" value="true" checked="@divisionOnly" onchange="this.form.submit()" /> @T["Org_DivisionOnly"]
+                </label>
+            </form>
+            <a class="btn btn-soft btn-sm" asp-action="Inconsistent" asp-route-versionId="@Model.Model.VersionId" asp-route-divisionOnly="@divisionOnly">@T["Org_Inconsistent"] (@Model.Consistency.Inconsistent.Count)</a>
+            <a class="btn btn-soft btn-sm" asp-action="Compare" asp-route-versionId="@Model.Model.VersionId">@T["Ver_Compare"]</a>
+            <a class="btn btn-soft btn-sm" asp-action="Template" asp-route-versionId="@Model.Model.VersionId">⭳ @T["Import_Download"]</a>
+            <a class="btn btn-soft btn-sm" asp-action="Export" asp-route-versionId="@Model.Model.VersionId">⭳ Excel</a>
+            <input id="saveLabel" class="btn-soft" style="padding:6px 10px;border-radius:8px;display:none" placeholder="@T["Org_VersionName"]" />
+            <button id="saveBtn" class="btn" type="button" disabled
+                    data-save-url="@Url.Action("Save")" data-index-url="@Url.Action("Index")">@T["Org_Save"]</button>
+        }
+        <a class="btn btn-soft" asp-action="Import">@T["Org_Import"]</a>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+
+@if (!Model.HasData)
+{
+    <div class="card">@T["Org_Empty"] <a asp-action="Import">@T["Org_Import"]</a></div>
+    return;
+}
+
+<div class="kpis" id="orgKpis"></div>
+
+<div class="grid2" style="grid-template-columns: 2.2fr 1fr">
+    <div class="card">
+        <div class="page-head" style="margin-bottom:8px"><h2 style="font-size:15px;margin:0">@T["Org_Tree"]</h2>
+            <span class="subtle">@T["Org_DragHint"] · <a href="#" id="expandAll">＋</a> / <a href="#" id="collapseAll">－</a></span></div>
+        <div id="orgBoard" class="board"></div>
+    </div>
+    <div class="card">
+        <div class="page-head" style="margin-bottom:8px"><h2 style="font-size:15px;margin:0">@T["Org_Departments"]</h2></div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+            <input id="newDeptName" class="btn-soft" style="padding:6px 8px;border-radius:8px;flex:1;min-width:120px" placeholder="@T["Org_NewDept"]" />
+            <select id="newDeptDiv" class="btn-soft" style="padding:6px 8px;border-radius:8px"></select>
+            <button id="addDeptBtn" class="btn btn-sm" type="button">+ @T["Org_Add"]</button>
+        </div>
+        <div style="margin-bottom:8px"><label class="subtle" style="margin-inline-end:6px">@T["Org_Division"]:</label>
+            <select id="paletteDivFilter" class="btn-soft" style="padding:6px 10px;border-radius:8px"></select></div>
+        <div id="orgPalette" class="palette"></div>
+    </div>
+</div>
+
+<div id="empModalHost"></div>
+
+<div class="card">
+    <div class="page-head" style="margin-bottom:8px">
+        <h2 style="font-size:15px;margin:0">@T["Org_ResultTable"]</h2>
+        <input id="orgSearch" placeholder="@T["Common_Search"]" class="btn-soft" style="padding:6px 10px;border-radius:8px;min-width:220px" />
+    </div>
+    <div class="table-scroll" style="max-height:520px;overflow:auto"><div id="orgTable"></div></div>
+</div>
+
+<script id="org-model" type="application/json">@Html.Raw(modelJson)</script>
+<script id="org-cfg" type="application/json">@Html.Raw(cfgJson)</script>
+<script src="~/js/restructure.js" asp-append-version="true"></script>

@@ -1,0 +1,33 @@
+# ---- build output ----
+bin/
+obj/
+publish/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+
+# ---- local dev database (SQLite fallback) ----
+*.db
+*.db-shm
+*.db-wal
+
+# ---- company data — never commit employee PII ----
+# source data workbooks (employee names / IDs / org structure)
+*.xlsx
+*.xls
+*.csv
+# legacy embedded webapp carries employee data in data.js
+/webapp/
+# Nitaqat zone screenshots (company-specific)
+/Levels/
+
+# ---- misc / temp ----
+~$*
+*.tmp
+*.log
+Thumbs.db
+
+# editor / tooling
+.claude/

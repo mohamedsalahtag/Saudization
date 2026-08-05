@@ -1,0 +1,44 @@
+@model List<Saudization.Web.Models.AuditLog>
+@{
+    ViewData["Title"] = T["Audit_Title"].Value;
+    var entities = ViewBag.Entities as List<string> ?? new();
+    var entity = ViewBag.Entity as string;
+}
+<div class="page-head"><h1>@T["Audit_Title"]</h1></div>
+
+<form method="get" class="toolbar">
+    <select name="entity" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+        <option value="">— @T["Audit_Entity"] —</option>
+        @foreach (var e in entities) { <option value="@e" selected="@(entity == e)">@e</option> }
+    </select>
+</form>
+
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Audit_When"]</th>
+            <th>@T["Audit_User"]</th>
+            <th>@T["Audit_Entity"]</th>
+            <th>@T["Audit_Action"]</th>
+            <th>@T["Audit_Field"]</th>
+            <th>@T["Audit_Old"]</th>
+            <th>@T["Audit_New"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var a in Model)
+    {
+        <tr>
+            <td>@a.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@a.ChangedByUser</td>
+            <td>@a.EntityName <span class="pill">#@a.EntityId</span></td>
+            <td>@a.Action</td>
+            <td>@a.FieldName</td>
+            <td dir="auto">@a.OldValue</td>
+            <td dir="auto">@a.NewValue</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

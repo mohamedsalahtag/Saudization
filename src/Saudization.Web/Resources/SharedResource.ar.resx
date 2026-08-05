@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" /><xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" /><xsd:attribute ref="xml:space" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType><xsd:attribute name="alias" type="xsd:string" /><xsd:attribute name="name" type="xsd:string" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" /><xsd:attribute ref="xml:space" /></xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType><xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" /></xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="AppTitle"><value>لوحة التوطين</value></data>
+  <data name="Nav_Dashboard"><value>اللوحة</value></data>
+  <data name="Nav_Records"><value>السجلات</value></data>
+  <data name="Nav_Import"><value>استيراد إكسل</value></data>
+  <data name="Nav_Occupations"><value>المهن</value></data>
+  <data name="Nav_Audit"><value>سجل التغييرات</value></data>
+  <data name="Lang_Arabic"><value>العربية</value></data>
+  <data name="Lang_English"><value>English</value></data>
+
+  <data name="Dash_Title"><value>التوطين</value></data>
+  <data name="Dash_Current"><value>الوضع الحالي</value></data>
+  <data name="Dash_Plan"><value>خطة التحسين</value></data>
+  <data name="Dash_Category"><value>الفئة</value></data>
+  <data name="Dash_Required"><value>النسبة المطلوبة</value></data>
+  <data name="Dash_MinCalc"><value>الحد الأدنى للحساب</value></data>
+  <data name="Dash_NonSaudi"><value>غير سعودي</value></data>
+  <data name="Dash_Saudi"><value>سعودي</value></data>
+  <data name="Dash_Total"><value>الإجمالي</value></data>
+  <data name="Dash_Pct"><value>النسبة</value></data>
+  <data name="Dash_Gap"><value>الفارق</value></data>
+  <data name="Dash_GrandTotal"><value>الإجمالي الكلي</value></data>
+  <data name="Dash_Zone"><value>النطاق</value></data>
+  <data name="Dash_Filter"><value>السجل التجاري</value></data>
+  <data name="Dash_AllRecords"><value>كل السجلات</value></data>
+  <data name="Dash_GapHint"><value>+ = سعوديون مطلوب توظيفهم · − = فائض</value></data>
+
+  <data name="Zone_Red"><value>النطاق الأحمر</value></data>
+  <data name="Zone_LowGreen"><value>الأخضر المنخفض</value></data>
+  <data name="Zone_MediumGreen"><value>الأخضر المتوسط</value></data>
+  <data name="Zone_HighGreen"><value>الأخضر المرتفع</value></data>
+  <data name="Zone_Platinum"><value>البلاتيني</value></data>
+  <data name="Zone_Unknown"><value>—</value></data>
+
+  <data name="Dash_Action"><value>الإجراء</value></data>
+  <data name="Dash_Disabled"><value>ذوو الاحتياجات</value></data>
+  <data name="Dash_Replace"><value>إحلال (غير سعودي ← سعودي)</value></data>
+  <data name="Dash_Hire"><value>توظيف سعوديين</value></data>
+  <data name="Dash_Counted"><value>السعوديون المحتسبون</value></data>
+  <data name="Dash_CountedNote"><value>نسبة السجل تشمل الفئات الخاصة ووزن ذوي الاحتياجات الخاصة بعد تطبيق الحد.</value></data>
+  <data name="Sim_Title"><value>محاكاة خطة التحسين</value></data>
+  <data name="Sim_Intro"><value>جرّب تعديل أعداد الموظفين ونقلهم بين السجلات — النتائج فورية ولا تُحفظ.</value></data>
+  <data name="Sim_Transfer"><value>النقل بين السجلات</value></data>
+  <data name="Sim_Move"><value>نقل</value></data>
+  <data name="Sim_Reset"><value>إعادة للوضع الفعلي</value></data>
+  <data name="Sim_Note"><value>هذه محاكاة فقط ولا تؤثر على البيانات الفعلية؛ أعد تحميل الصفحة لاستعادتها.</value></data>
+  <data name="Sim_ByReg"><value>حسب السجل</value></data>
+  <data name="Sim_ByJob"><value>حسب المهنة</value></data>
+  <data name="Sim_Need"><value>للوصول للمطلوب</value></data>
+  <data name="Sim_Fill"><value>ملء الأحمر ← أخضر</value></data>
+  <data name="Sim_FillHint"><value>إحلال غير السعوديين بسعوديين في كل سجل أحمر ليبلغ النسبة المطلوبة.</value></data>
+  <data name="Tr_Title"><value>فرص النقل</value></data>
+  <data name="Tr_Intro"><value>حين يكون عدد الموظفين في مهنة أقل من الحد الأدنى لتطبيق قرار التوطين، قد يحسّن نقل موظف بين السجلات الالتزام العام.</value></data>
+  <data name="Tr_None"><value>لا توجد فرص نقل لهذا الإصدار.</value></data>
+  <data name="Tr_Move"><value>النقل</value></data>
+  <data name="Tr_From"><value>من</value></data>
+  <data name="Tr_To"><value>إلى</value></data>
+  <data name="Tr_FromImpact"><value>نسبة السجل المصدر</value></data>
+  <data name="Tr_ToImpact"><value>نسبة السجل الهدف</value></data>
+  <data name="Tr_BringSaudi"><value>إدخال سعودي</value></data>
+  <data name="Tr_MoveNonSaudi"><value>إخراج غير سعودي</value></data>
+  <data name="Tr_Note"><value>كل صف يمثل نقل موظف واحد مقترح، مع أثره (قبل ← بعد) على السجلين.</value></data>
+  <data name="Nav_Settings"><value>الإعدادات</value></data>
+  <data name="Nav_Saudization"><value>التوطين</value></data>
+  <data name="Nav_Restructure"><value>إعادة الهيكلة</value></data>
+  <data name="Org_Title"><value>إعادة هيكلة المنظمة</value></data>
+  <data name="Org_Intro"><value>أعد تجميع الهيكل وصحّح اتساق المدراء؛ واحفظ الحالات المعدّلة كإصدارات.</value></data>
+  <data name="Org_Import"><value>استيراد البيانات الرئيسية</value></data>
+  <data name="Org_ImportIntro"><value>ارفع ملف البيانات الرئيسية (القسم، الإدارة، رمز المدير المباشر…). أول استيراد يصبح النسخة الأصلية الثابتة.</value></data>
+  <data name="Org_TemplateHelp"><value>القالب يتضمن عمود المهنة الاختياري ومعبّأ بالإصدار الحالي.</value></data>
+  <data name="Org_Empty"><value>لا توجد بيانات هيكل بعد.</value></data>
+  <data name="Org_Tree"><value>الهيكل</value></data>
+  <data name="Org_Departments"><value>الإدارات</value></data>
+  <data name="Org_Division"><value>القسم</value></data>
+  <data name="Org_Department"><value>الإدارة</value></data>
+  <data name="Org_ResultTable"><value>النتيجة</value></data>
+  <data name="Org_Employees"><value>الموظفون</value></data>
+  <data name="Org_Job"><value>المهنة</value></data>
+  <data name="Org_NoJob"><value>(بدون مهنة)</value></data>
+  <data name="Org_Manager"><value>المدير</value></data>
+  <data name="Org_Status"><value>الحالة</value></data>
+  <data name="Org_Consistent"><value>متسق</value></data>
+  <data name="Org_Inconsistent"><value>مدراء غير متسقين</value></data>
+  <data name="Org_NoManager"><value>بدون مدير</value></data>
+  <data name="Org_Dangling"><value>مدير مفقود</value></data>
+  <data name="Org_DivisionOnly"><value>المطابقة على القسم فقط</value></data>
+  <data name="Org_Save"><value>حفظ كإصدار</value></data>
+  <data name="Org_VersionName"><value>اسم الإصدار…</value></data>
+  <data name="Org_NewDept"><value>إدارة جديدة…</value></data>
+  <data name="Org_Add"><value>إضافة</value></data>
+  <data name="Org_Saved"><value>حُفظ كإصدار جديد.</value></data>
+  <data name="Org_Unsaved"><value>تغييرات غير محفوظة</value></data>
+  <data name="Org_ChangeTo"><value>النقل إلى</value></data>
+  <data name="Org_DragHint"><value>اسحب إدارة إلى قسم، أو مهنة إلى إدارة، أو موظفاً إلى إدارة/مهنة. أو انقر موظفاً لإعادة تعيينه.</value></data>
+  <data name="Org_RenameThis"><value>هذا العنصر فقط</value></data>
+  <data name="Org_RenameAll"><value>كل العناصر بنفس الاسم</value></data>
+  <data name="Org_RenamePrompt"><value>تطبيق إعادة التسمية على…</value></data>
+  <data name="Org_Branch"><value>الفرع</value></data>
+  <data name="Org_Directory"><value>الدليل</value></data>
+  <data name="Org_Transfer"><value>نقل</value></data>
+  <data name="Org_GoToManager"><value>الانتقال إلى المدير</value></data>
+  <data name="Org_EmployeeDetails"><value>الموظف</value></data>
+  <data name="Org_Changed"><value>تغيير غير محفوظ</value></data>
+  <data name="Org_DeleteDept"><value>حذف إدارة فارغة</value></data>
+  <data name="Org_DragJobHint"><value>اسحب هذه المهنة (مع موظفيها) إلى إدارة أخرى</value></data>
+  <data name="Org_AllDivisions"><value>كل الأقسام</value></data>
+  <data name="Kpi_Overall"><value>التوطين العام</value></data>
+  <data name="Kpi_Headcount"><value>الموظفون (غير سعودي + سعودي)</value></data>
+  <data name="Kpi_RedRegs"><value>سجلات في النطاق الأحمر</value></data>
+  <data name="Kpi_RedCells"><value>مهن دون المطلوب</value></data>
+  <data name="Kpi_Special"><value>الفئات الخاصة</value></data>
+  <data name="Kpi_Disabled"><value>ذوو الاحتياجات (موزونون)</value></data>
+  <data name="Ov_ByRegistration"><value>التوطين حسب السجل</value></data>
+  <data name="Ov_Findings"><value>الملاحظات والمشكلات</value></data>
+  <data name="Ov_NoFindings"><value>لا توجد مشكلات في هذا الإصدار.</value></data>
+  <data name="Ov_Suggestions"><value>الاقتراحات</value></data>
+  <data name="Find_RedReg"><value>{0} في النطاق الأحمر ({1})</value></data>
+  <data name="Find_RedCell"><value>{0} في {1}: يلزم {2} سعودي للوصول للمطلوب</value></data>
+  <data name="Find_Unmapped"><value>{0} مهنة غير مرتبطة بفئة</value></data>
+  <data name="Find_NoReq"><value>{0} بدون نسبة مطلوبة</value></data>
+
+  <data name="Set_Title"><value>الإعدادات</value></data>
+  <data name="Set_DisabilityCap"><value>حد وزن ذوي الاحتياجات الخاصة</value></data>
+  <data name="Set_DisabilityCapHint"><value>0–1. لا تتجاوز إضافة ذوي الاحتياجات إلى عدد السعوديين هذه النسبة من سعوديي السجل (افتراضي 0.10 = 10%).</value></data>
+  <data name="Set_LightBand"><value>نطاق الأخضر الفاتح</value></data>
+  <data name="Set_LightBandHint"><value>0–1. كم يمكن أن تزيد النسبة الحالية عن المطلوبة وتبقى خضراء فاتحة (افتراضي 0.05 = 5%).</value></data>
+
+  <data name="Records_Title"><value>السجلات التجارية</value></data>
+  <data name="Records_New"><value>سجل جديد</value></data>
+  <data name="Records_Edit"><value>تعديل السجل</value></data>
+  <data name="Records_Label"><value>اسم السجل التجاري</value></data>
+  <data name="Records_NameAr"><value>الاسم التجاري (عربي)</value></data>
+  <data name="Records_NameEn"><value>الاسم (إنجليزي)</value></data>
+  <data name="Records_Thresholds"><value>حدود نطاقات التوطين (نسبة السعودة)</value></data>
+  <data name="Field_LowGreenMin"><value>الأخضر المنخفض من</value></data>
+  <data name="Field_MediumGreenMin"><value>الأخضر المتوسط من</value></data>
+  <data name="Field_HighGreenMin"><value>الأخضر المرتفع من</value></data>
+  <data name="Field_PlatinumMin"><value>البلاتيني من</value></data>
+  <data name="Records_Number"><value>رقم السجل التجاري</value></data>
+  <data name="Records_Required"><value>نسبة التوطين المطلوبة</value></data>
+
+  <data name="Facility_Title"><value>المنشآت</value></data>
+  <data name="Facility_New"><value>منشأة جديدة</value></data>
+  <data name="Facility_Code"><value>رقم المنشأة</value></data>
+  <data name="Facility_Name"><value>اسم المنشأة</value></data>
+  <data name="Facility_Location"><value>الموقع</value></data>
+  <data name="Facility_Employees"><value>العاملون</value></data>
+
+  <data name="Emp_Title"><value>العاملون</value></data>
+  <data name="Emp_New"><value>عامل جديد</value></data>
+  <data name="Emp_WorkerNo"><value>رقم العامل</value></data>
+  <data name="Emp_Name"><value>اسم العامل</value></data>
+  <data name="Emp_Nationality"><value>الجنسية</value></data>
+  <data name="Emp_Occupation"><value>المهنة</value></data>
+  <data name="Emp_Border"><value>رقم الحدود</value></data>
+  <data name="Emp_Iqama"><value>الإقامة - البطاقة</value></data>
+  <data name="Emp_IqamaExpiry"><value>تاريخ انتهاء الإقامة</value></data>
+  <data name="Emp_EntryDate"><value>تاريخ دخول المملكة</value></data>
+  <data name="Emp_Type"><value>نوع العامل</value></data>
+
+  <data name="Common_Save"><value>حفظ</value></data>
+  <data name="Common_Cancel"><value>إلغاء</value></data>
+  <data name="Common_Edit"><value>تعديل</value></data>
+  <data name="Common_Delete"><value>حذف</value></data>
+  <data name="Common_Create"><value>إنشاء</value></data>
+  <data name="Common_Back"><value>رجوع</value></data>
+  <data name="Common_Actions"><value>إجراءات</value></data>
+  <data name="Common_Confirm"><value>هل أنت متأكد؟</value></data>
+  <data name="Common_Count"><value>العدد</value></data>
+  <data name="Common_Search"><value>بحث</value></data>
+
+  <data name="Import_Title"><value>استيراد ملف إكسل</value></data>
+  <data name="Import_Intro"><value>ارفع ملفاً بنفس بنية dashboard.xlsx. تُقرأ الأوراق المرجعية وورقة لكل رقم منشأة وتُدمج في قاعدة البيانات.</value></data>
+  <data name="Import_Choose"><value>اختر ملفاً</value></data>
+  <data name="Import_Run"><value>استيراد</value></data>
+  <data name="Import_Result"><value>ملخص الاستيراد</value></data>
+  <data name="Import_Rule"><value>قاعدة الأوراق</value></data>
+  <data name="Import_RulePerFacility"><value>ورقة لكل منشأة (حسب رقم المنشأة)</value></data>
+  <data name="Import_RulePerReg"><value>ورقة لكل سجل / شركة (حسب السجل التجاري)</value></data>
+  <data name="Import_RuleHelp"><value>كيف تُنظَّم أوراق الموظفين. تُقرأ الأوراق المرجعية (Records، الفئات، دليل المهن، الفئة الخاصة، ذوي الاحتياجات) بنفس الطريقة دائماً. في وضع «لكل سجل» يُوضع كل موظف في منشأته حسب عمود رقم المنشأة.</value></data>
+  <data name="Import_Download"><value>تنزيل القالب</value></data>
+  <data name="Import_TemplateHelp"><value>احصل على ملف جاهز للتعبئة مطابق للقاعدة المختارة، معبّأ بالبيانات الحالية — عدّله وارفعه كأسبوع جديد.</value></data>
+  <data name="Import_Unmatched"><value>عامل بمهنة غير موجودة في دليل المهن</value></data>
+  <data name="Import_Unmatched2"><value>غير مطابق</value></data>
+  <data name="Import_SpecialMatched"><value>موظفو الفئات الخاصة المطابقون</value></data>
+  <data name="Import_DisabilityMatched"><value>موظفو ذوي الاحتياجات المطابقون</value></data>
+
+  <data name="Occ_Title"><value>ربط المهن بالفئات</value></data>
+  <data name="Occ_Unmapped"><value>مهن غير مرتبطة (لدى عاملين وبدون فئة)</value></data>
+  <data name="Occ_Code"><value>الرمز</value></data>
+  <data name="Occ_Name"><value>المهنة</value></data>
+  <data name="Occ_Category"><value>الفئة</value></data>
+
+  <data name="Audit_Title"><value>سجل التغييرات</value></data>
+  <data name="Audit_When"><value>التاريخ (UTC)</value></data>
+  <data name="Audit_User"><value>المستخدم</value></data>
+  <data name="Audit_Entity"><value>الكيان</value></data>
+  <data name="Audit_Action"><value>الإجراء</value></data>
+  <data name="Audit_Field"><value>الحقل</value></data>
+  <data name="Audit_Old"><value>القيمة القديمة</value></data>
+  <data name="Audit_New"><value>القيمة الجديدة</value></data>
+
+  <data name="Nav_Versions"><value>الإصدارات</value></data>
+  <data name="Dash_Version"><value>الإصدار</value></data>
+  <data name="Ver_Title"><value>الإصدارات (لقطات أسبوعية)</value></data>
+  <data name="Ver_Label"><value>اسم الإصدار</value></data>
+  <data name="Ver_Week"><value>الأسبوع</value></data>
+  <data name="Ver_Note"><value>ملاحظة</value></data>
+  <data name="Ver_Created"><value>أُنشئ في</value></data>
+  <data name="Ver_Employees"><value>العاملون</value></data>
+  <data name="Ver_Compare"><value>مقارنة الإصدارات</value></data>
+  <data name="Ver_Overall"><value>الإجمالي</value></data>
+  <data name="Ver_Delta"><value>التغير</value></data>
+  <data name="Ver_Trend"><value>نسبة التوطين عبر الزمن</value></data>
+  <data name="Ver_Select"><value>اختر الإصدارات للمقارنة</value></data>
+  <data name="Ver_Apply"><value>قارن</value></data>
+  <data name="Ver_NeedTwo"><value>استورد إصدارين على الأقل لعرض التقدم عبر الزمن.</value></data>
+  <data name="Ver_From"><value>من</value></data>
+  <data name="Ver_To"><value>إلى</value></data>
+  <data name="Ver_ByDate"><value>قارن حسب المدى الزمني</value></data>
+  <data name="Ver_View"><value>عرض</value></data>
+  <data name="Import_Label"><value>اسم الإصدار</value></data>
+  <data name="Import_Week"><value>تاريخ الأسبوع</value></data>
+  <data name="Import_Note"><value>ملاحظة (اختياري)</value></data>
+  <data name="Nav_OrgChart"><value>الهيكل التنظيمي</value></data>
+  <data name="Nav_OrgAnalysis"><value>تحليل الموارد البشرية</value></data>
+  <data name="OrgChart_Title"><value>الهيكل التنظيمي</value></data>
+  <data name="OrgAnalysis_Title"><value>تحليل الموارد البشرية</value></data>
+  <data name="OrgView_Version"><value>الإصدار</value></data>
+  <data name="OrgView_NoData"><value>لا توجد بيانات تنظيمية بعد. قم باستيراد الهيكل من صفحة إعادة الهيكلة أولاً.</value></data>
+  <data name="OrgChart_TabChart"><value>مخطط التسلسل</value></data>
+  <data name="OrgChart_TabOrg"><value>البنية التنظيمية</value></data>
+  <data name="OrgChart_SelectHint"><value>اختر موظفاً لعرض بياناته وسلسلة التقارير والمرؤوسين المباشرين.</value></data>
+  <data name="OrgChart_ViewBy"><value>عرض حسب</value></data>
+  <data name="OrgChart_Dim_Manager"><value>المدير (خط التقارير)</value></data>
+  <data name="OrgChart_Dim_Division"><value>القطاع › المنصب</value></data>
+  <data name="OrgChart_Dim_Department"><value>الإدارة › المنصب</value></data>
+  <data name="OrgChart_Dim_DivDept"><value>القطاع › الإدارة</value></data>
+  <data name="OrgChart_Dim_Position"><value>المنصب (حسب المستوى)</value></data>
+  <data name="OrgChart_Layout"><value>التخطيط</value></data>
+  <data name="OrgChart_Layout_Vertical"><value>رأسي</value></data>
+  <data name="OrgChart_Layout_Horizontal"><value>أفقي</value></data>
+  <data name="OrgChart_SearchPlaceholder"><value>ابحث بالاسم أو الرمز ثم Enter…</value></data>
+  <data name="OrgChart_AllBranches"><value>كل الفروع</value></data>
+  <data name="OrgChart_AllSites"><value>كل المواقع</value></data>
+  <data name="OrgChart_AllDivisions"><value>كل القطاعات</value></data>
+  <data name="OrgChart_AllDepartments"><value>كل الإدارات</value></data>
+  <data name="OrgChart_FocusTip"><value>عند التفعيل، فتح فرع يطوي الفروع الأخرى في نفس المستوى للتركيز على مسار واحد.</value></data>
+  <data name="OrgChart_FocusOne"><value>التركيز على فرع واحد</value></data>
+  <data name="OrgChart_Collapse"><value>طي للأعلى</value></data>
+  <data name="OrgChart_ZoomIn"><value>تكبير</value></data>
+  <data name="OrgChart_ZoomOut"><value>تصغير</value></data>
+  <data name="OrgChart_Fit"><value>ملاءمة الشاشة</value></data>
+  <data name="OrgChart_ChartHint"><value>انقر عقدة للتوسيع / الطي · اسحب للتحريك · مرر للتكبير</value></data>
+  <data name="OrgAnalysis_Analyze"><value>تحليل:</value></data>
+  <data name="OrgAnalysis_Distribution"><value>توزيع القوى العاملة</value></data>
+  <data name="OrgAnalysis_ByDivision"><value>العدد حسب القطاع</value></data>
+  <data name="OrgAnalysis_BySite"><value>العدد حسب الموقع</value></data>
+  <data name="OrgAnalysis_ByNationality"><value>العدد حسب الجنسية</value></data>
+  <data name="OrgAnalysis_ByDepartment"><value>العدد حسب الإدارة</value></data>
+  <data name="OrgAnalysis_Issues"><value>مشاكل الهيكل للمراجعة</value></data>
+  <data name="OrgAnalysis_ExportTip"><value>تنزيل كل النتائج في ملف Excel واحد — ورقة ملخص وورقة لكل قائمة</value></data>
+  <data name="OrgAnalysis_ExportAll"><value>تصدير كل النتائج</value></data>
+  <data name="OrgAnalysis_IssuesHint"><value>يمكن تنزيل كل قائمة إلى Excel أو CSV. انقر أي صف لفتح الشخص في مخطط التقارير.</value></data>
+  <data name="Dash_Original"><value>الأصلي</value></data>
+  <data name="Dash_Enhanced"><value>المحسّن</value></data>
+  <data name="Dash_Editable"><value>خطة قابلة للتعديل (ماذا لو)</value></data>
+  <data name="Dash_Reset"><value>إعادة تعيين</value></data>
+  <data name="Dash_SaveScenario"><value>حفظ السيناريو</value></data>
+  <data name="Dash_LoadScenario"><value>تحميل سيناريو</value></data>
+  <data name="Dash_ExportBoth"><value>تصدير النسختين</value></data>
+  <data name="Dash_Shed"><value>إزالة غير سعودي</value></data>
+  <data name="Dash_Absorb"><value>يمكن إضافة غير سعودي</value></data>
+  <data name="Dash_Surplus"><value>فائض سعودي</value></data>
+  <data name="Dash_Exempt"><value>معفى</value></data>
+  <data name="Dash_AddBeforeCalc"><value>قبل بدء الاحتساب</value></data>
+  <data name="Dash_Transfer"><value>تحويلات مقترحة (نفس الفئة)</value></data>
+  <data name="Dash_ApplyAll"><value>تطبيق الكل</value></data>
+  <data name="Dash_Apply"><value>تطبيق</value></data>
+  <data name="Dash_Move"><value>نقل</value></data>
+  <data name="Dash_ScenarioSaved"><value>تم حفظ السيناريو.</value></data>
+  <data name="Dash_NoTransfers"><value>لا حاجة لتحويلات بين السجلات.</value></data>
+  <data name="Dash_TransferHint"><value>انقل فائض غير السعوديين من سجل يعاني عجزاً إلى سجل لديه سعة، ضمن نفس الفئة.</value></data>
+  <data name="Dash_EditableHint"><value>عدّل أعداد السعوديين/غير السعوديين لرؤية الأثر على النسبة والنطاق والإجراء المطلوب.</value></data>
+  <data name="Dash_ScenarioName"><value>اسم السيناريو</value></data>
+  <data name="Dash_SaudiPct"><value>نسبة التوطين</value></data>
+  <data name="Dash_SaudiPctTip"><value>نسبة السعودة الإجمالية = السعوديون المحتسبون (شاملاً الفئات الخاصة ومكافأة ذوي الإعاقة المحدودة) ÷ إجمالي الموظفين.</value></data>
+  <data name="Dash_DisabledTip"><value>نسبة الموظفين من ذوي الاحتياجات الخاصة. كل واحد يضيف مكافأة محدودة إلى عدد السعوديين المحتسب.</value></data>
+  <data name="Dash_ToGreen"><value>للوصول للأخضر</value></data>
+  <data name="Dash_ToGreenTip"><value>عدد السعوديين المطلوب توظيفهم لإخراج السجل من النطاق الأحمر إلى الأخضر.</value></data>
+  <data name="Dash_CurrentTip"><value>المتطلب الحالي — نسبة التوطين المطلوبة الآن لكل مهنة.</value></data>
+  <data name="Dash_PlanTip"><value>خطة التحسين — نسبة التوطين المستقبلية القادمة، للتخطيط قبل دخولها حيّز التنفيذ.</value></data>
+  <data name="Dash_ResetCell"><value>إعادة هذه الخلية للأصل</value></data>
+  <data name="Dash_Changes"><value>التغييرات (المحسّن مقابل الأصلي)</value></data>
+  <data name="Dash_Registration"><value>السجل</value></data>
+  <data name="Dash_Was"><value>قبل</value></data>
+  <data name="Dash_Now"><value>بعد</value></data>
+  <data name="Dash_NoChanges"><value>لا توجد تغييرات.</value></data>
+  <data name="Dash_ExportExcel"><value>تصدير Excel</value></data>
+  <data name="Ov_Kpis"><value>المؤشرات الرئيسية</value></data>
+  <data name="Occ_Import"><value>استيراد دليل المهن</value></data>
+  <data name="Occ_Apply"><value>تطبيق</value></data>
+  <data name="Occ_ImportHint"><value>ملف Excel بأعمدة: الرمز / المهنة / الفئة (أي ورقة).</value></data>
+  <data name="Occ_Guide"><value>دليل المهن حسب الفئة</value></data>
+  <data name="Occ_AssignAll"><value>إسناد جميع غير المصنّفة إلى</value></data>
+  <data name="Occ_NewCategory"><value>اسم فئة جديدة</value></data>
+  <data name="Occ_Or"><value>أو</value></data>
+  <data name="Occ_All"><value>جميع المهن</value></data>
+  <data name="Occ_Mapped"><value>مصنّفة</value></data>
+  <data name="Occ_TotalEmp"><value>الموظفون</value></data>
+  <data name="Occ_Classified"><value>مصنّف</value></data>
+  <data name="Occ_Unclassified"><value>غير مصنّف</value></data>
+  <data name="Occ_Employees"><value>الموظفون</value></data>
+  <data name="Occ_ByCatHint"><value>انقر الفئة لعرض موظفيها</value></data>
+  <data name="OrgChart_Dim_DivDeptPos"><value>القطاع › الإدارة › المنصب</value></data>
+  <data name="OrgChart_Dim_DivDeptMgr"><value>القطاع › الإدارة › المدير</value></data>
+  <data name="OrgAnalysis_ByPosition"><value>العدد حسب المنصب</value></data>
+  <data name="OrgAnalysis_Breakdowns"><value>تفصيلات (الوصول للموظفين)</value></data>
+  <data name="OrgAnalysis_ByPosDept"><value>القطاع › الإدارة › المنصب</value></data>
+  <data name="OrgAnalysis_ByManager"><value>الموظفون حسب المدير المباشر</value></data>
+</root>

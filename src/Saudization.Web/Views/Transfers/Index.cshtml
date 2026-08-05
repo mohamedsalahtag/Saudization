@@ -1,0 +1,66 @@
+@model TransfersViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = T["Tr_Title"].Value;
+    string Pct(decimal p) => (p * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+    IHtmlContent Arrow(decimal before, decimal after)
+    {
+        var cls = after > before ? "gap-neg" : after < before ? "gap-pos" : "";
+        return new HtmlString($"{Pct(before)} <span class=\"{cls}\">→ {Pct(after)}</span>");
+    }
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Tr_Title"]</h1>
+        @if (Model.Snapshot != null) { <div class="subtle">@T["Dash_Version"]: @Model.Snapshot.Label</div> }
+    </div>
+    <a class="btn btn-soft" asp-controller="Dashboard" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">← @T["Nav_Dashboard"]</a>
+</div>
+
+<div class="card"><p class="subtle">@T["Tr_Intro"]</p></div>
+
+@if (Model.Suggestions.Count == 0)
+{
+    <div class="card">@T["Tr_None"]</div>
+}
+else
+{
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Dash_Category"]</th>
+            <th>@T["Tr_Move"]</th>
+            <th>@T["Tr_From"]</th>
+            <th>@T["Tr_To"]</th>
+            <th>@T["Tr_FromImpact"]</th>
+            <th>@T["Tr_ToImpact"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model.Suggestions)
+    {
+        <tr>
+            <td dir="rtl">@s.CategoryName</td>
+            <td>
+                @if (s.BringSaudi)
+                {
+                    <span class="pill" style="background:var(--highgreen-bg);color:#1e6b2b">@T["Tr_BringSaudi"]</span>
+                }
+                else
+                {
+                    <span class="pill" style="background:#fff3e0;color:#b45309">@T["Tr_MoveNonSaudi"]</span>
+                }
+            </td>
+            <td><strong>@s.FromLabel</strong></td>
+            <td><strong>@s.ToLabel</strong></td>
+            <td class="num">@Arrow(s.FromPctBefore, s.FromPctAfter)</td>
+            <td class="num">@Arrow(s.ToPctBefore, s.ToPctAfter)</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+<div class="subtle" style="margin-top:8px">@T["Tr_Note"]</div>
+}

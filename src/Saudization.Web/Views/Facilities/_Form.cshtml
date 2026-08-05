@@ -1,0 +1,23 @@
+@model Saudization.Web.Models.Facility
+<form asp-action="@ViewData["Action"]" method="post" class="stack card">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="RecordId" />
+    <div class="field">
+        <label asp-for="Code">@T["Facility_Code"]</label>
+        <input asp-for="Code" />
+        <span asp-validation-for="Code"></span>
+    </div>
+    <div class="field">
+        <label asp-for="NameAr">@T["Facility_Name"]</label>
+        <input asp-for="NameAr" dir="rtl" />
+    </div>
+    <div class="field">
+        <label asp-for="Location">@T["Facility_Location"]</label>
+        <input asp-for="Location" />
+    </div>
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["Common_Save"]</button>
+        <a class="btn btn-soft" asp-controller="Records" asp-action="Details" asp-route-id="@Model.RecordId">@T["Common_Cancel"]</a>
+    </div>
+</form>

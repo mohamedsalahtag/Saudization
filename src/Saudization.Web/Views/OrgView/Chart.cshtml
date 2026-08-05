@@ -1,0 +1,98 @@
+@using Saudization.Web.Models
+@{
+    ViewData["Title"] = T["OrgChart_Title"].Value;
+    var versions = ViewBag.Versions as List<OrgVersion> ?? new List<OrgVersion>();
+    var vid = ViewBag.VersionId as int?;
+    var empRaw = ViewBag.EmpRaw as string;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/orgview.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <h1>@T["OrgChart_Title"]</h1>
+    <form method="get" class="inline-form">
+        <label class="muted">@T["OrgView_Version"]</label>
+        <select name="versionId" onchange="this.form.submit()">
+            @foreach (var v in versions)
+            {
+                <option value="@v.Id" selected="@(v.Id == vid)">@v.Label</option>
+            }
+        </select>
+        <a class="btn btn-ghost" asp-action="Analysis" asp-route-versionId="@vid">@T["Nav_OrgAnalysis"] →</a>
+    </form>
+</div>
+
+@if (empRaw is null)
+{
+    <div class="card"><p class="muted">@T["OrgView_NoData"]</p></div>
+}
+else
+{
+    <div class="orgv">
+        <div class="tabs">
+            <div class="tab active" data-tab="chart">@T["OrgChart_TabChart"]</div>
+            <div class="tab" data-tab="org">@T["OrgChart_TabOrg"]</div>
+        </div>
+
+        <div class="browse-layout">
+            <div class="card detail-top" id="detail">
+                <div class="d-empty">@T["OrgChart_SelectHint"]</div>
+            </div>
+
+            <div class="toolbar">
+                <label class="dim-pick">@T["OrgChart_ViewBy"]
+                    <select id="dim">
+                        <option value="manager">@T["OrgChart_Dim_Manager"]</option>
+                        <option value="division">@T["OrgChart_Dim_Division"]</option>
+                        <option value="department">@T["OrgChart_Dim_Department"]</option>
+                        <option value="divdept">@T["OrgChart_Dim_DivDeptPos"]</option>
+                        <option value="divdeptmgr">@T["OrgChart_Dim_DivDeptMgr"]</option>
+                        <option value="position">@T["OrgChart_Dim_Position"]</option>
+                    </select>
+                </label>
+                <label class="dim-pick">@T["OrgChart_Layout"]
+                    <select id="orient">
+                        <option value="vertical">@T["OrgChart_Layout_Vertical"]</option>
+                        <option value="horizontal">@T["OrgChart_Layout_Horizontal"]</option>
+                    </select>
+                </label>
+                <div class="grow"><input type="text" id="search" placeholder="@T["OrgChart_SearchPlaceholder"]" autocomplete="off"></div>
+                <select id="fBranch"><option value="">@T["OrgChart_AllBranches"]</option></select>
+                <select id="fSite"><option value="">@T["OrgChart_AllSites"]</option></select>
+                <select id="fDiv"><option value="">@T["OrgChart_AllDivisions"]</option></select>
+                <select id="fDept"><option value="">@T["OrgChart_AllDepartments"]</option></select>
+                <label class="chk" title="@T["OrgChart_FocusTip"]"><input type="checkbox" id="accordion" checked> @T["OrgChart_FocusOne"]</label>
+                <button id="btnExpand" class="btn-sm">@T["OrgChart_Collapse"]</button>
+                <span class="muted" id="dimHint"></span>
+            </div>
+
+            <div class="card chart-card" id="panel-chart">
+                <svg id="chart"></svg>
+                <div class="zoom-ctrls">
+                    <button id="zin" title="@T["OrgChart_ZoomIn"]">+</button>
+                    <button id="zout" title="@T["OrgChart_ZoomOut"]">−</button>
+                    <button id="zfit" title="@T["OrgChart_Fit"]" style="font-size:12px">⤢</button>
+                </div>
+                <div class="chart-legend" id="legend"></div>
+                <div class="chart-hint">@T["OrgChart_ChartHint"]</div>
+            </div>
+
+            <div class="card" id="panel-org" style="display:none;">
+                <div class="org-legend" id="orgLegend"></div>
+                <div id="orgtree"></div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @if (empRaw is not null)
+    {
+        <script>window.EMP_RAW = @Html.Raw(empRaw);</script>
+        <script src="~/lib/d3.v7.min.js"></script>
+        <script src="~/js/orgview/dataloader.js" asp-append-version="true"></script>
+        <script src="~/js/orgview/browse.js" asp-append-version="true"></script>
+    }
+}

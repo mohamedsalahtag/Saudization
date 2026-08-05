@@ -1,0 +1,50 @@
+@model Saudization.Web.Services.ImportResult
+@{ ViewData["Title"] = T["Import_Result"].Value; var snap = ViewBag.Snapshot as Snapshot; }
+<div class="page-head">
+    <h1>@T["Import_Result"]</h1>
+    @if (snap != null)
+    {
+        <span class="pill">@T["Dash_Version"]: <strong>@snap.Label</strong> · @snap.WeekDate.ToString("yyyy-MM-dd")</span>
+    }
+</div>
+
+<div class="zonecards">
+    <div class="zonecard"><div class="lbl">@T["Nav_Records"]</div><div class="pct">@Model.Records</div></div>
+    <div class="zonecard"><div class="lbl">@T["Facility_Title"]</div><div class="pct">@Model.Facilities</div></div>
+    <div class="zonecard"><div class="lbl">@T["Emp_Title"]</div><div class="pct">@Model.Employees</div></div>
+    <div class="zonecard"><div class="lbl">@T["Dash_Category"]</div><div class="pct">@Model.Categories</div></div>
+    <div class="zonecard"><div class="lbl">@T["Occ_Name"]</div><div class="pct">@Model.Occupations</div></div>
+    <div class="zonecard"><div class="lbl">@T["Emp_Nationality"]</div><div class="pct">@Model.Nationalities</div></div>
+</div>
+
+@if (Model.SpecialMatched + Model.SpecialUnmatched + Model.DisabilityMatched + Model.DisabilityUnmatched > 0)
+{
+    <div class="card">
+        <strong>@T["Occ_Category"] / @T["Dash_Disabled"]</strong>
+        <ul style="margin:8px 0 0">
+            <li>@T["Import_SpecialMatched"]: @Model.SpecialMatched (@T["Import_Unmatched2"]: @Model.SpecialUnmatched)</li>
+            <li>@T["Import_DisabilityMatched"]: @Model.DisabilityMatched (@T["Import_Unmatched2"]: @Model.DisabilityUnmatched)</li>
+        </ul>
+    </div>
+}
+
+@if (Model.OccupationsUnmatched > 0)
+{
+    <div class="alert err">
+        @Model.OccupationsUnmatched @T["Import_Unmatched"] —
+        <a asp-controller="Occupations" asp-action="Index">@T["Occ_Unmapped"]</a>
+    </div>
+}
+
+@if (Model.Warnings.Count > 0)
+{
+    <div class="card">
+        <ul>@foreach (var w in Model.Warnings) { <li>@w</li> }</ul>
+    </div>
+}
+
+<div class="form-actions">
+    <a class="btn" asp-controller="Dashboard" asp-action="Index" asp-route-snapshotId="@(snap?.Id)">@T["Nav_Dashboard"]</a>
+    <a class="btn btn-soft" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
+    <a class="btn btn-soft" asp-action="Index">@T["Import_Title"]</a>
+</div>

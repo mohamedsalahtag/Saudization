@@ -1,0 +1,150 @@
+@model ComparisonViewModel
+@using System.Globalization
+@using System.Text
+@{
+    ViewData["Title"] = T["Ver_Compare"].Value;
+    var allSnaps = ViewBag.AllSnapshots as List<Snapshot> ?? new();
+    var selected = ViewBag.SelectedIds as List<int> ?? new();
+    var snaps = Model.Snapshots;
+    int n = snaps.Count;
+    var inv = CultureInfo.InvariantCulture;
+    string P(decimal p) => (p * 100).ToString("0.#", inv) + "%";
+
+    var palette = new[] { "#0b6b3a", "#2f6df6", "#e8590c", "#7048e8", "#0ca678", "#e64980", "#f59f00", "#495057" };
+
+    IHtmlContent Delta(TrendSeries s)
+    {
+        if (s.Points.Count < 2) return new HtmlString("");
+        var d = (s.Points[^1].Pct - s.Points[0].Pct) * 100;
+        var cls = d > 0 ? "gap-neg" : d < 0 ? "gap-pos" : "";   // rising Saudization = good (green)
+        var arrow = d > 0 ? "▲" : d < 0 ? "▼" : "▬";
+        return new HtmlString($"<span class=\"{cls}\">{arrow} {(d > 0 ? "+" : "")}{d.ToString("0.#", inv)} pp</span>");
+    }
+
+    var seriesForChart = new List<(TrendSeries s, string label)> { (Model.Overall, T["Ver_Overall"].Value) };
+    foreach (var s in Model.Series) seriesForChart.Add((s, s.Label));
+
+    // Build the trend chart as raw SVG (avoids Razor treating <text>/<line> as keywords).
+    string BuildSvg()
+    {
+        if (n == 0) return "";
+        double W = Math.Max(520, 90 * Math.Max(n, 2)), H = 320;
+        double padL = 44, padR = 20, padT = 20, padB = 52;
+        double innerW = W - padL - padR, innerH = H - padT - padB;
+        double X(int i) => padL + (n <= 1 ? innerW / 2 : innerW * i / (n - 1));
+        double Y(decimal pct) => padT + innerH * (1 - (double)pct);
+        string F(double v) => v.ToString("0.##", inv);
+
+        var sb = new StringBuilder();
+        sb.Append($"<svg viewBox='0 0 {F(W)} {F(H)}' width='100%' style='max-width:{F(W)}px;min-width:520px' font-family='Segoe UI, Tahoma, sans-serif'>");
+        for (int g = 0; g <= 4; g++)
+        {
+            decimal pct = (decimal)g / 4; double y = Y(pct);
+            sb.Append($"<line x1='{F(padL)}' x2='{F(padL + innerW)}' y1='{F(y)}' y2='{F(y)}' stroke='#e2e8f0'/>");
+            sb.Append($"<text x='{F(padL - 8)}' y='{F(y + 4)}' text-anchor='end' font-size='11' fill='#6b7a8d'>{g * 25}%</text>");
+        }
+        for (int i = 0; i < n; i++)
+        {
+            sb.Append($"<text x='{F(X(i))}' y='{F(padT + innerH + 18)}' text-anchor='middle' font-size='11' fill='#1b2733'>{System.Net.WebUtility.HtmlEncode(snaps[i].Label)}</text>");
+            sb.Append($"<text x='{F(X(i))}' y='{F(padT + innerH + 32)}' text-anchor='middle' font-size='10' fill='#6b7a8d'>{snaps[i].WeekDate:MM-dd}</text>");
+        }
+        for (int si = 0; si < seriesForChart.Count; si++)
+        {
+            var s = seriesForChart[si].s; var col = palette[si % palette.Length]; bool ov = si == 0;
+            var pts = string.Join(" ", s.Points.Select((p, i) => $"{F(X(i))},{F(Y(p.Pct))}"));
+            sb.Append($"<polyline points='{pts}' fill='none' stroke='{col}' stroke-width='{(ov ? 3 : 1.8).ToString(inv)}' stroke-linejoin='round' opacity='{(ov ? 1 : 0.85).ToString(inv)}'/>");
+            for (int i = 0; i < s.Points.Count; i++)
+                sb.Append($"<circle cx='{F(X(i))}' cy='{F(Y(s.Points[i].Pct))}' r='{(ov ? 4 : 3)}' fill='{col}'/>");
+        }
+        sb.Append("</svg>");
+        return sb.ToString();
+    }
+}
+
+<div class="page-head">
+    <h1>@T["Ver_Compare"]</h1>
+    <a class="btn btn-soft" asp-controller="Dashboard" asp-action="Index">← @T["Nav_Dashboard"]</a>
+</div>
+
+<div class="card">
+    <form method="get" asp-action="Compare" style="margin-bottom:12px;display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+        <div class="field" style="gap:2px"><label class="subtle">@T["Ver_From"]</label><input type="date" name="from" value="@(ViewBag.From)" class="btn-soft" style="padding:6px 10px;border-radius:8px" /></div>
+        <div class="field" style="gap:2px"><label class="subtle">@T["Ver_To"]</label><input type="date" name="to" value="@(ViewBag.To)" class="btn-soft" style="padding:6px 10px;border-radius:8px" /></div>
+        <button class="btn btn-soft" type="submit">@T["Ver_ByDate"]</button>
+    </form>
+    <form method="get" asp-action="Compare">
+        <strong>@T["Ver_Select"]</strong>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0">
+            @foreach (var s in allSnaps)
+            {
+                <label style="display:flex;gap:6px;align-items:center">
+                    <input type="checkbox" name="ids" value="@s.Id" checked="@(selected.Contains(s.Id))" />
+                    @s.Label <span class="subtle">(@s.WeekDate.ToString("yyyy-MM-dd"))</span>
+                </label>
+            }
+        </div>
+        <button class="btn" type="submit">@T["Ver_Apply"]</button>
+    </form>
+</div>
+
+@if (n == 0)
+{
+    <div class="card">@T["Ver_NeedTwo"]</div>
+    return;
+}
+
+<div class="card">
+    <strong>@T["Ver_Trend"]</strong>
+    <div class="table-scroll" style="margin-top:12px">@Html.Raw(BuildSvg())</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+        @for (int si = 0; si < seriesForChart.Count; si++)
+        {
+            <span style="display:inline-flex;gap:6px;align-items:center;font-size:13px">
+                <span style="width:14px;height:3px;background:@palette[si % palette.Length];display:inline-block;border-radius:2px"></span>
+                @seriesForChart[si].label
+            </span>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-scroll">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th>@T["Dash_Filter"]</th>
+                @foreach (var s in snaps) { <th class="num">@s.Label</th> }
+                <th class="num">@T["Ver_Delta"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="totalrow">
+                <td>@T["Ver_Overall"]</td>
+                @foreach (var pt in Model.Overall.Points) { <td class="num">@(pt.Total > 0 ? P(pt.Pct) : "—")</td> }
+                <td class="num">@Delta(Model.Overall)</td>
+            </tr>
+            @foreach (var s in Model.Series)
+            {
+                <tr>
+                    <td>@s.Label</td>
+                    @foreach (var pt in s.Points)
+                    {
+                        <td class="num">
+                            @if (pt.Total > 0)
+                            {
+                                <span class="zonebadge @ZoneDisplay.Css(pt.Zone)" title="@pt.Saudi / @pt.Total">@P(pt.Pct)</span>
+                            }
+                            else
+                            {
+                                <span class="subtle">—</span>
+                            }
+                        </td>
+                    }
+                    <td class="num">@Delta(s)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+    <div class="subtle" style="margin-top:8px">pp = @T["Dash_Pct"] points</div>
+</div>

@@ -1,0 +1,60 @@
+@model List<OrgMoveRow>
+@{
+    ViewData["Title"] = T["Ver_Compare"].Value;
+    int vid = (int)(ViewBag.VersionId ?? 0), bid = (int)(ViewBag.BaseId ?? 0);
+    var versions = ViewBag.Versions as List<Saudization.Web.Models.OrgVersion> ?? new();
+    int movedDiv = Model.Count(r => r.FromDivision != r.ToDivision);
+    int movedDept = Model.Count(r => r.FromDepartment != r.ToDepartment);
+    int movedJob = Model.Count(r => r.FromJob != r.ToJob);
+    IHtmlContent Chg(string a, string b) => a == b
+        ? new HtmlString(System.Net.WebUtility.HtmlEncode(a))
+        : new HtmlString($"<span class='muted'>{System.Net.WebUtility.HtmlEncode(a)}</span> <span class='ic-bad'>→</span> <strong>{System.Net.WebUtility.HtmlEncode(b)}</strong>");
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Ver_Compare"]</h1>
+        <div class="subtle">@ViewBag.BaseLabel → @ViewBag.CurLabel · @Model.Count @T["Org_Employees"]</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <form method="get" asp-action="Compare" style="display:flex;gap:8px;align-items:center">
+            <input type="hidden" name="versionId" value="@vid" />
+            <label class="subtle">@T["Ver_From"]</label>
+            <select name="baseId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+                @foreach (var v in versions) { <option value="@v.Id" selected="@(v.Id == bid)">@v.Label</option> }
+            </select>
+        </form>
+        <a class="btn btn-soft" asp-action="Index" asp-route-versionId="@vid">← @T["Org_Title"]</a>
+    </div>
+</div>
+
+<div class="kpis">
+    <div class="kpi"><div class="k-val">@Model.Count</div><div class="k-lbl">@T["Org_Employees"]</div></div>
+    <div class="kpi @(movedDiv>0?"warn":"")"><div class="k-val">@movedDiv</div><div class="k-lbl">@T["Org_Division"]</div></div>
+    <div class="kpi @(movedDept>0?"warn":"")"><div class="k-val">@movedDept</div><div class="k-lbl">@T["Org_Department"]</div></div>
+    <div class="kpi"><div class="k-val">@movedJob</div><div class="k-lbl">@T["Org_Job"]</div></div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card"><p class="subtle">No differences.</p></div>
+}
+else
+{
+<div class="table-scroll">
+<table class="grid">
+    <thead><tr><th>@T["Emp_Name"]</th><th>@T["Org_Division"]</th><th>@T["Org_Department"]</th><th>@T["Org_Job"]</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.Name <span class="muted small">#@r.Code</span></td>
+            <td>@Chg(r.FromDivision, r.ToDivision)</td>
+            <td>@Chg(r.FromDepartment, r.ToDepartment)</td>
+            <td>@Chg(r.FromJob, r.ToJob)</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+}

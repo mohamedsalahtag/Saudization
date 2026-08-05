@@ -1,0 +1,4 @@
+@model Employee
+@{ var fac = ViewBag.Facility as Facility; ViewData["Title"] = T["Common_Edit"].Value; ViewData["Action"] = "Edit"; }
+<div class="page-head"><h1>@T["Common_Edit"] — @Model.Name</h1></div>
+@await Html.PartialAsync("_Form", Model)

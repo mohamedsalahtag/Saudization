@@ -1,0 +1,229 @@
+@model DashboardViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = T["Dash_Title"].Value;
+    var isRtl = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+    var records = Model.Records;
+    string Pct(decimal p) => (p * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+    string CatName(CategoryRow r) => isRtl ? r.NameAr : (string.IsNullOrWhiteSpace(r.NameEn) ? r.NameAr : r.NameEn!);
+    var allRecords = ViewBag.Records as List<Saudization.Web.Models.Record> ?? new();
+    var allSnapshots = ViewBag.Snapshots as List<Snapshot> ?? new();
+    string modeParam = Model.Mode == DashboardMode.Plan ? "plan" : "current";
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Dash_Title"]</h1>
+        <div class="subtle">@T["Dash_GapHint"]</div>
+    </div>
+    @if (Model.Snapshot != null)
+    {
+        <div class="subtle">
+            <span class="pill">@T["Dash_Version"]: <strong>@Model.Snapshot.Label</strong></span>
+            <span class="pill">@T["Ver_Week"]: @Model.Snapshot.WeekDate.ToString("yyyy-MM-dd")</span>
+        </div>
+    }
+</div>
+
+@if (!allSnapshots.Any())
+{
+    <div class="card">@T["Import_Intro"] <a asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a></div>
+    return;
+}
+
+<div class="toolbar">
+    <div class="seg">
+        <a class="@(Model.Mode == DashboardMode.Current ? "on" : "")" title="@T["Dash_CurrentTip"]"
+           asp-action="Index" asp-route-mode="current" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Current"]</a>
+        <a class="@(Model.Mode == DashboardMode.Plan ? "on" : "")" title="@T["Dash_PlanTip"]"
+           asp-action="Index" asp-route-mode="plan" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Plan"]</a>
+    </div>
+    <span class="subtle mode-hint">@(Model.Mode == DashboardMode.Plan ? T["Dash_PlanTip"] : T["Dash_CurrentTip"])</span>
+
+    <form method="get" asp-action="Index" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="hidden" name="mode" value="@modeParam" />
+        <label class="subtle">@T["Dash_Version"]:</label>
+        <select name="snapshotId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
+            @foreach (var s in allSnapshots)
+            {
+                <option value="@s.Id" selected="@(Model.SnapshotId == s.Id)">@s.Label (@s.WeekDate.ToString("yyyy-MM-dd"))</option>
+            }
+        </select>
+        <label class="subtle">@T["Dash_Filter"]:</label>
+        <select name="recordId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
+            <option value="">@T["Dash_AllRecords"]</option>
+            @foreach (var r in allRecords)
+            {
+                <option value="@r.Id" selected="@(Model.FilterRecordId == r.Id)">@r.RegistrationLabel</option>
+            }
+        </select>
+        <a class="btn btn-soft btn-sm" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
+    </form>
+</div>
+
+<!-- Zone status cards per registration (§7: zone + current % + disabled %) -->
+<div class="zonecards">
+    @foreach (var rc in records)
+    {
+        <div class="zonecard @ZoneDisplay.CardCss(rc.Zone)" style="border-top-color:@rc.ZoneColor">
+            <div class="lbl">@rc.Label @if (!string.IsNullOrWhiteSpace(rc.RegistrationNumber)) { <span class="subtle">#@rc.RegistrationNumber</span> }</div>
+            <div class="pct" title="@T["Dash_SaudiPctTip"]">@Pct(rc.Pct)</div>
+            <div class="cnt">@T["Dash_SaudiPct"] · @rc.SaudiCountedGeneral @T["Dash_Saudi"] / @rc.Headcount @T["Dash_Total"]</div>
+            <div class="cnt" title="@T["Dash_DisabledTip"]">@T["Dash_Disabled"]: @Pct(rc.DisabledPct) <span class="help">?</span></div>
+            <span class="zonebadge @ZoneDisplay.Css(rc.Zone)">@T[ZoneDisplay.Key(rc.Zone)]</span>
+            @if (rc.Zone == NitaqatZone.Red)
+            {
+                <div class="to-green" title="@T["Dash_ToGreenTip"]">↗ @T["Dash_ToGreen"] @Pct(rc.LowGreenMin): <strong>+@rc.HiresToGreen @T["Dash_Saudi"]</strong></div>
+            }
+        </div>
+    }
+</div>
+
+<div class="section-head"><h2>@T["Dash_Original"]</h2></div>
+<div class="table-scroll">
+<table class="grid compact">
+    <thead>
+        <tr>
+            <th rowspan="2">@T["Dash_Category"]</th>
+            <th rowspan="2" class="center">@T["Dash_MinCalc"]</th>
+            <th rowspan="2" class="center">@T["Dash_Required"]</th>
+            @foreach (var rc in records)
+            {
+                <th colspan="5" class="grp rec-sep">
+                    <span class="grp-lbl">@rc.Label</span>
+                    <span class="zonebadge @ZoneDisplay.Css(rc.Zone)">@T[ZoneDisplay.Key(rc.Zone)]</span>
+                </th>
+            }
+            <th colspan="4" class="grp rec-sep">@T["Dash_GrandTotal"]</th>
+        </tr>
+        <tr>
+            @foreach (var rc in records)
+            {
+                <th class="num rec-sep">@T["Dash_NonSaudi"]</th>
+                <th class="num">@T["Dash_Saudi"]</th>
+                <th class="num">@T["Dash_Total"]</th>
+                <th class="num">@T["Dash_Pct"]</th>
+                <th class="num">@T["Dash_Action"]</th>
+            }
+            <th class="num rec-sep">@T["Dash_NonSaudi"]</th>
+            <th class="num">@T["Dash_Saudi"]</th>
+            <th class="num">@T["Dash_Total"]</th>
+            <th class="num">@T["Dash_Pct"]</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            <tr>
+                <td>@CatName(row)</td>
+                <td class="center">@(row.IsUnclassified ? "" : row.MinForCalc.ToString())</td>
+                <td class="center">@(row.IsUnclassified ? "" : Pct(row.RequiredPct))</td>
+                @foreach (var rc in records)
+                {
+                    var c = row.ByRecord.TryGetValue(rc.RecordId, out var cell) ? cell : new Cell();
+                    <td class="num rec-sep">@c.NonSaudi</td>
+                    <td class="num">@c.Saudi</td>
+                    <td class="num">@c.Total</td>
+                    <td class="num @ZoneDisplay.StatusCss(c.Status)">@Pct(c.Pct)</td>
+                    <td class="num">
+                        @if (c.Status == CellStatus.Red)
+                        {
+                            <div class="act"><span class="act-rep" title="@T["Dash_Replace"]">↔ @c.ReplaceNeeded</span>
+                            <span class="act-hire" title="@T["Dash_Hire"]">＋ @c.HireNeeded</span>
+                            <span class="act-shed" title="@T["Dash_Shed"]">⤓ @c.ShedNonSaudi</span></div>
+                        }
+                        else if (c.Status == CellStatus.LightGreen || c.Status == CellStatus.HighGreen)
+                        {
+                            <div class="act">
+                                @if ((c.AbsorbNonSaudi ?? 0) > 0) { <span class="act-absorb" title="@T["Dash_Absorb"]">⤒ +@c.AbsorbNonSaudi</span> }
+                                @if ((c.SaudiSurplus ?? 0) > 0) { <span class="act-surplus" title="@T["Dash_Surplus"]">▽ @c.SaudiSurplus</span> }
+                            </div>
+                        }
+                        else if (c.Status == CellStatus.Exempt)
+                        {
+                            <span class="act-exempt" title="@T["Dash_Exempt"]">✓ +@c.ExemptAddNonSaudi</span>
+                        }
+                    </td>
+                }
+                <td class="num rec-sep">@row.Grand.NonSaudi</td>
+                <td class="num">@row.Grand.Saudi</td>
+                <td class="num">@row.Grand.Total</td>
+                <td class="num @ZoneDisplay.StatusCss(row.Grand.Status)">@Pct(row.Grand.Pct)</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="totalrow">
+            <td>@T["Dash_GrandTotal"]</td>
+            <td></td><td></td>
+            @foreach (var rc in records)
+            {
+                <td class="num rec-sep">@rc.NonSaudi</td>
+                <td class="num" title="@T["Dash_Counted"]: @rc.SaudiCountedGeneral">@rc.BaseSaudi</td>
+                <td class="num">@rc.Headcount</td>
+                <td class="num">@(rc.Headcount > 0 ? Pct(rc.Pct) : "")</td>
+                <td class="num"></td>
+            }
+            <td class="num rec-sep">@(Model.GrandHeadcount - Model.GrandBaseSaudi)</td>
+            <td class="num" title="@T["Dash_Counted"]: @Model.GrandSaudiCounted">@Model.GrandBaseSaudi</td>
+            <td class="num">@Model.GrandHeadcount</td>
+            <td class="num">@(Model.GrandHeadcount > 0 ? Pct(Model.GrandPct) : "")</td>
+        </tr>
+    </tfoot>
+</table>
+</div>
+
+<div class="subtle" style="margin-top:8px">
+    <span class="act-rep">↔ @T["Dash_Replace"]</span> · <span class="act-hire">＋ @T["Dash_Hire"]</span> · <span class="act-shed">⤓ @T["Dash_Shed"]</span> · <span class="act-absorb">⤒ @T["Dash_Absorb"]</span> · <span class="act-surplus">▽ @T["Dash_Surplus"]</span> · @T["Dash_CountedNote"]
+</div>
+
+@{
+    var em = ViewBag.EditableModel as string;
+    var plans = ViewBag.Plans as List<Saudization.Web.Models.SaudizationPlan> ?? new();
+    var curPlan = ViewBag.PlanId as int?;
+}
+@if (!string.IsNullOrEmpty(em))
+{
+    <div class="section-head editable-head">
+        <h2>@T["Dash_Enhanced"] <span class="pill">@T["Dash_Editable"]</span></h2>
+        <div class="subtle">@T["Dash_EditableHint"]</div>
+    </div>
+
+    <div class="sg-controls">
+        <input id="sgName" placeholder="@T["Dash_ScenarioName"]" />
+        <button id="sgSave" class="btn btn-sm">@T["Dash_SaveScenario"]</button>
+        <button id="sgExport" class="btn btn-soft btn-sm">⭳ @T["Dash_ExportBoth"]</button>
+        <button id="sgReset" class="btn btn-soft btn-sm">↺ @T["Dash_Reset"]</button>
+        @if (plans.Any())
+        {
+            <label class="subtle">@T["Dash_LoadScenario"]:</label>
+            <select id="sgLoad" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+                <option value="">—</option>
+                @foreach (var p in plans)
+                {
+                    <option value="@p.Id" selected="@(curPlan == p.Id)">@p.Label</option>
+                }
+            </select>
+        }
+        <span id="sgMsg" class="subtle"></span>
+    </div>
+
+    <div class="table-scroll"><table class="grid compact" id="sgGrid"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+
+    <div class="section-head"><h3>@T["Dash_Transfer"]</h3></div>
+    <div class="subtle" style="margin:-6px 0 8px">@T["Dash_TransferHint"]</div>
+    <div id="sgTransfers" class="sg-transfers"></div>
+
+    @Html.AntiForgeryToken()
+    <script id="sg-model" type="application/json">@Html.Raw(em)</script>
+    <form id="sgExportForm" method="post" asp-action="Export" asp-controller="Saudization" style="display:none">
+        <input type="hidden" name="payload" id="sgExportPayload" />
+    </form>
+    <script>
+        window.SG_SNAPSHOT = @Model.SnapshotId;
+        window.SG_MODE = '@modeParam';
+        window.SG_LOAD_URL = '@Url.Action("Index", "Saudization")';
+        window.SG_SAVE_URL = '@Url.Action("SavePlan", "Saudization")';
+    </script>
+    <script src="~/js/saudization-grid.js" asp-append-version="true"></script>
+}
