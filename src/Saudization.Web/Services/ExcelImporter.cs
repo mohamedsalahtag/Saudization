@@ -14,6 +14,10 @@ public class ImportResult
     public int OccupationsUpdated, EmployeesRelinked, GuideRows;
     public int SpecialMatched, SpecialUnmatched, DisabilityMatched, DisabilityUnmatched;
     public readonly List<string> Warnings = new();
+    /// <summary>Employees read per worksheet (for the upload preview).</summary>
+    public readonly Dictionary<string, int> SheetEmployees = new();
+    /// <summary>Occupation names in the file that match nothing in the occupation guide → employee count.</summary>
+    public readonly Dictionary<string, int> UnmatchedOccupations = new();
     public bool Success => Warnings.All(w => !w.StartsWith("ERROR"));
 }
 
@@ -27,36 +31,56 @@ public class ExcelImporter
     private readonly AppDbContext _db;
     public ExcelImporter(AppDbContext db) => _db = db;
 
-    // Sheet names in the source workbook (Arabic).
+    // Sheet names in the source workbook (Arabic). The registrations sheet is "Records" in older files
+    // and "اسماء السجلات" in the current ministry export — both are accepted.
     private const string ShRecords = "Records";
+    private const string ShRecordsAr = "اسماء السجلات";
     private const string ShCategories = "فئات التوطين";
     private const string ShOccupations = "دليل المهن";
     private const string ShSpecial = "الفئة الخاصة";
     private const string ShDisability = "ذوي الاحتياجات الخاصة";
 
-    /// <summary>Imports reference data (shared across versions) and loads all employees into <paramref name="snapshot"/>.</summary>
+    /// <summary>Imports a weekly file into <paramref name="snapshot"/>. When <paramref name="protectMaster"/> is true
+    /// (the default for regular uploads), existing master data — Saudization categories, the occupation guide, and
+    /// each registration's Nitaqat settings — is treated as read-only: it is reused to place employees but never
+    /// created or edited from the file. Master data is maintained only through its own screens.</summary>
     public async Task<ImportResult> ImportAsync(Stream xlsx, Snapshot snapshot,
-        ImportSheetRule rule = ImportSheetRule.PerFacility, CancellationToken ct = default)
+        ImportSheetRule rule = ImportSheetRule.PerFacility, bool protectMaster = true, CancellationToken ct = default, bool save = true)
     {
         var res = new ImportResult();
+        // ClosedXML evaluates formulas with the current culture; under "ar" it writes R1C1 offsets with an Arabic
+        // letter mark (RC[؜-1]) and then fails to parse them. Excel content is culture-neutral, so read it invariant.
+        using var _ = new InvariantCultureScope();
         using var wb = new XLWorkbook(xlsx);
 
-        var catByName = await ImportCategoriesAsync(wb, res, ct);
-        var occByName = await ImportOccupationsAsync(wb, res, catByName, ct);
-        var recByLabel = await ImportRecordsAsync(wb, res, ct);        // also creates facilities
-        await ImportReferenceListsAsync(wb, res, ct);                  // disability + special (raw lists)
-        await ImportEmployeesAsync(wb, res, occByName, snapshot, rule, recByLabel, ct);
-        ApplyWeighting(wb, res, snapshot);                            // §4/§5: match special/disabled → employees
+        // Default "يُحتسب بعدد" weight for disabled rows that leave the count blank (Settings, Nitaqat default 4).
+        var defWeight = (await _db.Settings.Where(s => s.Id == 1).Select(s => (int?)s.DisabilityDefaultWeight).FirstOrDefaultAsync(ct)) ?? 4;
+        if (defWeight < 1) defWeight = 4;
 
+        var catByName = await ImportCategoriesAsync(wb, res, protectMaster, ct);
+        var occByName = await ImportOccupationsAsync(wb, res, catByName, protectMaster, ct);
+        var recByLabel = await ImportRecordsAsync(wb, res, protectMaster, ct);   // also creates facilities
+        await ImportReferenceListsAsync(wb, res, defWeight, ct);       // disability + special (raw lists)
+        await ImportEmployeesAsync(wb, res, occByName, snapshot, rule, recByLabel, ct);
+        ApplyWeighting(wb, res, snapshot, defWeight);                 // §4/§5: match special/disabled → employees
+
+        if (res.Employees == 0)
+        {
+            // Nothing is saved: an empty version must never be created (or become the default).
+            res.Warnings.Add("ERROR: no employees were read from the file. Check the sheet rule (by facility / by registration) and that the sheet names match facility codes or registration labels.");
+            return res;
+        }
+        if (!save) return res;   // dry run (upload preview): the caller inspects the tracked entities, then discards them
         await _db.SaveChangesAsync(ct);
         return res;
     }
 
     // ---------- categories (فئات التوطين) ----------
     private async Task<Dictionary<string, SaudizationCategory>> ImportCategoriesAsync(
-        XLWorkbook wb, ImportResult res, CancellationToken ct)
+        XLWorkbook wb, ImportResult res, bool protectMaster, CancellationToken ct)
     {
-        var map = await _db.Categories.ToDictionaryAsync(c => c.NameAr, ct);
+        var map = (await _db.Categories.ToListAsync(ct)).GroupBy(c => Normalize(c.NameAr)).ToDictionary(g => g.Key, g => g.First());
+        if (protectMaster) return map;   // weekly upload: existing categories are authoritative and untouched
         var ws = Find(wb, ShCategories);
         if (ws is null) { res.Warnings.Add($"Sheet '{ShCategories}' not found — categories skipped."); return map; }
 
@@ -73,10 +97,10 @@ public class ExcelImporter
         {
             var name = Str(row, cName);
             if (string.IsNullOrWhiteSpace(name)) continue;
-            if (!map.TryGetValue(name, out var cat))
+            if (!map.TryGetValue(Normalize(name), out var cat))
             {
                 cat = new SaudizationCategory { NameAr = name };
-                _db.Categories.Add(cat); map[name] = cat; res.Categories++;
+                _db.Categories.Add(cat); map[Normalize(name)] = cat; res.Categories++;
             }
             cat.MinForCalc = (int)(Num(row, cMin) ?? 0);
             // Frac normalizes a whole-number percentage (e.g. 30 → 0.30) so it fits decimal(5,4); true fractions pass through.
@@ -91,9 +115,11 @@ public class ExcelImporter
 
     // ---------- occupation guide (دليل المهن) ----------
     private async Task<Dictionary<string, Occupation>> ImportOccupationsAsync(
-        XLWorkbook wb, ImportResult res, Dictionary<string, SaudizationCategory> cats, CancellationToken ct)
+        XLWorkbook wb, ImportResult res, Dictionary<string, SaudizationCategory> cats, bool protectMaster, CancellationToken ct)
     {
-        var map = await _db.Occupations.ToDictionaryAsync(o => o.NameAr, ct);
+        // keyed by normalized name (so "مهندس مدنى" == "مهندس مدني"); duplicates in the guide must not crash the import
+        var map = (await _db.Occupations.ToListAsync(ct)).GroupBy(o => Normalize(o.NameAr)).ToDictionary(g => g.Key, g => g.First());
+        if (protectMaster) return map;   // weekly upload: existing occupation guide is authoritative and untouched
         var ws = Find(wb, ShOccupations);
         if (ws is null) { res.Warnings.Add($"Sheet '{ShOccupations}' not found — occupation guide skipped."); return map; }
 
@@ -106,14 +132,14 @@ public class ExcelImporter
         {
             var name = Str(row, cName);
             if (string.IsNullOrWhiteSpace(name)) continue;
-            if (!map.TryGetValue(name, out var occ))
+            if (!map.TryGetValue(Normalize(name), out var occ))
             {
                 occ = new Occupation { NameAr = name };
-                _db.Occupations.Add(occ); map[name] = occ; res.Occupations++;
+                _db.Occupations.Add(occ); map[Normalize(name)] = occ; res.Occupations++;
             }
             occ.Code = Str(row, cCode);
             var catName = Str(row, cCat);
-            if (!string.IsNullOrWhiteSpace(catName) && cats.TryGetValue(catName!, out var cat))
+            if (!string.IsNullOrWhiteSpace(catName) && cats.TryGetValue(Normalize(catName!), out var cat))
                 occ.Category = cat;
         }
         return map;
@@ -125,6 +151,7 @@ public class ExcelImporter
     public async Task<ImportResult> ApplyOccupationGuideAsync(Stream xlsx, CancellationToken ct = default)
     {
         var res = new ImportResult();
+        using var _ = new InvariantCultureScope();
         using var wb = new XLWorkbook(xlsx);
         var ws = Find(wb, ShOccupations) ?? FindByHeaders(wb, "المهنة", "الفئة") ?? wb.Worksheets.FirstOrDefault();
         if (ws is null) { res.Warnings.Add("ERROR: no worksheet found in the file."); return res; }
@@ -185,16 +212,16 @@ public class ExcelImporter
 
     // ---------- records + facilities (Records sheet) ----------
     private async Task<Dictionary<string, Record>> ImportRecordsAsync(
-        XLWorkbook wb, ImportResult res, CancellationToken ct)
+        XLWorkbook wb, ImportResult res, bool protectMaster, CancellationToken ct)
     {
-        var recByLabel = await _db.Records.ToDictionaryAsync(r => r.RegistrationLabel, ct);
-        var facByCode = await _db.Facilities.ToDictionaryAsync(f => f.Code, ct);
+        var recByLabel = (await _db.Records.ToListAsync(ct)).GroupBy(r => Normalize(r.RegistrationLabel)).ToDictionary(g => g.Key, g => g.First());
+        var facByCode = (await _db.Facilities.ToListAsync(ct)).GroupBy(f => Normalize(f.Code)).ToDictionary(g => g.Key, g => g.First());
 
-        var ws = Find(wb, ShRecords);
-        if (ws is null) { res.Warnings.Add($"Sheet '{ShRecords}' not found — records skipped."); return recByLabel; }
+        var ws = Find(wb, ShRecords) ?? Find(wb, ShRecordsAr);
+        if (ws is null) { res.Warnings.Add($"Sheet '{ShRecords}'/'{ShRecordsAr}' not found — records skipped."); return recByLabel; }
 
         var h = HeaderIndex(ws);
-        int cFac = Col(h, "إسم المنشأة", "اسم المنشأة", "رقم المنشأة");
+        int cFac = Col(h, "رقم المنشأة", "إسم المنشأة", "اسم المنشأة");   // code column first: a sheet with both must not read the name as the code
         int cName = Col(h, "اسم السجل");
         int cLabel = Col(h, "السجل التجاري");
         int cRed = Col(h, "احمر", "أحمر");
@@ -208,36 +235,54 @@ public class ExcelImporter
             var label = Str(row, cLabel);
             if (string.IsNullOrWhiteSpace(label)) continue;
 
-            if (!recByLabel.TryGetValue(label!, out var rec))
+            var isNewRec = false;
+            if (!recByLabel.TryGetValue(Normalize(label!), out var rec))
             {
+                if (protectMaster)
+                {
+                    // a weekly upload never creates registrations (a typo would otherwise move facilities and rewrite history)
+                    res.Warnings.Add($"Registrations sheet: unknown registration “{label}” ignored — add it on the Records page, or tick “update master data”.");
+                    continue;
+                }
                 rec = new Record { RegistrationLabel = label! };
-                _db.Records.Add(rec); recByLabel[label!] = rec; res.Records++;
+                _db.Records.Add(rec); recByLabel[Normalize(label!)] = rec; res.Records++; isNewRec = true;
             }
             var recName = Str(row, cName);
-            if (!string.IsNullOrWhiteSpace(recName)) rec.NameAr = recName;
-
-            var red = Frac(row, cRed); if (red is not null) rec.LowGreenMin = red.Value;
-            var high = Frac(row, cHigh); if (high is not null) rec.HighGreenMin = high.Value;
-            var plat = Frac(row, cPlat); if (plat is not null) rec.PlatinumMin = plat.Value;
-            // Keep the (spec-added) medium-green threshold between low and high so all five zones stay ascending.
-            var med = Frac(row, cMed);
-            rec.MediumGreenMin = med ?? (rec.LowGreenMin + rec.HighGreenMin) / 2m;
+            // Never overwrite an existing registration's name/Nitaqat thresholds on a weekly upload — only set them
+            // for a brand-new registration (or when master editing is explicitly allowed).
+            if (isNewRec || !protectMaster)
+            {
+                if (!string.IsNullOrWhiteSpace(recName)) rec.NameAr = recName;
+                var red = Frac(row, cRed); if (red is not null) rec.LowGreenMin = red.Value;
+                var high = Frac(row, cHigh); if (high is not null) rec.HighGreenMin = high.Value;
+                var plat = Frac(row, cPlat); if (plat is not null) rec.PlatinumMin = plat.Value;
+                // Keep the (spec-added) medium-green threshold between low and high so all five zones stay ascending.
+                var med = Frac(row, cMed);
+                rec.MediumGreenMin = med ?? (rec.LowGreenMin + rec.HighGreenMin) / 2m;
+            }
 
             if (!string.IsNullOrWhiteSpace(facCode))
             {
-                if (!facByCode.TryGetValue(facCode!, out var fac))
+                if (!facByCode.TryGetValue(Normalize(facCode!), out var fac))
                 {
-                    fac = new Facility { Code = facCode! };
-                    _db.Facilities.Add(fac); facByCode[facCode!] = fac; res.Facilities++;
+                    fac = new Facility { Code = facCode!, Record = rec };
+                    _db.Facilities.Add(fac); facByCode[Normalize(facCode!)] = fac; res.Facilities++;
+                    if (protectMaster) res.Warnings.Add($"New facility {facCode} added under registration “{rec.RegistrationLabel}”.");
                 }
-                fac.Record = rec;
+                else if (fac.Record != rec && fac.RecordId != rec.Id)
+                {
+                    // moving a facility changes every past version's registration totals — only with master editing
+                    if (protectMaster)
+                        res.Warnings.Add($"Facility {fac.Code} is listed under “{rec.RegistrationLabel}” in the file but belongs to another registration — not moved (tick “update master data” to move it).");
+                    else fac.Record = rec;
+                }
                 if (string.IsNullOrWhiteSpace(fac.NameAr)) fac.NameAr = recName;
             }
         }
         return recByLabel;
     }
 
-    private async Task ImportReferenceListsAsync(XLWorkbook wb, ImportResult res, CancellationToken ct)
+    private async Task ImportReferenceListsAsync(XLWorkbook wb, ImportResult res, int defaultWeight, CancellationToken ct)
     {
         var disWs = Find(wb, ShDisability);
         if (disWs is not null)
@@ -250,9 +295,7 @@ public class ExcelImporter
             {
                 var id = Str(row, cId); var nm = Str(row, cName);
                 if (string.IsNullOrWhiteSpace(id) && string.IsNullOrWhiteSpace(nm)) continue;
-                _db.DisabilityRecords.Add(new DisabilityRecord
-                { IdNumber = id, Name = nm, CountAs = (int)(Num(row, cCount) ?? 4) });
-                res.Disabilities++;
+                res.Disabilities++;   // the weighting itself is applied per employee in ApplyWeighting
             }
         }
 
@@ -268,16 +311,14 @@ public class ExcelImporter
             {
                 var id = Str(row, cId); var nm = Str(row, cName);
                 if (string.IsNullOrWhiteSpace(id) && string.IsNullOrWhiteSpace(nm)) continue;
-                _db.SpecialCases.Add(new SpecialCase
-                { IdNumber = id, Name = nm, Category = Str(row, cCat), Occupation = Str(row, cOcc) });
-                res.SpecialCases++;
+                res.SpecialCases++;   // applied per employee in ApplyWeighting
             }
         }
         await Task.CompletedTask;
     }
 
     // ---------- §4/§5: attach special-category & disability weighting to this snapshot's employees ----------
-    private void ApplyWeighting(XLWorkbook wb, ImportResult res, Snapshot snapshot)
+    private void ApplyWeighting(XLWorkbook wb, ImportResult res, Snapshot snapshot, int defaultWeight)
     {
         // Build IqamaNo → employee(s) for the employees just added to this snapshot.
         var byId = new Dictionary<string, List<Employee>>();
@@ -320,11 +361,16 @@ public class ExcelImporter
             {
                 var key = IdKey(Str(row, cId));
                 if (key is null) continue;
-                var countAs = (int)(Num(row, cCount) ?? 1);
+                var countAs = (int)(Num(row, cCount) ?? defaultWeight);
                 if (countAs < 1) countAs = 1;
                 if (byId.TryGetValue(key, out var emps))
                 {
-                    foreach (var e in emps) e.DisabilityCountAs = countAs;
+                    foreach (var e in emps)
+                    {
+                        // the يُحتسب بعدد bonus applies to Saudi employees only
+                        if (e.Nationality?.IsSaudi == true || e.CountsAsSaudiSpecial) e.DisabilityCountAs = countAs;
+                        else res.Warnings.Add($"Disability list: {e.Name} ({e.IqamaNo}) is not Saudi — weighting not applied.");
+                    }
                     res.DisabilityMatched++;
                 }
                 else res.DisabilityUnmatched++;
@@ -335,26 +381,23 @@ public class ExcelImporter
             res.Warnings.Add($"Unmatched IDs — special: {res.SpecialUnmatched}, disability: {res.DisabilityUnmatched} (no employee with that ID in this version).");
     }
 
-    private static string? IdKey(string? id)
-    {
-        if (string.IsNullOrWhiteSpace(id)) return null;
-        var s = id.Trim().Replace(" ", "");
-        return s.Length == 0 ? null : s;
-    }
+    private static string? IdKey(string? id) => TextNormalizer.IdKey(id);
 
     // ---------- employees — one sheet per facility (default) OR one sheet per registration/company ----------
     private async Task ImportEmployeesAsync(
         XLWorkbook wb, ImportResult res, Dictionary<string, Occupation> occByName, Snapshot snapshot,
         ImportSheetRule rule, Dictionary<string, Record> recByLabel, CancellationToken ct)
     {
-        var facByCode = await _db.Facilities.ToDictionaryAsync(f => f.Code, ct);
+        var facByCode = (await _db.Facilities.ToListAsync(ct)).GroupBy(f => Normalize(f.Code)).ToDictionary(g => g.Key, g => g.First());
         foreach (var f in _db.ChangeTracker.Entries<Facility>().Select(e => e.Entity))
-            facByCode[f.Code] = f;   // include facilities added in this same session
-        var natByName = await _db.Nationalities.ToDictionaryAsync(n => n.NameAr, ct);
+            facByCode[Normalize(f.Code)] = f;   // include facilities added in this same session
+        var natByName = (await _db.Nationalities.ToListAsync(ct)).GroupBy(n => Normalize(n.NameAr)).ToDictionary(g => g.Key, g => g.First());
+        var seen = new Dictionary<string, string>();   // worker identity → sheet, to drop duplicates within the file
+        int dupes = 0;
         var recByNorm = recByLabel.ToDictionary(kv => Normalize(kv.Key), kv => kv.Value);
 
         // reference sheets are never employee sheets
-        var reserved = new[] { ShRecords, ShCategories, ShOccupations, ShSpecial, ShDisability }.Select(Normalize).ToHashSet();
+        var reserved = new[] { ShRecords, ShRecordsAr, ShCategories, ShOccupations, ShSpecial, ShDisability }.Select(Normalize).ToHashSet();
 
         foreach (var ws in wb.Worksheets)
         {
@@ -365,12 +408,21 @@ public class ExcelImporter
             Record? sheetReg = null;     // registration (PerRegistration rule)
             if (rule == ImportSheetRule.PerRegistration)
             {
-                if (!recByNorm.TryGetValue(sheetNorm, out sheetReg)) continue;   // only registration-named sheets
+                if (!recByNorm.TryGetValue(sheetNorm, out sheetReg))   // only registration-named sheets
+                {
+                    res.Warnings.Add($"Sheet \"{ws.Name}\" was skipped: its name does not match any registration label.");
+                    continue;
+                }
             }
             else
             {
-                if (!facByCode.TryGetValue(ws.Name.Trim(), out sheetFac)) continue;   // only facility-code sheets
+                if (!facByCode.TryGetValue(Normalize(ws.Name), out sheetFac))   // only facility-code sheets
+                {
+                    res.Warnings.Add($"Sheet \"{ws.Name}\" was skipped: its name does not match any facility code (رقم المنشأة).");
+                    continue;
+                }
             }
+            int sheetRows = 0, noName = 0;
 
             var h = HeaderIndex(ws);
             int cWorker = Col(h, "رقم العامل");
@@ -389,29 +441,42 @@ public class ExcelImporter
             foreach (var row in DataRows(ws))
             {
                 var name = Str(row, cName);
-                if (string.IsNullOrWhiteSpace(name)) continue;
+                if (string.IsNullOrWhiteSpace(name)) { noName++; continue; }
 
                 // resolve the target facility for this row
                 Facility fac;
                 if (rule == ImportSheetRule.PerRegistration)
                 {
                     var facCode = Str(row, cFacNo) ?? sheetReg!.RegistrationLabel;   // fall back to one facility per registration
-                    if (!facByCode.TryGetValue(facCode, out fac!))
+                    if (!facByCode.TryGetValue(Normalize(facCode), out fac!))
                     {
                         fac = new Facility { Code = facCode, NameAr = Str(row, cFacName), Record = sheetReg };
-                        _db.Facilities.Add(fac); facByCode[facCode] = fac; res.Facilities++;
+                        _db.Facilities.Add(fac); facByCode[Normalize(facCode)] = fac; res.Facilities++;
                     }
+                    else if (fac.RecordId != 0 && fac.RecordId != sheetReg!.Id && fac.Record != sheetReg)
+                        res.Warnings.Add($"Sheet \"{ws.Name}\": facility {facCode} belongs to another registration — its employees are counted there.");
                 }
                 else fac = sheetFac!;
+
+                // the same person twice in one file (pasted twice / listed on two facility sheets) is counted once
+                var who = SnapshotComparer.WorkerKey(Str(row, cIqama), Str(row, cWorker), name);
+                if (seen.TryGetValue(who, out var firstSheet))
+                {
+                    dupes++;
+                    if (dupes <= 20) res.Warnings.Add($"Duplicate skipped: {name} ({Str(row, cIqama) ?? Str(row, cWorker)}) on sheet \"{ws.Name}\" — already read from sheet \"{firstSheet}\".");
+                    continue;
+                }
+                seen[who] = ws.Name;
 
                 var natName = Str(row, cNat);
                 Nationality? nat = null;
                 if (!string.IsNullOrWhiteSpace(natName))
                 {
-                    if (!natByName.TryGetValue(natName!, out nat))
+                    if (!natByName.TryGetValue(Normalize(natName!), out nat))
                     {
                         nat = new Nationality { NameAr = natName!, IsSaudi = IsSaudi(natName!) };
-                        _db.Nationalities.Add(nat); natByName[natName!] = nat; res.Nationalities++;
+                        _db.Nationalities.Add(nat); natByName[Normalize(natName!)] = nat; res.Nationalities++;
+                        res.Warnings.Add($"New nationality “{natName}” added (counted as {(nat.IsSaudi ? "Saudi" : "non-Saudi")}).");
                     }
                 }
 
@@ -419,7 +484,11 @@ public class ExcelImporter
                 Occupation? occ = null;
                 if (!string.IsNullOrWhiteSpace(occRaw))
                 {
-                    if (!occByName.TryGetValue(occRaw!, out occ)) res.OccupationsUnmatched++;
+                    if (!occByName.TryGetValue(Normalize(occRaw!), out occ))
+                    {
+                        res.OccupationsUnmatched++;
+                        res.UnmatchedOccupations[occRaw!] = res.UnmatchedOccupations.GetValueOrDefault(occRaw!) + 1;
+                    }
                 }
 
                 _db.Employees.Add(new Employee
@@ -438,24 +507,43 @@ public class ExcelImporter
                     EntryDate = Str(row, cEntry),
                     WorkerType = Str(row, cType)
                 });
-                res.Employees++;
+                res.Employees++; sheetRows++;
             }
+            res.SheetEmployees[ws.Name] = sheetRows;
+            if (cName < 0)
+                res.Warnings.Add($"Sheet \"{ws.Name}\": no \"اسم العامل\" column found in the header row — no employees read.");
+            else if (noName > 0)
+                res.Warnings.Add($"Sheet \"{ws.Name}\": {sheetRows} employees read, {noName} row(s) skipped because the worker name was empty.");
         }
+        if (dupes > 20) res.Warnings.Add($"… {dupes} duplicate rows skipped in total.");
     }
 
     // ===================== helpers =====================
 
-    private static bool IsSaudi(string nat) =>
-        nat.Contains("سعود") && !nat.Contains("غير");
+    private static bool IsSaudi(string nat) => TextNormalizer.IsSaudiNationality(nat);
 
     private static IXLWorksheet? Find(XLWorkbook wb, string name) =>
         wb.Worksheets.FirstOrDefault(w => Normalize(w.Name) == Normalize(name));
 
-    /// <summary>Map normalized header text → 1-based column number, from the first non-empty row.</summary>
+    /// <summary>The header row: among the first 10 used rows, the first one with the most filled cells
+    /// (a title row above the header has only one or two).</summary>
+    private static IXLRow? HeaderRow(IXLWorksheet ws)
+    {
+        IXLRow? best = null; int bestCount = 0;
+        foreach (var r in ws.RowsUsed().Take(10))
+        {
+            int count = r.CellsUsed().Count(c => c.HasFormula || !string.IsNullOrWhiteSpace(c.GetString()));   // no formula evaluation
+            if (count > bestCount) { best = r; bestCount = count; }
+        }
+        return best;
+    }
+
+    /// <summary>Map normalized header text → worksheet column number. Absolute, like Str/Num which read worksheet
+    /// rows, so a sheet whose data starts at column B is read correctly.</summary>
     private static Dictionary<string, int> HeaderIndex(IXLWorksheet ws)
     {
         var dict = new Dictionary<string, int>();
-        var headerRow = ws.RowsUsed().FirstOrDefault();
+        var headerRow = HeaderRow(ws);
         if (headerRow is null) return dict;
         foreach (var cell in headerRow.CellsUsed())
         {
@@ -467,36 +555,42 @@ public class ExcelImporter
 
     private static int Col(Dictionary<string, int> h, params string[] candidates)
     {
+        // 1) exact header match for any candidate, in candidate order
+        foreach (var c in candidates)
+            if (h.TryGetValue(Normalize(c), out var idx)) return idx;
+        // 2) a header that contains the candidate; the shortest such header wins, so "الإقامة" picks
+        //    "رقم الإقامة" rather than "تاريخ انتهاء الإقامة". Very short candidates are never fuzzy-matched.
         foreach (var c in candidates)
         {
             var key = Normalize(c);
-            if (h.TryGetValue(key, out var idx)) return idx;
-            // contains-match fallback
-            foreach (var kv in h) if (kv.Key.Contains(key) || key.Contains(kv.Key)) return kv.Value;
+            if (key.Length < 4) continue;
+            var hit = h.Where(kv => kv.Key.Contains(key)).OrderBy(kv => kv.Key.Length).Select(kv => (int?)kv.Value).FirstOrDefault();
+            if (hit is int found) return found;
         }
         return -1;
     }
 
-    private static IEnumerable<IXLRangeRow> DataRows(IXLWorksheet ws)
+    private static IEnumerable<IXLRow> DataRows(IXLWorksheet ws)
     {
-        var used = ws.RangeUsed();
-        if (used is null) yield break;
-        bool first = true;
-        foreach (var row in used.RowsUsed())
-        {
-            if (first) { first = false; continue; }   // skip header
-            yield return row;
-        }
+        var header = HeaderRow(ws);
+        if (header is null) yield break;
+        int headerNo = header.RowNumber();
+        foreach (var row in ws.RowsUsed())
+            if (row.RowNumber() > headerNo) yield return row;
     }
 
-    private static string? Str(IXLRangeRow row, int col)
+    private static string? Str(IXLRow row, int col)
     {
         if (col < 1) return null;
         var v = row.Cell(col).GetString().Trim();
-        return string.IsNullOrWhiteSpace(v) ? null : v;
+        if (string.IsNullOrWhiteSpace(v)) return null;
+        // when an employee row is also an Excel table's header row, its empty cells read back as the table's
+        // automatic column names ("Column7") — those are blanks, not data
+        return AutoTableHeader.IsMatch(v) ? null : v;
     }
+    private static readonly Regex AutoTableHeader = new(@"^Column\d+$", RegexOptions.Compiled);
 
-    private static decimal? Num(IXLRangeRow row, int col)
+    private static decimal? Num(IXLRow row, int col)
     {
         if (col < 1) return null;
         var cell = row.Cell(col);
@@ -509,22 +603,12 @@ public class ExcelImporter
     }
 
     /// <summary>Parse a threshold cell into a 0..1 fraction; a value &gt;1 (e.g. "20-40%") is treated as a percentage.</summary>
-    private static decimal? Frac(IXLRangeRow row, int col)
+    private static decimal? Frac(IXLRow row, int col)
     {
         var n = Num(row, col);
         if (n is null) return null;
         return n.Value > 1m ? n.Value / 100m : n.Value;
     }
 
-    private static string Normalize(string s)
-    {
-        if (string.IsNullOrEmpty(s)) return "";
-        s = s.Trim();
-        // collapse whitespace, unify Arabic alef/ya/ta-marbuta variants for resilient matching
-        s = Regex.Replace(s, @"\s+", " ");
-        s = s.Replace('أ', 'ا').Replace('إ', 'ا').Replace('آ', 'ا') // أإآ → ا
-             .Replace('ى', 'ي')  // ى → ي
-             .Replace('ة', 'ه'); // ة → ه
-        return s;
-    }
+    private static string Normalize(string s) => TextNormalizer.Key(s);
 }

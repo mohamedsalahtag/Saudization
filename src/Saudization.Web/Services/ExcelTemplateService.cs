@@ -20,38 +20,40 @@ public class ExcelTemplateService
         "رقم الحدود","الإقامة - البطاقة","المهنة","تاريخ انتهاء الاقامة","تاريخ دخول المملكة","نوع العامل"
     };
 
-    public async Task<byte[]> BuildAsync(ImportSheetRule rule, CancellationToken ct = default)
+    /// <summary>limit: -1 = all current data · 0 = headers only (empty) · N = headers + up to N example rows (sample).</summary>
+    public async Task<byte[]> BuildAsync(ImportSheetRule rule, int limit = -1, CancellationToken ct = default)
     {
         var records = await _db.Records.Include(r => r.Facilities).OrderBy(r => r.RegistrationLabel).ToListAsync(ct);
         var categories = await _db.Categories.OrderBy(c => c.NameAr).ToListAsync(ct);
         var occupations = await _db.Occupations.Include(o => o.Category).OrderBy(o => o.NameAr).ToListAsync(ct);
 
-        var latest = await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id)
-            .Select(s => (int?)s.Id).FirstOrDefaultAsync(ct);
-        var employees = latest == null ? new List<Employee>() : await _db.Employees
+        var latest = await _db.DefaultSnapshotIdAsync(ct);
+        var employees = latest == 0 ? new List<Employee>() : await _db.Employees
             .Include(e => e.Nationality).Include(e => e.Facility!).ThenInclude(f => f.Record)
             .Where(e => e.SnapshotId == latest)
             .ToListAsync(ct);
 
+        IEnumerable<T> Cap<T>(IEnumerable<T> src) => limit < 0 ? src : src.Take(Math.Max(0, limit));
+
         using var wb = new XLWorkbook();
         var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // ---- Records ----
-        var wsR = wb.Worksheets.Add(SheetName("Records", used));
+        // ---- Records (registrations) — the ministry export now names this sheet "اسماء السجلات" ----
+        var wsR = wb.Worksheets.Add(SheetName("اسماء السجلات", used));
         WriteRow(wsR, 1, "إسم المنشأة", "اسم السجل", "السجل التجاري", "رقم السجل التجاري",
             "احمر", "اخضر منخفض", "أخضر متوسط", "أخضر مرتفع", "بلاتيني", "النسبة المطلوبة");
         int rr = 2;
-        foreach (var rec in records)
-            foreach (var f in rec.Facilities.OrderBy(f => f.Code))
-                WriteRow(wsR, rr++, f.Code, rec.NameAr, rec.RegistrationLabel, rec.RegistrationNumber,
-                    rec.LowGreenMin, rec.LowGreenMin, rec.MediumGreenMin, rec.HighGreenMin, rec.PlatinumMin, rec.RequiredPct);
+        var recFac = records.SelectMany(rec => rec.Facilities.OrderBy(f => f.Code).Select(f => (rec, f)));
+        foreach (var (rec, f) in Cap(recFac))
+            WriteRow(wsR, rr++, f.Code, rec.NameAr, rec.RegistrationLabel, rec.RegistrationNumber,
+                rec.LowGreenMin, rec.LowGreenMin, rec.MediumGreenMin, rec.HighGreenMin, rec.PlatinumMin, rec.RequiredPct);
 
         // ---- categories ----
         var wsC = wb.Worksheets.Add(SheetName("فئات التوطين", used));
         WriteRow(wsC, 1, "الفئة", "الحد الادنى لحساب التوطين", "النسبة الحالية", "تاريخ تطبيق القرار",
             "نسبة التوطين المستقبلية", "تاريخ تطبيق القرار الممستقبلي", "الحد الادنى للأجور");
         int cr = 2;
-        foreach (var c in categories)
+        foreach (var c in Cap(categories))
             WriteRow(wsC, cr++, c.NameAr, c.MinForCalc, c.CurrentRequiredPct, c.CurrentDecisionDate,
                 c.FutureRequiredPct, c.FutureDecisionDate, c.MinWage);
 
@@ -59,38 +61,84 @@ public class ExcelTemplateService
         var wsO = wb.Worksheets.Add(SheetName("دليل المهن", used));
         WriteRow(wsO, 1, "الرمز", "المهنة", "الفئة");
         int or = 2;
-        foreach (var o in occupations) WriteRow(wsO, or++, o.Code, o.NameAr, o.Category?.NameAr);
+        foreach (var o in Cap(occupations)) WriteRow(wsO, or++, o.Code, o.NameAr, o.Category?.NameAr);
 
-        // ---- special / disability (headers only) ----
+        // ---- special / disability — pre-filled from the current snapshot so the file round-trips ----
         var wsS = wb.Worksheets.Add(SheetName("الفئة الخاصة", used));
-        WriteRow(wsS, 1, "#", "رقم الهوية", "الاسم", "الفئة الخاصة", "المهنة");
+        wsS.RightToLeft = true;
+        WriteRow(wsS, 1, "#", "رقم الهوية", "الاسم", "الفئة الخاصة", "المهنة", "رقم المنشأة");
+        int sr = 2;
+        foreach (var e in Cap(employees.Where(e => e.CountsAsSaudiSpecial).OrderBy(e => e.Name)))
+        { WriteRow(wsS, sr, sr - 1, e.IqamaNo, e.Name, e.SpecialCategory, e.OccupationRaw, e.Facility?.Code); sr++; }
+
         var wsD = wb.Worksheets.Add(SheetName("ذوي الاحتياجات الخاصة", used));
-        WriteRow(wsD, 1, "#", "رقم الهوية", "الاسم", "ليُحتسب بعدد");
+        wsD.RightToLeft = true;
+        WriteRow(wsD, 1, "#", "رقم الهوية", "الاسم", "ليُحتسب بعدد", "رقم المنشأة", "المسمى الوظيفي");
+        int dr = 2;
+        foreach (var e in Cap(employees.Where(e => e.DisabilityCountAs > 1).OrderBy(e => e.Name)))
+        { WriteRow(wsD, dr, dr - 1, e.IqamaNo, e.Name, e.DisabilityCountAs, e.Facility?.Code, e.OccupationRaw); dr++; }
 
         // ---- employee sheets per the chosen rule ----
-        if (rule == ImportSheetRule.PerRegistration)
+        if (limit == 0)
         {
-            foreach (var rec in records)
+            // empty template — a single employee sheet with headers only
+            var ws = wb.Worksheets.Add(SheetName(rule == ImportSheetRule.PerRegistration ? "Registration" : "Employees", used));
+            WriteHeaders(ws);
+        }
+        else if (rule == ImportSheetRule.PerRegistration)
+        {
+            foreach (var rec in Cap(records))
             {
                 var ws = wb.Worksheets.Add(SheetName(rec.RegistrationLabel, used));
                 WriteHeaders(ws);
                 int row = 2;
-                foreach (var e in employees.Where(e => e.Facility?.RecordId == rec.Id).OrderBy(e => e.Name))
+                foreach (var e in Cap(employees.Where(e => e.Facility?.RecordId == rec.Id).OrderBy(e => e.Name)))
                     WriteEmployee(ws, row++, e);
             }
         }
         else
         {
-            foreach (var rec in records)
-                foreach (var f in rec.Facilities.OrderBy(f => f.Code))
-                {
-                    var ws = wb.Worksheets.Add(SheetName(f.Code, used));
-                    WriteHeaders(ws);
-                    int row = 2;
-                    foreach (var e in employees.Where(e => e.FacilityId == f.Id).OrderBy(e => e.Name))
-                        WriteEmployee(ws, row++, e);
-                }
+            foreach (var (rec, f) in Cap(recFac))
+            {
+                var ws = wb.Worksheets.Add(SheetName(f.Code, used));
+                WriteHeaders(ws);
+                int row = 2;
+                foreach (var e in Cap(employees.Where(e => e.FacilityId == f.Id).OrderBy(e => e.Name)))
+                    WriteEmployee(ws, row++, e);
+            }
         }
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return ms.ToArray();
+    }
+
+    /// <summary>Standalone occupation-guide workbook (دليل المهن: الرمز / المهنة / الفئة), pre-filled with the current
+    /// catalog so the user only fills the blank الفئة cells for unmapped occupations and re-uploads via Import guide.
+    /// A second reference sheet lists the valid category names.</summary>
+    public async Task<byte[]> BuildOccupationGuideAsync(CancellationToken ct = default)
+    {
+        var categories = await _db.Categories.OrderBy(c => c.NameAr).ToListAsync(ct);
+        var occupations = await _db.Occupations.Include(o => o.Category)
+            .OrderBy(o => o.CategoryId != null)      // unmapped first — those are the ones to fill in
+            .ThenBy(o => o.NameAr)
+            .ToListAsync(ct);
+
+        using var wb = new XLWorkbook();
+
+        var wsO = wb.Worksheets.Add("دليل المهن");
+        wsO.RightToLeft = true;
+        WriteRow(wsO, 1, "الرمز", "المهنة", "الفئة");
+        int r = 2;
+        foreach (var o in occupations) WriteRow(wsO, r++, o.Code, o.NameAr, o.Category?.NameAr);
+        wsO.Columns().AdjustToContents();
+
+        var wsC = wb.Worksheets.Add("الفئات");
+        wsC.RightToLeft = true;
+        WriteRow(wsC, 1, "الفئة");
+        int cr = 2;
+        foreach (var c in categories) WriteRow(wsC, cr++, c.NameAr);
+        wsC.Columns().AdjustToContents();
 
         using var ms = new MemoryStream();
         wb.SaveAs(ms);

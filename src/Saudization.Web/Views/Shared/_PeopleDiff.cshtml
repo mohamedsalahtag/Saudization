@@ -1,0 +1,70 @@
+@model Saudization.Web.Services.SnapshotDiff
+@using Saudization.Web.Services
+@{
+    // shared by the upload preview, the upload result and Versions › Who changed
+    var limit = ViewData["DiffLimit"] as int? ?? 300;
+    bool open = ViewData["DiffOpen"] as bool? ?? false;
+    string Val(PersonRow r, string f) => f switch
+    {
+        "WorkerNo" => r.WorkerNo ?? "—",
+        "Facility" => r.Facility ?? "—",
+        "Registration" => $"{r.Registration} ({r.Facility})",
+        "Nationality" => r.Nationality ?? "—",
+        "Occupation" => r.Occupation ?? "—",
+        "Category" => $"{r.Occupation ?? "—"} · {r.Category ?? T["Occ_Unmapped"].Value}",
+        "Special" => r.Special ? "✓" : "—",
+        "Disability" => r.Disability > 1 ? "×" + r.Disability : "—",
+        _ => ""
+    };
+}
+<div class="card">
+    <strong>@string.Format(T["Import_DiffTitle"].Value, Model.OtherLabel)</strong>
+    <span class="pill ok">+@Model.Joiners @T["Import_Joiners"]</span>
+    <span class="pill">−@Model.Leavers @T["Import_Leavers"]</span>
+    <span class="pill">@Model.Changed @T["Import_Changed"]</span>
+    <span class="pill @(Model.SaudiDelta > 0 ? "ok" : "")">@string.Format(T["Diff_SaudiDelta"].Value, (Model.SaudiDelta > 0 ? "+" : "") + Model.SaudiDelta)</span>
+
+    @if (Model.Joiners > 0)
+    {
+        <details style="margin-top:10px" open="@open">
+            <summary><strong>+@Model.Joiners @T["Import_Joiners"]</strong></summary>
+            <partial name="_PeopleRows" model="Model.JoinerRows.Take(limit).ToList()" />
+            @if (Model.Joiners > limit) { <div class="subtle">@string.Format(T["Diff_More"].Value, Model.Joiners - limit)</div> }
+        </details>
+    }
+    @if (Model.Leavers > 0)
+    {
+        <details style="margin-top:6px" open="@open">
+            <summary><strong>−@Model.Leavers @T["Import_Leavers"]</strong></summary>
+            <partial name="_PeopleRows" model="Model.LeaverRows.Take(limit).ToList()" />
+            @if (Model.Leavers > limit) { <div class="subtle">@string.Format(T["Diff_More"].Value, Model.Leavers - limit)</div> }
+        </details>
+    }
+    @if (Model.Changed > 0)
+    {
+        <details style="margin-top:6px" open="@open">
+            <summary><strong>@Model.Changed @T["Import_Changed"]</strong></summary>
+            <div class="table-scroll" style="max-height:420px;overflow:auto">
+            <table class="grid">
+                <thead><tr><th>@T["Diff_Name"]</th><th>@T["Diff_Id"]</th><th>@T["Diff_Changes"]</th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.ChangedRows.Take(limit))
+                {
+                    <tr>
+                        <td>@c.After.Name</td>
+                        <td dir="ltr">@(c.After.IqamaNo ?? c.After.WorkerNo)</td>
+                        <td>
+                            @foreach (var f in c.Fields)
+                            {
+                                <div><span class="subtle">@T["Field_" + f]:</span> @Val(c.Before, f) → <strong>@Val(c.After, f)</strong></div>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            </div>
+            @if (Model.Changed > limit) { <div class="subtle">@string.Format(T["Diff_More"].Value, Model.Changed - limit)</div> }
+        </details>
+    }
+</div>

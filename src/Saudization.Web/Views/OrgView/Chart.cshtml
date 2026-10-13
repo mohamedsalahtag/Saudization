@@ -12,16 +12,28 @@
 
 <div class="page-head">
     <h1>@T["OrgChart_Title"]</h1>
-    <form method="get" class="inline-form">
-        <label class="muted">@T["OrgView_Version"]</label>
-        <select name="versionId" onchange="this.form.submit()">
-            @foreach (var v in versions)
-            {
-                <option value="@v.Id" selected="@(v.Id == vid)">@v.Label</option>
-            }
-        </select>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <form method="get" style="display:flex;gap:6px;align-items:center;margin:0">
+            <label class="muted">@T["OrgView_Version"]</label>
+            <select name="versionId" onchange="this.form.submit()">
+                @foreach (var v in versions)
+                {
+                    <option value="@v.Id" selected="@(v.Id == vid)">@v.Label</option>
+                }
+            </select>
+        </form>
+        @if (vid != null)
+        {
+            <form method="post" asp-controller="Restructure" asp-action="DeleteVersion" style="margin:0"
+                  onsubmit="return confirm('@T["OrgView_DeleteVersionConfirm"].Value')">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@vid" />
+                <input type="hidden" name="back" value="chart" />
+                <button type="submit" class="btn btn-ghost" style="color:#c0392b">🗑 @T["OrgView_DeleteVersion"]</button>
+            </form>
+        }
         <a class="btn btn-ghost" asp-action="Analysis" asp-route-versionId="@vid">@T["Nav_OrgAnalysis"] →</a>
-    </form>
+    </div>
 </div>
 
 @if (empRaw is null)
@@ -45,11 +57,16 @@ else
                 <label class="dim-pick">@T["OrgChart_ViewBy"]
                     <select id="dim">
                         <option value="manager">@T["OrgChart_Dim_Manager"]</option>
+                        <option value="managertree">@T["OrgChart_Dim_ManagerTree"]</option>
+                        <option value="divflat">@T["OrgChart_Dim_DivFlat"]</option>
+                        <option value="deptflat">@T["OrgChart_Dim_DeptFlat"]</option>
                         <option value="division">@T["OrgChart_Dim_Division"]</option>
                         <option value="department">@T["OrgChart_Dim_Department"]</option>
                         <option value="divdept">@T["OrgChart_Dim_DivDeptPos"]</option>
                         <option value="divdeptmgr">@T["OrgChart_Dim_DivDeptMgr"]</option>
                         <option value="position">@T["OrgChart_Dim_Position"]</option>
+                        <option value="nationality">@T["OrgChart_Dim_Nationality"]</option>
+                        <option value="branch">@T["OrgChart_Dim_Branch"]</option>
                     </select>
                 </label>
                 <label class="dim-pick">@T["OrgChart_Layout"]
@@ -70,12 +87,13 @@ else
 
             <div class="card chart-card" id="panel-chart">
                 <svg id="chart"></svg>
+                <div id="navigator"></div>
                 <div class="zoom-ctrls">
+                    <button id="zfull" title="@T["OrgChart_Fullscreen"]" style="font-size:15px">⛶</button>
                     <button id="zin" title="@T["OrgChart_ZoomIn"]">+</button>
                     <button id="zout" title="@T["OrgChart_ZoomOut"]">−</button>
                     <button id="zfit" title="@T["OrgChart_Fit"]" style="font-size:12px">⤢</button>
                 </div>
-                <div class="chart-legend" id="legend"></div>
                 <div class="chart-hint">@T["OrgChart_ChartHint"]</div>
             </div>
 

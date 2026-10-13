@@ -160,6 +160,22 @@ public class Snapshot
     [MaxLength(200)]
     public string? CreatedByUser { get; set; }
 
+    /// <summary>The version shown by default across the app. Exactly one snapshot is the default (the most
+    /// recently uploaded, unless changed on the Versions page). When none is flagged the app falls back to
+    /// the most recent by week.</summary>
+    public bool IsDefault { get; set; }
+
+    /// <summary>Soft delete: a deleted version is hidden everywhere (global query filter) but can be
+    /// restored from the Versions page until it is purged.</summary>
+    public DateTime? DeletedAtUtc { get; set; }
+
+    [MaxLength(200)]
+    public string? DeletedByUser { get; set; }
+
+    /// <summary>SHA-256 of the version's employee rows (see SnapshotComparer) — detects re-uploads of identical data.</summary>
+    [MaxLength(64)]
+    public string? ContentHash { get; set; }
+
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }
 
@@ -261,6 +277,13 @@ public class Settings
 
     /// <summary>Light-green band width above the required % before a cell turns high-green (§7, default 5pp).</summary>
     public decimal LightGreenBand { get; set; } = 0.05m;
+
+    /// <summary>Default "يُحتسب بعدد" weight applied at IMPORT time when a disability row leaves the count blank
+    /// (Nitaqat default = 4). Applies to the next upload only — it does not retroactively change stored employees.</summary>
+    public int DisabilityDefaultWeight { get; set; } = 4;
+
+    /// <summary>Show the Saudi / non-Saudi / total column headers as icons (true) or as plain text (false).</summary>
+    public bool ShowNationalityIcons { get; set; } = true;
 }
 
 /// <summary>A saved "what-if" scenario for the Saudization workbench — edited aggregate Saudi/non-Saudi

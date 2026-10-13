@@ -22,6 +22,53 @@ namespace Saudization.Web.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Saudization.Web.Models.AppUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdUsername")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByUser")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdUsername")
+                        .IsUnique();
+
+                    b.ToTable("AppUsers");
+                });
+
             modelBuilder.Entity("Saudization.Web.Models.AuditLog", b =>
                 {
                     b.Property<long>("Id")
@@ -63,9 +110,49 @@ namespace Saudization.Web.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChangedAtUtc");
+
                     b.HasIndex("EntityName", "EntityId");
 
                     b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("Saudization.Web.Models.DepartmentHead", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Division")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("HeadCode")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("HeadName")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int?>("OrgVersionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgVersionId", "Division", "Department")
+                        .IsUnique()
+                        .HasFilter("[OrgVersionId] IS NOT NULL");
+
+                    b.ToTable("DepartmentHeads");
                 });
 
             modelBuilder.Entity("Saudization.Web.Models.DisabilityRecord", b =>
@@ -168,6 +255,8 @@ namespace Saudization.Web.Migrations
                     b.HasIndex("NationalityId");
 
                     b.HasIndex("OccupationId");
+
+                    b.HasIndex("OccupationRaw");
 
                     b.HasIndex("SnapshotId");
 
@@ -338,6 +427,14 @@ namespace Saudization.Web.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<string>("DirectManagerName")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Grade")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -371,6 +468,43 @@ namespace Saudization.Web.Migrations
                     b.HasIndex("OrgVersionId", "Code");
 
                     b.ToTable("OrgEmployees");
+                });
+
+            modelBuilder.Entity("Saudization.Web.Models.OrgFindingAccept", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AcceptedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AcceptedByUser")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FindingId")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("RowKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("RowLabel")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FindingId", "RowKey")
+                        .IsUnique();
+
+                    b.ToTable("OrgFindingAccepts");
                 });
 
             modelBuilder.Entity("Saudization.Web.Models.OrgJob", b =>
@@ -615,8 +749,14 @@ namespace Saudization.Web.Migrations
                     b.Property<decimal>("DisabilityCapPct")
                         .HasColumnType("decimal(5,4)");
 
+                    b.Property<int>("DisabilityDefaultWeight")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("LightGreenBand")
                         .HasColumnType("decimal(5,4)");
+
+                    b.Property<bool>("ShowNationalityIcons")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -631,12 +771,26 @@ namespace Saudization.Web.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContentHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedByUser")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedByUser")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -691,7 +845,7 @@ namespace Saudization.Web.Migrations
                     b.HasOne("Saudization.Web.Models.Facility", "Facility")
                         .WithMany("Employees")
                         .HasForeignKey("FacilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Saudization.Web.Models.Nationality", "Nationality")
@@ -724,7 +878,7 @@ namespace Saudization.Web.Migrations
                     b.HasOne("Saudization.Web.Models.Record", "Record")
                         .WithMany("Facilities")
                         .HasForeignKey("RecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Record");

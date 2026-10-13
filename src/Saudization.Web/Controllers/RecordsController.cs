@@ -39,15 +39,14 @@ public class RecordsController : Controller
         return View(rec);
     }
 
-    private async Task<int> LatestSnapshotIdAsync(CancellationToken ct) =>
-        await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id)
-            .Select(s => s.Id).FirstOrDefaultAsync(ct);
+    private Task<int> LatestSnapshotIdAsync(CancellationToken ct) => _db.ResolveSnapshotAsync(HttpContext, null, ct);
 
     public IActionResult Create() => View(new Record());
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Record model, CancellationToken ct)
     {
+        ValidateThresholds(model);
         if (!ModelState.IsValid) return View(model);
         _db.Records.Add(model);
         await _db.SaveChangesAsync(ct);
@@ -65,6 +64,7 @@ public class RecordsController : Controller
     public async Task<IActionResult> Edit(int id, Record model, CancellationToken ct)
     {
         if (id != model.Id) return BadRequest();
+        ValidateThresholds(model);
         if (!ModelState.IsValid) return View(model);
         var rec = await _db.Records.FindAsync([id], ct);
         if (rec is null) return NotFound();
@@ -87,11 +87,42 @@ public class RecordsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    /// <summary>Thresholds are Saudi-ratio fractions. A value typed as a percentage (20 instead of 0.20) is converted,
+    /// and the zones must ascend (Low ≤ Medium ≤ High ≤ Platinum ≤ 1) or ZoneFor would silently skip zones.</summary>
+    private void ValidateThresholds(Record m)
+    {
+        static decimal Frac(decimal v) => v > 1m && v <= 100m ? v / 100m : v;
+        m.RequiredPct = Frac(m.RequiredPct);
+        m.LowGreenMin = Frac(m.LowGreenMin); m.MediumGreenMin = Frac(m.MediumGreenMin);
+        m.HighGreenMin = Frac(m.HighGreenMin); m.PlatinumMin = Frac(m.PlatinumMin);
+        foreach (var (name, v) in new[] { (nameof(Record.RequiredPct), m.RequiredPct), (nameof(Record.LowGreenMin), m.LowGreenMin),
+                     (nameof(Record.MediumGreenMin), m.MediumGreenMin), (nameof(Record.HighGreenMin), m.HighGreenMin), (nameof(Record.PlatinumMin), m.PlatinumMin) })
+            if (v < 0m || v > 1m) ModelState.AddModelError(name, "Enter a fraction between 0 and 1 (e.g. 0.20 for 20%).");
+        if (!(m.LowGreenMin <= m.MediumGreenMin && m.MediumGreenMin <= m.HighGreenMin && m.HighGreenMin <= m.PlatinumMin))
+            ModelState.AddModelError(nameof(Record.LowGreenMin), "Zone thresholds must ascend: Low green ≤ Medium green ≤ High green ≤ Platinum.");
+        // the converted values must be the ones re-displayed / saved
+        foreach (var k in new[] { nameof(Record.RequiredPct), nameof(Record.LowGreenMin), nameof(Record.MediumGreenMin), nameof(Record.HighGreenMin), nameof(Record.PlatinumMin) })
+            if (ModelState[k]?.Errors.Count == 0) ModelState.Remove(k);
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var rec = await _db.Records.FindAsync([id], ct);
-        if (rec is not null) { _db.Records.Remove(rec); await _db.SaveChangesAsync(ct); TempData["ok"] = "Record deleted."; }
+        var rec = await _db.Records.Include(r => r.Facilities).FirstOrDefaultAsync(r => r.Id == id, ct);
+        if (rec is null) return RedirectToAction(nameof(Index));
+        // Never erase history: refuse while any version (including deleted ones) still has employees here.
+        var emps = await _db.Employees.IgnoreQueryFilters().Where(e => e.Facility!.RecordId == id)
+            .GroupBy(e => e.SnapshotId).Select(g => g.Count()).ToListAsync(ct);
+        if (emps.Count > 0)
+        {
+            TempData["err"] = $"“{rec.RegistrationLabel}” cannot be deleted: {emps.Sum()} employee rows in {emps.Count} version(s) belong to it. " +
+                              "Move its facilities to another registration, or delete those versions permanently first.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        _db.Facilities.RemoveRange(rec.Facilities);
+        _db.Records.Remove(rec);
+        await _db.SaveChangesAsync(ct);
+        TempData["ok"] = "Record deleted.";
         return RedirectToAction(nameof(Index));
     }
 }

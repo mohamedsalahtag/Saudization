@@ -1,0 +1,101 @@
+@model List<Saudization.Web.Controllers.CatRow>
+@{
+    ViewData["Title"] = T["Cat_Title"].Value;
+    int occMapped = (int)(ViewBag.OccMappedTotal ?? 0);
+    string Pct(decimal f) => f > 0 ? (f * 100).ToString("0.#") + "%" : "—";
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Cat_Title"]</h1>
+        <div class="subtle">@Model.Count @T["Cat_Count"] · @occMapped @T["Cat_OccMapped"]</div>
+    </div>
+    @if (Model.Count > 0)
+    {
+        <form asp-action="DeleteAll" method="post" style="margin:0"
+              onsubmit="return confirm('@T["Cat_DeleteAllConfirm"].Value')">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-sm btn-danger" type="submit">🗑 @T["Cat_DeleteAll"]</button>
+        </form>
+    }
+</div>
+
+<div class="card">
+    <strong>@T["Cat_Add"]</strong>
+    <form asp-action="Create" method="post" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
+        @Html.AntiForgeryToken()
+        <label style="display:flex;flex-direction:column;gap:4px">
+            <span class="subtle">@T["Cat_NameAr"] *</span>
+            <input name="nameAr" dir="rtl" required style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);min-width:240px" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px">
+            <span class="subtle">@T["Cat_NameEn"]</span>
+            <input name="nameEn" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);min-width:200px" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px">
+            <span class="subtle">@T["Cat_CurrentPct"]</span>
+            <input name="currentPct" type="number" step="0.1" min="0" max="100" placeholder="%" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);width:100px" />
+        </label>
+        <button class="btn btn-sm" type="submit">＋ @T["Common_Save"]</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="page-head" style="margin-bottom:10px">
+        <strong>@T["Cat_Title"] (@Model.Count)</strong>
+        <input id="catSearch" placeholder="@T["Common_Search"]" oninput="catFilter(this.value)"
+               style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);min-width:240px" />
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <p class="subtle" style="margin-top:8px">@T["Cat_Empty"]</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+        <table class="grid" id="catTable">
+            <thead>
+                <tr>
+                    <th>@T["Cat_NameAr"]</th>
+                    <th>@T["Cat_NameEn"]</th>
+                    <th class="num" style="width:110px">@T["Cat_CurrentPct"]</th>
+                    <th class="num" style="width:120px">@T["Cat_Occupations"]</th>
+                    <th class="num" style="width:120px">@T["Cat_Employees"]</th>
+                    <th style="width:90px"></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td dir="rtl">@c.NameAr</td>
+                    <td>@c.NameEn</td>
+                    <td class="num">@Pct(c.CurrentRequiredPct)</td>
+                    <td class="num">@c.OccCount</td>
+                    <td class="num">@c.EmpCount</td>
+                    <td>
+                        <form asp-action="Delete" method="post" style="margin:0"
+                              onsubmit="return confirm('@T["Cat_DeleteConfirm"].Value'.replace('{0}', @c.OccCount))">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@c.Id" />
+                            <button class="btn btn-sm btn-danger" type="submit" title="@T["Cat_Delete"]">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>
+
+<script>
+    function catFilter(q) {
+        q = (q || "").toLowerCase();
+        var rows = document.querySelectorAll("#catTable tbody tr");
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].style.display = rows[i].innerText.toLowerCase().indexOf(q) >= 0 ? "" : "none";
+        }
+    }
+</script>

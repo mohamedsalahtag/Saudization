@@ -16,34 +16,38 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
   function fmt(p) { return (p * 100).toFixed(1).replace(/\.0$/, "") + "%"; }
   function pctOf(s, n) { var t = s + n; return t > 0 ? s / t : 0; }
+  // general (registration) Saudi count = Saudi heads + disability bonus capped at capPct × Saudi heads (as NitaqatCalculator)
+  function counted(r) { return r.Saudi + Math.min(r.DisabledExtraRaw || 0, Math.floor((cfg.capPct || 0) * r.Saudi + 1e-9)); }
+  function regPct(r) { var t = r.Saudi + r.NonSaudi; return t > 0 ? counted(r) / t : 0; }
 
   function zoneIndex(r) {
-    var p = pctOf(r.Saudi, r.NonSaudi), t = r.Saudi + r.NonSaudi;
+    var p = regPct(r) + 1e-12, t = r.Saudi + r.NonSaudi;
     if (t <= 0) return 0;
     if (p >= r.Platinum) return 5; if (p >= r.High) return 4; if (p >= r.Medium) return 3; if (p >= r.Low) return 2; return 1;
   }
 
   /* ---------------- By registration ---------------- */
   function recRow(r, o) {
-    var t = r.Saudi + r.NonSaudi, zi = zoneIndex(r), dp = pctOf(r.Saudi, r.NonSaudi) - pctOf(o.Saudi, o.NonSaudi);
+    var t = r.Saudi + r.NonSaudi, zi = zoneIndex(r), dp = regPct(r) - regPct(o);
     var cls = dp > 1e-4 ? "gap-neg" : dp < -1e-4 ? "gap-pos" : "";
     var delta = Math.abs(dp) < 1e-4 ? "—" : (dp > 0 ? "▲ +" : "▼ ") + (dp * 100).toFixed(1) + " pp";
     return "<tr><td><strong>" + esc(r.Label) + "</strong></td>" +
       "<td class='num'><input type='number' min='0' data-id='" + r.Id + "' data-f='NonSaudi' value='" + r.NonSaudi + "' style='width:70px'></td>" +
       "<td class='num'><input type='number' min='0' data-id='" + r.Id + "' data-f='Saudi' value='" + r.Saudi + "' style='width:70px'></td>" +
-      "<td class='num'>" + t + "</td><td class='num'>" + fmt(pctOf(r.Saudi, r.NonSaudi)) + "</td>" +
+      "<td class='num'>" + t + "</td><td class='num'>" + fmt(regPct(r)) + "</td>" +
       "<td class='center'><span class='zonebadge " + cfg.zoneCss[zi] + "'>" + esc(cfg.zones[zi]) + "</span></td>" +
       "<td class='num'><span class='" + cls + "'>" + delta + "</span></td></tr>";
   }
   function renderReg() {
     document.getElementById("rBody").innerHTML = rec.map(function (r, i) { return recRow(r, recOrig[i]); }).join("");
-    var s = 0, n = 0, os = 0, on = 0;
-    rec.forEach(function (r) { s += r.Saudi; n += r.NonSaudi; });
-    recOrig.forEach(function (r) { os += r.Saudi; on += r.NonSaudi; });
-    var dp = pctOf(s, n) - pctOf(os, on), cls = dp > 1e-4 ? "gap-neg" : dp < -1e-4 ? "gap-pos" : "";
+    var s = 0, n = 0, c = 0, os = 0, on = 0, oc = 0;
+    rec.forEach(function (r) { s += r.Saudi; n += r.NonSaudi; c += counted(r); });
+    recOrig.forEach(function (r) { os += r.Saudi; on += r.NonSaudi; oc += counted(r); });
+    var gp = s + n > 0 ? c / (s + n) : 0, ogp = os + on > 0 ? oc / (os + on) : 0;
+    var dp = gp - ogp, cls = dp > 1e-4 ? "gap-neg" : dp < -1e-4 ? "gap-pos" : "";
     var delta = Math.abs(dp) < 1e-4 ? "—" : (dp > 0 ? "▲ +" : "▼ ") + (dp * 100).toFixed(1) + " pp";
     document.getElementById("rFoot").innerHTML = "<tr class='totalrow'><td>" + esc(cfg.overall) + "</td><td class='num'>" + n +
-      "</td><td class='num'>" + s + "</td><td class='num'>" + (s + n) + "</td><td class='num'>" + fmt(pctOf(s, n)) +
+      "</td><td class='num'>" + s + "</td><td class='num'>" + (s + n) + "</td><td class='num'>" + fmt(gp) +
       "</td><td></td><td class='num'><span class='" + cls + "'>" + delta + "</span></td></tr>";
     bindNums("#rBody input", function (id, f, v) { byId(rec, id)[f] = v; renderReg(); });
   }
@@ -51,8 +55,9 @@
   /* ---------------- By job ---------------- */
   function needCell(saudi, total, req) {
     if (total <= 0 || req <= 0 || saudi / total >= req) return "";
-    var need = Math.ceil(req * total), rep = Math.max(0, need - saudi);
-    var hire = req < 1 ? Math.ceil((req * total - saudi) / (1 - req)) : Math.max(0, total - saudi);
+    // the 1e-9 nudges undo float error (0.35 * 20 = 7.000000000000001) so results match the server's decimal maths
+    var need = Math.ceil(req * total - 1e-9), rep = Math.max(0, need - saudi);
+    var hire = req < 1 ? Math.ceil((req * total - saudi) / (1 - req) - 1e-9) : Math.max(0, total - saudi);
     return "<span class='act-rep'>↔ " + rep + "</span> <span class='act-hire'>＋ " + hire + "</span>";
   }
   function jobStatus(saudi, total, req, min) {
@@ -118,7 +123,7 @@
     cat.Cells.forEach(function (cell) {
       var total = cell.Saudi + cell.NonSaudi;
       if (total >= cat.MinForCalc && total > 0 && cat.Required > 0 && cell.Saudi / total < cat.Required) {
-        var need = Math.ceil(cat.Required * total);          // replace non-Saudis with Saudis (total unchanged)
+        var need = Math.ceil(cat.Required * total - 1e-9);   // replace non-Saudis with Saudis (total unchanged)
         var add = Math.min(need - cell.Saudi, cell.NonSaudi);
         cell.Saudi += add; cell.NonSaudi -= add;
       }

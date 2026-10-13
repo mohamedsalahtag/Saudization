@@ -1,0 +1,92 @@
+@model List<Saudization.Web.Models.AdUser>
+@{
+    ViewData["Title"] = T["AdBrowse_Title"].Value;
+    var registered = (HashSet<string>)(ViewBag.Registered ?? new HashSet<string>());
+    var q = (string?)ViewBag.Query;
+    var total = (int)(ViewBag.TotalFetched ?? Model.Count);
+    var newCount = Model.Count(u => u.Enabled && !registered.Contains(u.Username.ToLowerInvariant()));
+}
+<div class="page-head" style="display:flex; justify-content:space-between; align-items:center; gap:12px">
+    <h1>@T["AdBrowse_Title"]</h1>
+    <a class="btn btn-soft" asp-action="Index">← @T["AdBrowse_BackToList"]</a>
+</div>
+<p class="subtle">@T["AdBrowse_Intro"]</p>
+
+<div class="card">
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px">
+        <form asp-action="AdBrowse" method="get" style="display:flex; gap:8px; align-items:center; margin:0">
+            <input name="q" value="@q" placeholder="@T["AdBrowse_SearchPh"]" style="padding:8px 10px; border:1px solid var(--line); border-radius:8px; min-width:220px" />
+            <button class="btn btn-soft" type="submit">@T["AdBrowse_SearchBtn"]</button>
+        </form>
+        <div style="display:flex; gap:8px; align-items:center">
+            <a class="btn btn-soft" asp-action="AdBrowse" asp-route-refresh="true" asp-route-q="@q">↻ @T["AdBrowse_Refresh"]</a>
+            <form asp-action="MassCreate" method="post" style="margin:0"
+                  onsubmit="return confirm('@string.Format(T["AdBrowse_ConfirmMass"].Value, newCount)');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="q" value="@q" />
+                <button class="btn" type="submit" @(newCount == 0 ? "disabled" : "")>@string.Format(T["AdBrowse_MassBtn"].Value, newCount)</button>
+            </form>
+        </div>
+    </div>
+
+    <p class="subtle" style="margin-top:0">@string.Format(T["AdBrowse_Count"].Value, Model.Count, total)</p>
+
+    @if (Model.Count == 0)
+    {
+        <p>@T["AdBrowse_Empty"]</p>
+    }
+    else
+    {
+        <table class="grid">
+            <thead>
+                <tr>
+                    <th>@T["Users_ColFullName"]</th>
+                    <th>@T["Users_ColUsername"]</th>
+                    <th>@T["Users_ColEmail"]</th>
+                    <th>@T["Users_ColDept"]</th>
+                    <th>@T["AdBrowse_AdStatus"]</th>
+                    <th style="text-align:end">@T["Users_ColActions"]</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var u in Model)
+            {
+                var isReg = registered.Contains(u.Username.ToLowerInvariant());
+                <tr>
+                    <td>@u.FullName</td>
+                    <td dir="ltr">@u.Username</td>
+                    <td dir="ltr">@u.Email</td>
+                    <td>@u.Department</td>
+                    <td>
+                        @if (u.Enabled)
+                        {
+                            <span class="badge ok">@T["AdBrowse_Enabled"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge">@T["AdBrowse_DisabledAd"]</span>
+                        }
+                    </td>
+                    <td style="text-align:end; white-space:nowrap">
+                        @if (isReg)
+                        {
+                            <span class="badge ok">@T["AdBrowse_Registered"]</span>
+                        }
+                        else
+                        {
+                            <form asp-action="CreateFromAd" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="adUsername" value="@u.Username" />
+                                <button class="btn btn-soft" type="submit">＋ @T["AdBrowse_Add"]</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    <div style="margin-top:14px">
+        <a class="btn btn-ghost" asp-action="Index">← @T["AdBrowse_BackToList"]</a>
+    </div>
+</div>

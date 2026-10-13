@@ -47,6 +47,13 @@ public class FacilitiesController : Controller
         var f = await _db.Facilities.FindAsync([id], ct);
         if (f is null) return NotFound();
         var recordId = f.RecordId;
+        var emps = await _db.Employees.IgnoreQueryFilters().Where(e => e.FacilityId == id)
+            .GroupBy(e => e.SnapshotId).Select(g => g.Count()).ToListAsync(ct);
+        if (emps.Count > 0)
+        {
+            TempData["err"] = $"Facility “{f.Code}” cannot be deleted: {emps.Sum()} employee rows in {emps.Count} version(s) belong to it.";
+            return RedirectToAction("Details", "Records", new { id = recordId });
+        }
         _db.Facilities.Remove(f);
         await _db.SaveChangesAsync(ct);
         TempData["ok"] = "Facility deleted.";

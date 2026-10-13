@@ -37,6 +37,30 @@
   <data name="Nav_Records"><value>Records</value></data>
   <data name="Nav_Import"><value>Import Excel</value></data>
   <data name="Nav_Occupations"><value>Occupations</value></data>
+  <data name="Nav_Categories"><value>Categories</value></data>
+  <data name="Nav_MasterData"><value>Master Data</value></data>
+  <data name="Nav_OrgStructure"><value>Organization Structure</value></data>
+  <data name="Nav_StructureEditor"><value>Structure Editor</value></data>
+  <data name="Org_Code"><value>Code</value></data>
+  <data name="Asg_Hint"><value>Click a Division or Department cell to change it; type a manager code or name in the Manager column. Then Update this version, or Save as a new version.</value></data>
+  <data name="Asg_SaveNew"><value>Save as new version</value></data>
+  <data name="Asg_UpdateVersion"><value>Update this version</value></data>
+  <data name="Asg_UpdateHint"><value>Save these changes onto the currently selected version (in place).</value></data>
+  <data name="Asg_UpdateConfirm"><value>Update the currently selected version in place? This overwrites its assignments and cannot be undone.</value></data>
+  <data name="Cat_Title"><value>Saudization categories</value></data>
+  <data name="Cat_Count"><value>categories</value></data>
+  <data name="Cat_OccMapped"><value>occupations mapped</value></data>
+  <data name="Cat_Add"><value>Add a category</value></data>
+  <data name="Cat_NameAr"><value>Name (Arabic)</value></data>
+  <data name="Cat_NameEn"><value>Name (English)</value></data>
+  <data name="Cat_CurrentPct"><value>Required %</value></data>
+  <data name="Cat_Occupations"><value>Occupations</value></data>
+  <data name="Cat_Employees"><value>Employees</value></data>
+  <data name="Cat_Delete"><value>Delete</value></data>
+  <data name="Cat_DeleteAll"><value>Delete all</value></data>
+  <data name="Cat_DeleteConfirm"><value>Delete this category? {0} occupation(s) will become unclassified. This cannot be undone.</value></data>
+  <data name="Cat_DeleteAllConfirm"><value>Delete ALL categories? Every mapped occupation will become unclassified until you re-upload. This cannot be undone.</value></data>
+  <data name="Cat_Empty"><value>No categories yet — add one above, or upload a workbook.</value></data>
   <data name="Nav_Audit"><value>Change history</value></data>
   <data name="Lang_Arabic"><value>العربية</value></data>
   <data name="Lang_English"><value>English</value></data>
@@ -156,6 +180,10 @@
   <data name="Set_DisabilityCapHint"><value>0–1. The disability bonus added to a registration's Saudi count cannot exceed this fraction of its Saudis (default 0.10 = 10%).</value></data>
   <data name="Set_LightBand"><value>Light-green band</value></data>
   <data name="Set_LightBandHint"><value>0–1. How far above the required % a category may sit and still be light-green (default 0.05 = 5pp).</value></data>
+  <data name="Set_TabGeneral"><value>General</value></data>
+  <data name="Set_ViewsScope"><value>These apply to the Organization chart's “View by” list and are saved on this device.</value></data>
+  <data name="Set_ViewsAll"><value>Show all</value></data>
+  <data name="Set_ViewsSaved"><value>Saved ✓</value></data>
 
   <data name="Records_Title"><value>Records (commercial registrations)</value></data>
   <data name="Records_New"><value>New record</value></data>
@@ -205,13 +233,18 @@
   <data name="Import_Intro"><value>Upload a dashboard.xlsx-shaped workbook. Reference sheets and one sheet per facility code are read and merged into the database.</value></data>
   <data name="Import_Choose"><value>Choose file</value></data>
   <data name="Import_Run"><value>Import</value></data>
+  <data name="Import_UpdateMaster"><value>Also update master data (categories, occupations, registrations) from this file</value></data>
+  <data name="Import_UpdateMasterHelp"><value>Leave unticked for a normal weekly upload — it only adds a new version and never touches your master data. Tick it only when this file is a new authoritative version whose categories / occupation guide / registrations should replace what's in the app.</value></data>
   <data name="Import_Result"><value>Import summary</value></data>
   <data name="Import_Rule"><value>Sheet rule</value></data>
   <data name="Import_RulePerFacility"><value>One sheet per facility (by facility number)</value></data>
   <data name="Import_RulePerReg"><value>One sheet per registration / company (by commercial registration)</value></data>
   <data name="Import_RuleHelp"><value>How your employee worksheets are organized. Reference sheets (Records, categories, occupation guide, special, disability) are always read the same way. In the per-registration mode each employee is placed into its facility using the رقم المنشأة column.</value></data>
   <data name="Import_Download"><value>Download template</value></data>
-  <data name="Import_TemplateHelp"><value>Get a ready-to-fill workbook matching the selected rule, pre-filled with current data — edit it and upload as the new week.</value></data>
+  <data name="Import_TemplateHelp"><value>Get a ready-to-fill workbook matching the selected rule. A weekly upload never changes your categories, occupations or registration settings.</value></data>
+  <data name="Import_TplData"><value>With data</value></data>
+  <data name="Import_TplEmpty"><value>Empty</value></data>
+  <data name="Import_TplSample"><value>Sample (≤5 rows)</value></data>
   <data name="Import_Unmatched"><value>employees had an occupation not found in the guide</value></data>
   <data name="Import_Unmatched2"><value>unmatched</value></data>
   <data name="Import_SpecialMatched"><value>Special-category employees matched</value></data>
@@ -251,6 +284,10 @@
   <data name="Ver_To"><value>To</value></data>
   <data name="Ver_ByDate"><value>Compare by date range</value></data>
   <data name="Ver_View"><value>View</value></data>
+  <data name="Ver_Default"><value>Default</value></data>
+  <data name="Ver_DefaultHint"><value>This version is shown by default across the app.</value></data>
+  <data name="Ver_SetDefault"><value>Set default</value></data>
+  <data name="Ver_SetDefaultHint"><value>Make this the version shown by default across the app.</value></data>
   <data name="Import_Label"><value>Version label</value></data>
   <data name="Import_Week"><value>Week date</value></data>
   <data name="Import_Note"><value>Note (optional)</value></data>
@@ -259,16 +296,28 @@
   <data name="OrgChart_Title"><value>Org Chart</value></data>
   <data name="OrgAnalysis_Title"><value>HR Analysis</value></data>
   <data name="OrgView_Version"><value>Version</value></data>
+  <data name="OrgView_DeleteVersion"><value>Delete version</value></data>
+  <data name="OrgView_DeleteVersionConfirm"><value>Delete this version and all of its divisions, departments and employees? This cannot be undone.</value></data>
   <data name="OrgView_NoData"><value>No org data yet. Import a structure in Restructure first.</value></data>
   <data name="OrgChart_TabChart"><value>Hierarchy Chart</value></data>
   <data name="OrgChart_TabOrg"><value>Org Structure</value></data>
   <data name="OrgChart_SelectHint"><value>Select an employee to see their details, reporting chain, and direct reports.</value></data>
   <data name="OrgChart_ViewBy"><value>View by</value></data>
   <data name="OrgChart_Dim_Manager"><value>Manager (reporting line)</value></data>
-  <data name="OrgChart_Dim_Division"><value>Division › Position</value></data>
-  <data name="OrgChart_Dim_Department"><value>Department › Position</value></data>
+  <data name="OrgChart_Dim_ManagerTree"><value>Manager (tree)</value></data>
+  <data name="OrgChart_Dim_Division"><value>Division › Reporting line</value></data>
+  <data name="OrgChart_Dim_Department"><value>Department › Reporting line</value></data>
+  <data name="OrgChart_ManageViews"><value>Manage views</value></data>
+  <data name="OrgChart_ManageViewsTip"><value>Choose which views appear in the “View by” list</value></data>
+  <data name="OrgChart_ViewsTitle"><value>Show / hide views</value></data>
+  <data name="OrgChart_ViewsHint"><value>Untick a view to remove it from the “View by” list.</value></data>
   <data name="OrgChart_Dim_DivDept"><value>Division › Department</value></data>
   <data name="OrgChart_Dim_Position"><value>Position (by level)</value></data>
+  <data name="OrgChart_Dim_Nationality"><value>Nationality</value></data>
+  <data name="OrgChart_Dim_Branch"><value>Branch</value></data>
+  <data name="OrgChart_Dim_DivFlat"><value>Division (all staff)</value></data>
+  <data name="OrgChart_Dim_DeptFlat"><value>Department (all staff)</value></data>
+  <data name="OrgChart_Fullscreen"><value>Maximize / minimize</value></data>
   <data name="OrgChart_Layout"><value>Layout</value></data>
   <data name="OrgChart_Layout_Vertical"><value>Vertical (root left → down)</value></data>
   <data name="OrgChart_Layout_Horizontal"><value>Horizontal (root top → across)</value></data>
@@ -298,7 +347,16 @@
   <data name="Dash_Enhanced"><value>Enhanced</value></data>
   <data name="Dash_Editable"><value>Editable plan (what-if)</value></data>
   <data name="Dash_Reset"><value>Reset</value></data>
-  <data name="Dash_SaveScenario"><value>Save scenario</value></data>
+  <data name="Dash_SaveScenario"><value>Save as new</value></data>
+  <data name="Dash_UpdateScenario"><value>Update scenario</value></data>
+  <data name="Dash_ScenarioChanges"><value>{0} cell(s) differ from the current data — highlighted. Use ↺ on a cell, or Reset, to restore.</value></data>
+  <data name="Dash_Roadmap"><value>Roadmap</value></data>
+  <data name="Dash_RoadmapHint"><value>How to reach each Nitaqat level — up to Platinum — for every registration, with all options (hire / swap / remove) and a per-category breakdown.</value></data>
+  <data name="Dash_ToReach"><value>To reach</value></data>
+  <data name="Dash_AlreadyPlatinum"><value>Already Platinum — the top zone.</value></data>
+  <data name="Dash_NotEnoughNonSaudi"><value>not enough non-Saudi</value></data>
+  <data name="Dash_CategoryTarget"><value>Category target %</value></data>
+  <data name="Dash_Suggested"><value>Suggested</value></data>
   <data name="Dash_LoadScenario"><value>Load scenario</value></data>
   <data name="Dash_ExportBoth"><value>Export both</value></data>
   <data name="Dash_Shed"><value>shed non-Saudi</value></data>
@@ -350,4 +408,380 @@
   <data name="OrgAnalysis_Breakdowns"><value>Breakdowns (drill to employees)</value></data>
   <data name="OrgAnalysis_ByPosDept"><value>Division › Department › Position</value></data>
   <data name="OrgAnalysis_ByManager"><value>Employees by direct manager</value></data>
+  <data name="Import_SecSaud"><value>Saudization data (employees)</value></data>
+  <data name="Import_SecOrg"><value>Org structure (Restructure)</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login_Prompt" xml:space="preserve"><value>Sign in with your company account</value></data>
+  <data name="Login_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Login_Remember" xml:space="preserve"><value>Keep me signed in</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Nav_Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>Sign out</value></data>
+  <data name="Nav_SignedInAs" xml:space="preserve"><value>Signed in as</value></data>
+  <data name="Users_Title" xml:space="preserve"><value>Users</value></data>
+  <data name="Users_Intro" xml:space="preserve"><value>Only the users listed here can sign in. Passwords are always verified against Active Directory.</value></data>
+  <data name="Users_AddHeading" xml:space="preserve"><value>Add a user</value></data>
+  <data name="Users_AddBtn" xml:space="preserve"><value>Add user</value></data>
+  <data name="Users_ListHeading" xml:space="preserve"><value>Allowed users</value></data>
+  <data name="Users_ColFullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="Users_ColUsername" xml:space="preserve"><value>AD username</value></data>
+  <data name="Users_ColEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="Users_ColDept" xml:space="preserve"><value>Department</value></data>
+  <data name="Users_ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="Users_ColLastLogin" xml:space="preserve"><value>Last sign-in</value></data>
+  <data name="Users_ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Users_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Users_Disabled2" xml:space="preserve"><value>Disabled</value></data>
+  <data name="Users_You" xml:space="preserve"><value>(you)</value></data>
+  <data name="Users_EnableBtn" xml:space="preserve"><value>Enable</value></data>
+  <data name="Users_DisableBtn" xml:space="preserve"><value>Disable</value></data>
+  <data name="Users_DeleteBtn" xml:space="preserve"><value>Delete</value></data>
+  <data name="Users_ConfirmDelete" xml:space="preserve"><value>Remove this user's access?</value></data>
+  <data name="Users_Added" xml:space="preserve"><value>User '{0}' added.</value></data>
+  <data name="Users_Enabled" xml:space="preserve"><value>User '{0}' enabled.</value></data>
+  <data name="Users_Disabled" xml:space="preserve"><value>User '{0}' disabled.</value></data>
+  <data name="Users_Deleted" xml:space="preserve"><value>User '{0}' removed.</value></data>
+  <data name="Users_ErrNoName" xml:space="preserve"><value>Enter an AD username.</value></data>
+  <data name="Users_ErrExists" xml:space="preserve"><value>User '{0}' already exists.</value></data>
+  <data name="Users_ErrSelf" xml:space="preserve"><value>You cannot change your own account.</value></data>
+  <data name="AdBrowse_Title" xml:space="preserve"><value>Add from Active Directory</value></data>
+  <data name="AdBrowse_Intro" xml:space="preserve"><value>Browse everyone in the company directory and grant sign-in access with one click — no need to type usernames.</value></data>
+  <data name="AdBrowse_SearchPh" xml:space="preserve"><value>Search name, username, email, department</value></data>
+  <data name="AdBrowse_SearchBtn" xml:space="preserve"><value>Search</value></data>
+  <data name="AdBrowse_Refresh" xml:space="preserve"><value>Refresh from AD</value></data>
+  <data name="AdBrowse_MassBtn" xml:space="preserve"><value>Add all new ({0})</value></data>
+  <data name="AdBrowse_ConfirmMass" xml:space="preserve"><value>Grant sign-in access to all {0} directory users not yet added?</value></data>
+  <data name="AdBrowse_MassResult" xml:space="preserve"><value>{0} user(s) added from Active Directory.</value></data>
+  <data name="AdBrowse_Count" xml:space="preserve"><value>Showing {0} of {1} directory users.</value></data>
+  <data name="AdBrowse_Empty" xml:space="preserve"><value>No users returned from Active Directory. Try Refresh, or check the AD connection.</value></data>
+  <data name="AdBrowse_AdStatus" xml:space="preserve"><value>AD account</value></data>
+  <data name="AdBrowse_Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="AdBrowse_DisabledAd" xml:space="preserve"><value>Disabled in AD</value></data>
+  <data name="AdBrowse_Registered" xml:space="preserve"><value>Already added</value></data>
+  <data name="AdBrowse_Add" xml:space="preserve"><value>Allow sign-in</value></data>
+  <data name="AdBrowse_BackToList" xml:space="preserve"><value>Back to users</value></data>
+  <data name="AdBrowse_NotConfigured" xml:space="preserve"><value>Active Directory is not configured.</value></data>
+  <data name="AdBrowse_NoneFetched" xml:space="preserve"><value>No users could be fetched from Active Directory.</value></data>
+  <data name="Users_AddManualHint" xml:space="preserve"><value>Or browse Active Directory to add users without typing.</value></data>
+  <data name="Occ_TemplateHint" xml:space="preserve"><value>Pre-filled with current occupations — fill the blank Category cells and re-upload.</value></data>
+  <data name="Set_DisabilityWeight" xml:space="preserve"><value>Default disability weight (يُحتسب بعدد)</value></data>
+  <data name="Set_DisabilityWeightHint" xml:space="preserve"><value>Applied at import when a disability row leaves the count blank (Nitaqat default = 4). Does not change already-imported employees.</value></data>
+  <data name="Import_Matched2" xml:space="preserve"><value>matched</value></data>
+  <data name="Import_WeightHint" xml:space="preserve"><value>Special employees count as Saudi in both percentages; disabled Saudis add a capped bonus to the registration % only.</value></data>
+  <data name="Weight_Title" xml:space="preserve"><value>Special &amp; disability weighting</value></data>
+  <data name="Weight_Intro" xml:space="preserve"><value>How special-category and disabled employees are counted in Nitaqat: special categories count as Saudi in both the registration % and the occupation-category %; each disabled Saudi adds (weight − 1) extra 'heads' to the registration % only, capped at {0} of the base Saudi count.</value></data>
+  <data name="Weight_ByRegistration" xml:space="preserve"><value>Effect per registration</value></data>
+  <data name="Weight_BaseSaudi" xml:space="preserve"><value>Base Saudi</value></data>
+  <data name="Weight_RawBonus" xml:space="preserve"><value>Disability bonus (raw)</value></data>
+  <data name="Weight_CappedBonus" xml:space="preserve"><value>Disability bonus (applied)</value></data>
+  <data name="Weight_CountedSaudi" xml:space="preserve"><value>Counted Saudi</value></data>
+  <data name="Weight_CapHit" xml:space="preserve"><value>Capped at {0} of base Saudi — extra heads beyond the cap are not counted.</value></data>
+  <data name="Weight_CapNote" xml:space="preserve"><value>⚠ marks a registration where the disability bonus hit the {0} cap.</value></data>
+  <data name="Weight_SpecialNote" xml:space="preserve"><value>count as Saudi in both percentages</value></data>
+  <data name="Weight_SpecialCat" xml:space="preserve"><value>Special category</value></data>
+  <data name="Weight_DisabledNote" xml:space="preserve"><value>add a capped bonus to the registration % only</value></data>
+  <data name="Weight_Weight" xml:space="preserve"><value>Weight</value></data>
+  <data name="Weight_HeadsAdded" xml:space="preserve"><value>Heads added</value></data>
+  <data name="Dash_ShedExempt" xml:space="preserve"><value>Shed → exempt</value></data>
+  <data name="Dash_ReplaceTip" xml:space="preserve"><value>Replace: swap non-Saudi for Saudi (total unchanged) to reach the required %.</value></data>
+  <data name="Dash_HireTip" xml:space="preserve"><value>Hire: add Saudi employees to reach the required %.</value></data>
+  <data name="Dash_ShedTip" xml:space="preserve"><value>Remove this many non-Saudi to reach the required % by reduction.</value></data>
+  <data name="Dash_ShedExemptTip" xml:space="preserve"><value>Cheaper escape: remove only this many non-Saudi to drop below the calculation floor (min) — the cell then becomes exempt from the % requirement.</value></data>
+  <data name="Dash_AbsorbTip" xml:space="preserve"><value>You can hire up to this many more non-Saudi and still stay at/above the required %.</value></data>
+  <data name="Dash_ExemptTip" xml:space="preserve"><value>Below the calculation floor (exempt): you can add up to this many non-Saudi and stay exempt from the % requirement.</value></data>
+  <data name="Dash_AllCategories" xml:space="preserve"><value>All categories</value></data>
+  <data name="Dash_ExportSub" xml:space="preserve"><value>Original vs. scenario</value></data>
+  <data name="Dash_ExportTip" xml:space="preserve"><value>Download a two-sheet Excel: current data vs. the edited/selected scenario, color-coded by zone.</value></data>
+  <data name="Dash_DeleteScenario" xml:space="preserve"><value>Delete scenario</value></data>
+  <data name="Dash_DeleteScenarioConfirm" xml:space="preserve"><value>Delete the selected scenario? This cannot be undone.</value></data>
+  <data name="Dash_ScenarioDeleted" xml:space="preserve"><value>Scenario deleted.</value></data>
+  <data name="Set_ShowIcons" xml:space="preserve"><value>Show Saudi / non-Saudi / total as icons</value></data>
+  <data name="Set_ShowIconsHint" xml:space="preserve"><value>When off, the Saudization table headers show plain text labels instead of the figure icons.</value></data>
+  <data name="Import_NotDefault"><value>This upload has the same people as version “{0}” (nobody joined or left; {1} employee(s) changed), so it was saved but NOT made the default. If it is really this week's data, open Versions and press “Set default”; if it was an old file by mistake, delete it.</value></data>
+  <data name="Import_DiffTitle"><value>Compared with “{0}”:</value></data>
+  <data name="Import_Joiners"><value>joined</value></data>
+  <data name="Import_Leavers"><value>left</value></data>
+  <data name="Import_Changed"><value>changed</value></data>
+  <data name="Import_MadeDefault"><value>This version is now the default shown across the app.</value></data>
+  <data name="Ver_DeleteConfirm"><value>Move version “{0}” ({1} employees) to Deleted versions? You can restore it later.</value></data>
+  <data name="Ver_Deleted"><value>Deleted versions</value></data>
+  <data name="Ver_DeletedHint"><value>Hidden from all pages. Restore a version to bring it back, or delete it permanently.</value></data>
+  <data name="Ver_DeletedOn"><value>Deleted</value></data>
+  <data name="Ver_Restore"><value>Restore</value></data>
+  <data name="Ver_Purge"><value>Delete permanently</value></data>
+  <data name="Ver_PurgeConfirm"><value>Permanently delete version “{0}” and its {1} employees and saved scenarios? This cannot be undone.</value></data>
+  <data name="Diff_SaudiDelta"><value>Saudi heads {0}</value></data>
+  <data name="Diff_More"><value>… and {0} more</value></data>
+  <data name="Diff_Name"><value>Name</value></data>
+  <data name="Diff_Id"><value>ID / Iqama</value></data>
+  <data name="Diff_Changes"><value>What changed</value></data>
+  <data name="Field_WorkerNo"><value>Worker no.</value></data>
+  <data name="Field_Facility"><value>Facility</value></data>
+  <data name="Field_Registration"><value>Registration</value></data>
+  <data name="Field_Nationality"><value>Nationality</value></data>
+  <data name="Field_Occupation"><value>Occupation</value></data>
+  <data name="Field_Category"><value>Category</value></data>
+  <data name="Field_Special"><value>Special category</value></data>
+  <data name="Field_Disability"><value>Disability weight</value></data>
+  <data name="Prev_Title"><value>Check the upload before saving</value></data>
+  <data name="Prev_Intro"><value>Nothing has been saved yet. Check what the file contains and what it changes, then save it or cancel.</value></data>
+  <data name="Prev_Identical"><value>This file has exactly the same employees as version “{0}” ({1}), so it can't be saved. If you downloaded the template “with data”, fill it with this week's data first.</value></data>
+  <data name="Prev_SameWeek"><value>A version for this week already exists: {0}</value></data>
+  <data name="Prev_Employees"><value>Employees read</value></data>
+  <data name="Prev_Saudi"><value>Saudi (incl. special)</value></data>
+  <data name="Prev_Sheets"><value>Sheets read</value></data>
+  <data name="Prev_Warnings"><value>Warnings</value></data>
+  <data name="Prev_SheetCol"><value>Employees per sheet</value></data>
+  <data name="Prev_Unmatched"><value>Occupations not in the occupation guide (they will count as Unclassified)</value></data>
+  <data name="Prev_MakeDefault"><value>Make this the default version shown across the app</value></data>
+  <data name="Prev_NoChangeHint"><value>Nobody joined or left compared with “{0}”. If this is an old file uploaded by mistake, cancel.</value></data>
+  <data name="Prev_Confirm"><value>Save this version</value></data>
+  <data name="Prev_Cancel"><value>Cancel — don't save</value></data>
+  <data name="Import_SavedNotDefault"><value>Saved, but not made the default version. To show it everywhere, use “Set default” on the</value></data>
+  <data name="Ppl_Title"><value>Who joined, left or changed</value></data>
+  <data name="Ppl_Intro"><value>People are matched by Iqama / ID number, so a changed worker number shows as a change — not as one person leaving and another joining.</value></data>
+  <data name="Ppl_From"><value>Earlier version</value></data>
+  <data name="Ppl_To"><value>Later version</value></data>
+  <data name="Ppl_Show"><value>Compare</value></data>
+  <data name="Ppl_NoDiff"><value>No differences: the same people with the same details in both versions.</value></data>
+  <data name="Ver_People"><value>Who changed</value></data>
+  <data name="OrgA_Page_Summary"><value>Summary</value></data>
+  <data name="OrgA_Page_Depts"><value>Department scorecard</value></data>
+  <data name="OrgA_Page_DeptsHint"><value>Where the problems are. Click a department for the reasons and a fix list. “Under head” = the manager chain reaches the HOD head; “Direct to head” = the head is the direct manager.</value></data>
+  <data name="OrgA_Page_Mgrs"><value>Manager scorecard</value></data>
+  <data name="OrgA_Page_MgrsHint"><value>Largest teams first. “Sub-supervisors” = direct reports with a supervisory or management title who could carry part of the team.</value></data>
+  <data name="OrgA_Page_Findings"><value>Findings</value></data>
+  <data name="OrgA_Page_FindingsHint"><value>Every check, grouped. Each one states the likely cause and the fix; expand it for the rows, filter, sort and download.</value></data>
+  <data name="OrgA_Page_Changes"><value>Changes since the previous version</value></data>
+  <data name="OrgA_Page_ChangesHint"><value>Who joined, left, or changed manager, department or job. Useful to confirm an upload before acting on it.</value></data>
+  <data name="OrgA_Page_ExportAll"><value>Export all findings (Excel)</value></data>
+  <data name="OrgA_Page_Excel"><value>Excel</value></data>
+  <data name="OrgA_UI_Summary"><value>Summary</value></data>
+  <data name="OrgA_UI_Filter"><value>Filter these rows…</value></data>
+  <data name="OrgA_UI_FilterDepts"><value>Filter departments…</value></data>
+  <data name="OrgA_UI_FilterMgrs"><value>Filter managers…</value></data>
+  <data name="OrgA_UI_Excel"><value>Download Excel</value></data>
+  <data name="OrgA_UI_Csv"><value>Download CSV</value></data>
+  <data name="OrgA_UI_FixList"><value>Fix list (Excel)</value></data>
+  <data name="OrgA_UI_Accept"><value>Accept</value></data>
+  <data name="OrgA_UI_Undo"><value>Undo</value></data>
+  <data name="OrgA_UI_AcceptedN"><value>{0} accepted</value></data>
+  <data name="OrgA_UI_RowsOf"><value>{0} of {1} rows</value></data>
+  <data name="OrgA_UI_NoneFound"><value>None found.</value></data>
+  <data name="OrgA_UI_OpenInChart"><value>Open in the org chart</value></data>
+  <data name="OrgA_UI_LikelyCause"><value>Likely cause</value></data>
+  <data name="OrgA_UI_Head"><value>Head</value></data>
+  <data name="OrgA_UI_SitsIn"><value>sits in “{0}”</value></data>
+  <data name="OrgA_UI_UnderOf"><value>{0} of {1} are under the head</value></data>
+  <data name="OrgA_UI_DirectOf"><value>{0} report directly to the head</value></data>
+  <data name="OrgA_UI_ManagersInside"><value>Managers inside the department</value></data>
+  <data name="OrgA_UI_IntoOther"><value>Reports into other departments ({0})</value></data>
+  <data name="OrgA_UI_SupsNoTeam"><value>Supervisors without a team ({0} of {1})</value></data>
+  <data name="OrgA_UI_TeamsOver15"><value>Teams over 15 in this department</value></data>
+  <data name="OrgA_UI_More"><value>… {0} more</value></data>
+  <data name="OrgA_UI_None"><value>none</value></data>
+  <data name="OrgA_UI_People"><value>people</value></data>
+  <data name="OrgA_UI_SitesLbl"><value>sites</value></data>
+  <data name="OrgA_UI_NotInChart"><value>not in chart</value></data>
+  <data name="OrgA_UI_NoHead"><value>no head</value></data>
+  <data name="OrgA_UI_NoHodEntry"><value>no HOD entry</value></data>
+  <data name="OrgA_UI_NotFoundVersion"><value>not found in this version</value></data>
+  <data name="OrgA_UI_Of"><value>of</value></data>
+  <data name="OrgA_UI_Top"><value>top</value></data>
+  <data name="OrgA_UI_Level"><value>level</value></data>
+  <data name="OrgA_UI_Levels"><value>levels</value></data>
+  <data name="OrgA_UI_AvailableWhen"><value>Available {0}.</value></data>
+  <data name="OrgA_UI_Pending"><value>pending</value></data>
+  <data name="OrgA_UI_AcceptedHint"><value>“Accept” marks a row as expected; it stays out of the counts on every upload until undone.</value></data>
+  <data name="OrgA_UI_AcceptFailed"><value>Could not save</value></data>
+  <data name="OrgA_UI_ChecksWith"><value>{0} checks with findings</value></data>
+  <data name="OrgA_UI_Affected"><value>{0} employees affected</value></data>
+  <data name="OrgA_UI_K_Employees"><value>Employees</value></data>
+  <data name="OrgA_UI_K_EmployeesSub"><value>{0} divisions · {1} departments</value></data>
+  <data name="OrgA_UI_K_Managers"><value>Managers</value></data>
+  <data name="OrgA_UI_K_ManagersSub"><value>{0} direct reports each on average</value></data>
+  <data name="OrgA_UI_K_Shallow"><value>Within 3 levels of the top</value></data>
+  <data name="OrgA_UI_K_ShallowSub"><value>{0} employees — the chart is very flat</value></data>
+  <data name="OrgA_UI_K_Cross"><value>Report across org lines</value></data>
+  <data name="OrgA_UI_K_CrossSub"><value>{0}% — another department, division or site</value></data>
+  <data name="OrgA_UI_K_NotUnder"><value>Not under their HOD head</value></data>
+  <data name="OrgA_UI_K_NotUnderSub"><value>manager chain never reaches the head</value></data>
+  <data name="OrgA_UI_K_Hod"><value>Head-reference mismatches</value></data>
+  <data name="OrgA_UI_K_HodSub"><value>HOD sheet vs this version</value></data>
+  <data name="OrgA_UI_K_Issue"><value>Employees with at least one issue</value></data>
+  <data name="OrgA_UI_K_IssueSub"><value>{0}% of employees</value></data>
+  <data name="OrgA_UI_DepthTitle"><value>Levels below the top</value></data>
+  <data name="OrgA_UI_SpanTitle"><value>Direct reports per manager</value></data>
+  <data name="OrgA_UI_DepthNote"><value>{0}% of employees are within 3 levels of the top: the direct-manager field mostly holds the department head, not the supervisor.</value></data>
+  <data name="OrgA_UI_SpanNote"><value>{0} managers · average {1} · {2} managers have more than 30 direct reports.</value></data>
+  <data name="OrgA_UI_D_division"><value>Division</value></data>
+  <data name="OrgA_UI_D_dept"><value>Department</value></data>
+  <data name="OrgA_UI_D_people"><value>People</value></data>
+  <data name="OrgA_UI_D_head"><value>Head (HOD)</value></data>
+  <data name="OrgA_UI_D_under"><value>Under head</value></data>
+  <data name="OrgA_UI_D_direct"><value>Direct to head</value></data>
+  <data name="OrgA_UI_D_external"><value>Report outside</value></data>
+  <data name="OrgA_UI_D_sups"><value>Supervisors w/o team</value></data>
+  <data name="OrgA_UI_D_issues"><value>With issues</value></data>
+  <data name="OrgA_UI_D_cause"><value>Likely cause</value></data>
+  <data name="OrgA_UI_D_count"><value>{0} of {1} departments</value></data>
+  <data name="OrgA_UI_M_name"><value>Manager</value></data>
+  <data name="OrgA_UI_M_job"><value>Position</value></data>
+  <data name="OrgA_UI_M_dept"><value>Department</value></data>
+  <data name="OrgA_UI_M_reports"><value>Direct reports</value></data>
+  <data name="OrgA_UI_M_depts"><value>Departments</value></data>
+  <data name="OrgA_UI_M_sites"><value>Sites</value></data>
+  <data name="OrgA_UI_M_subSups"><value>Sub-supervisors</value></data>
+  <data name="OrgA_UI_M_from"><value>Reports come from</value></data>
+  <data name="OrgA_UI_M_cause"><value>Likely cause</value></data>
+  <data name="OrgA_UI_M_count"><value>{0} of {1} managers</value></data>
+  <data name="OrgA_UI_C_joined"><value>Joined</value></data>
+  <data name="OrgA_UI_C_left"><value>Left</value></data>
+  <data name="OrgA_UI_C_mgr"><value>Manager changed</value></data>
+  <data name="OrgA_UI_C_dept"><value>Department changed</value></data>
+  <data name="OrgA_UI_C_job"><value>Job changed</value></data>
+  <data name="OrgA_UI_C_note"><value>{0}% of employees have a different manager than in the previous version — most of it in {1}. Confirm this is a real restructure, not a column mix-up in the export, before acting on the findings.</value></data>
+  <data name="OrgA_UI_C_none"><value>No previous version to compare with.</value></data>
+  <data name="OrgA_V_headGone"><value>HOD head “{0}” is not in the chart (left, or code changed). Update the HOD sheet.</value></data>
+  <data name="OrgA_V_noHead"><value>No head in the HOD reference. Add one, or merge this department.</value></data>
+  <data name="OrgA_V_external"><value>{0}% report to managers in other departments ({1}). Either the department label or the manager column is wrong for most of this group.</value></data>
+  <data name="OrgA_V_direct"><value>{0}% report straight to the head while {1} supervisor(s) have no team. The direct-manager field skips the supervisor level.</value></data>
+  <data name="OrgA_V_under"><value>Only {0}% are under the head through their manager chain. Check the managers of the rest.</value></data>
+  <data name="OrgA_V_headElsewhere"><value>The head sits in “{0}” in the chart, not in this department.</value></data>
+  <data name="OrgA_V_supsNoTeam"><value>{0} supervisor(s) with no direct reports — individual contributors, or the field skips them.</value></data>
+  <data name="OrgA_V_ok"><value>Reporting lines are consistent with the head.</value></data>
+  <data name="OrgA_M_headForDepts"><value>Entered as the direct manager for whole departments. Point the field at the sub-supervisors.</value></data>
+  <data name="OrgA_M_subSups"><value>{0} supervisors in the team could carry part of it.</value></data>
+  <data name="OrgA_M_noLayer"><value>Large team with no supervisory layer.</value></data>
+  <data name="OrgA_Top_notTop"><value>Not a top: a {0} with no team. Missing manager code.</value></data>
+  <data name="OrgA_Top_real"><value>Real top. Should be NO_MANAGER rather than their own manager.</value></data>
+  <data name="OrgA_Top_big"><value>Large team but no manager above them — set their manager (probably a director or the COO).</value></data>
+  <data name="OrgA_Top_small"><value>Own manager with {0} report(s) — most likely a supervisor whose manager code is missing.</value></data>
+  <data name="OrgA_Dang_scope"><value>in the chart but outside the selected scope</value></data>
+  <data name="OrgA_Dang_left"><value>existed in the previous version (left)</value></data>
+  <data name="OrgA_Dang_payroll"><value>in the weekly payroll list, not in the chart</value></data>
+  <data name="OrgA_Dang_typo"><value>unknown code (typo?)</value></data>
+  <data name="OrgA_Hod_left"><value>in the previous version (left)</value></data>
+  <data name="OrgA_Hod_unknown"><value>code not in this or the previous version</value></data>
+  <data name="OrgA_Lvl_Management"><value>Management</value></data>
+  <data name="OrgA_Lvl_Supervisory"><value>Supervisory</value></data>
+  <data name="OrgA_Lvl_Professional"><value>Professional / Technical</value></data>
+  <data name="OrgA_Lvl_Labor"><value>Operations / Labor</value></data>
+  <data name="OrgA_Lvl_Other"><value>Other</value></data>
+  <data name="OrgA_Case_noMgr"><value>no manager</value></data>
+  <data name="OrgA_Case_ownMgr"><value>own manager</value></data>
+  <data name="OrgA_Sev_site"><value>cross-site</value></data>
+  <data name="OrgA_Sev_division"><value>cross-division</value></data>
+  <data name="OrgA_Sev_department"><value>cross-department</value></data>
+  <data name="OrgA_G_lines"><value>Reporting lines</value></data>
+  <data name="OrgA_G_heads"><value>Department heads (HOD reference vs this version)</value></data>
+  <data name="OrgA_G_quality"><value>Data quality</value></data>
+  <data name="OrgA_F_headAsManager_T"><value>Direct manager is the department head, not the supervisor</value></data>
+  <data name="OrgA_F_headAsManager_C"><value>&lt;b&gt;Cause:&lt;/b&gt; HR fills “Direct Manager” with the head of department. &lt;b&gt;Fix:&lt;/b&gt; for these {0} managers (more than 15 reports), assign the sub-supervisors listed in the department detail.</value></data>
+  <data name="OrgA_F_crossLine_T"><value>Reports across org lines</value></data>
+  <data name="OrgA_F_crossLine_C"><value>&lt;b&gt;Cause:&lt;/b&gt; department label or manager code wrong. &lt;b&gt;Fix:&lt;/b&gt; use the scorecard — when most of a department reports elsewhere the label is wrong; when a few do, the manager is.</value></data>
+  <data name="OrgA_F_notUnder_T"><value>Not under the department head</value></data>
+  <data name="OrgA_F_notUnder_C"><value>&lt;b&gt;Cause:&lt;/b&gt; the manager chain goes to another head or straight to the COO. Overlaps with the finding above; a person is counted once in the summary.</value></data>
+  <data name="OrgA_F_around_T"><value>Reports around the department</value></data>
+  <data name="OrgA_F_around_C"><value>&lt;b&gt;Cause:&lt;/b&gt; the manager sits outside the department but the manager's manager is inside it — a line that bypasses the head. &lt;b&gt;Fix:&lt;/b&gt; point the employee at the inside manager.</value></data>
+  <data name="OrgA_F_tops_T"><value>Top of the organisation: no manager, or own manager</value></data>
+  <data name="OrgA_F_tops_C"><value>&lt;b&gt;Fix:&lt;/b&gt; mark the real top (the COO) as NO_MANAGER and accept it once; give the other {0} a manager — a driver with no team is not a top, and an “own manager” supervisor is a missing code.</value></data>
+  <data name="OrgA_F_dangling_T"><value>Manager code not found</value></data>
+  <data name="OrgA_F_dangling_C"><value>Classified: existed in the previous version (left) · in the weekly payroll list but not in the chart · outside the selected scope · typo.</value></data>
+  <data name="OrgA_F_leaverMgr_T"><value>Leaver still set as a manager</value></data>
+  <data name="OrgA_F_leaverMgr_C"><value>&lt;b&gt;Cause:&lt;/b&gt; the manager was in the previous version and is gone now. &lt;b&gt;Fix:&lt;/b&gt; reassign their reports.</value></data>
+  <data name="OrgA_F_cycles_T"><value>Reporting cycle</value></data>
+  <data name="OrgA_F_cycles_C"><value>The manager chain loops back to the employee (self-managers are listed under “Top of the organisation” instead).</value></data>
+  <data name="OrgA_F_inversion_T"><value>Seniority inversion</value></data>
+  <data name="OrgA_F_inversion_C"><value>The report's title or grade is more senior than the manager's. Exact when both have a &lt;b&gt;Grade&lt;/b&gt;; otherwise guessed from job titles.</value></data>
+  <data name="OrgA_F_junior_T"><value>Junior-titled people with reports</value></data>
+  <data name="OrgA_F_junior_C"><value>A labour or operative title with direct reports — probably a mis-typed manager code.</value></data>
+  <data name="OrgA_F_titleNoTeam_T"><value>Manager or supervisor title with no team</value></data>
+  <data name="OrgA_F_titleNoTeam_C"><value>Vacant team, individual contributor, or the direct-manager field skips them (where the head has 50+ direct reports and supervisors have none, it is the latter).</value></data>
+  <data name="OrgA_F_single_T"><value>Thin layer: exactly one direct report</value></data>
+  <data name="OrgA_F_single_C"><value>A possible redundant layer to flatten.</value></data>
+  <data name="OrgA_F_hodMissing_T"><value>HOD departments that no longer exist in the chart</value></data>
+  <data name="OrgA_F_hodMissing_C"><value>&lt;b&gt;Cause:&lt;/b&gt; divisions or departments were renamed. &lt;b&gt;Fix:&lt;/b&gt; rename these rows in the HOD sheet.</value></data>
+  <data name="OrgA_F_hodNoHead_T"><value>Chart departments with no head in HOD</value></data>
+  <data name="OrgA_F_hodNoHead_C"><value>&lt;b&gt;Fix:&lt;/b&gt; add a head, or merge the department — several are generic “Management” groups.</value></data>
+  <data name="OrgA_F_hodGone_T"><value>Head codes not found in this version</value></data>
+  <data name="OrgA_F_hodGone_C"><value>&lt;b&gt;Cause:&lt;/b&gt; the head left, or their code changed.</value></data>
+  <data name="OrgA_F_hodOtherDept_T"><value>Head sits in a different department than the one they head</value></data>
+  <data name="OrgA_F_hodOtherDept_C"><value>&lt;b&gt;Cause:&lt;/b&gt; heads filed under a generic “Management” department. &lt;b&gt;Fix:&lt;/b&gt; move them, or accept.</value></data>
+  <data name="OrgA_F_hodName_T"><value>Head name differs from the chart name for the same code</value></data>
+  <data name="OrgA_F_hodName_C"><value>Spelling only in most cases; a different person would mean a wrong code.</value></data>
+  <data name="OrgA_F_hodInverted_T"><value>Head whose own manager is inside the department</value></data>
+  <data name="OrgA_F_hodInverted_C"><value>&lt;b&gt;Cause:&lt;/b&gt; an inverted line — the head reports to a subordinate. &lt;b&gt;Fix:&lt;/b&gt; swap the manager codes.</value></data>
+  <data name="OrgA_F_dups_T"><value>Same person on two codes</value></data>
+  <data name="OrgA_F_dups_C"><value>&lt;b&gt;Cause:&lt;/b&gt; re-hire or duplicate record. &lt;b&gt;Fix:&lt;/b&gt; merge the codes; reports pointing at either code are split today.</value></data>
+  <data name="OrgA_F_generic_T"><value>Generic department names used under several divisions</value></data>
+  <data name="OrgA_F_generic_C"><value>Heads filed in “Management” cannot be matched to the department they head. &lt;b&gt;Fix:&lt;/b&gt; name the group after its division.</value></data>
+  <data name="OrgA_F_missingSite_T"><value>Missing site</value></data>
+  <data name="OrgA_F_missingSite_C"><value>Employees with no site recorded.</value></data>
+  <data name="OrgA_F_mgrNameMismatch_T"><value>Manager ID does not match the manager name in the export</value></data>
+  <data name="OrgA_F_mgrNameMismatch_C"><value>The HR file carries &lt;b&gt;Direct Manager Name&lt;/b&gt; next to the ID; when they disagree the code is mistyped.</value></data>
+  <data name="OrgA_F_payroll_T"><value>In the chart but not on the weekly payroll list (and the reverse)</value></data>
+  <data name="OrgA_F_payroll_C"><value>The two files share no key today: employee codes do not match worker numbers.</value></data>
+  <data name="OrgA_F_chgMgr_T"><value>Manager changed</value></data>
+  <data name="OrgA_F_chgMgr_C"><value>Compared by employee code with the previous version.</value></data>
+  <data name="OrgA_F_chgDept_T"><value>Department changed</value></data>
+  <data name="OrgA_F_chgDept_C"><value>Includes renamed departments.</value></data>
+  <data name="OrgA_F_chgJoined_T"><value>Joined</value></data>
+  <data name="OrgA_F_chgJoined_C"><value>In this version, not in the previous one.</value></data>
+  <data name="OrgA_F_chgLeft_T"><value>Left</value></data>
+  <data name="OrgA_F_chgLeft_C"><value>In the previous version, not in this one. Anyone who was a manager needs their reports reassigned.</value></data>
+  <data name="OrgA_F_chgJob_T"><value>Job changed</value></data>
+  <data name="OrgA_F_chgJob_C"><value></value></data>
+  <data name="OrgA_F_mgrNameMismatch_P"><value>after the next upload of an HR export that has the “Direct Manager Name” column</value></data>
+  <data name="OrgA_F_payroll_P"><value>once the HR export includes the Iqama / national ID</value></data>
+  <data name="OrgA_Col_code"><value>Code</value></data>
+  <data name="OrgA_Col_name"><value>Name</value></data>
+  <data name="OrgA_Col_job"><value>Position</value></data>
+  <data name="OrgA_Col_dept"><value>Department</value></data>
+  <data name="OrgA_Col_division"><value>Division</value></data>
+  <data name="OrgA_Col_site"><value>Site</value></data>
+  <data name="OrgA_Col_reports"><value>Reports</value></data>
+  <data name="OrgA_Col_depts"><value>Departments</value></data>
+  <data name="OrgA_Col_sites"><value>Sites</value></data>
+  <data name="OrgA_Col_subSups"><value>Sub-supervisors</value></data>
+  <data name="OrgA_Col_mgrName"><value>Manager</value></data>
+  <data name="OrgA_Col_mgrDept"><value>Mgr department</value></data>
+  <data name="OrgA_Col_mgrDivision"><value>Mgr division</value></data>
+  <data name="OrgA_Col_mgrSite"><value>Mgr site</value></data>
+  <data name="OrgA_Col_severity"><value>Severity</value></data>
+  <data name="OrgA_Col_head"><value>HOD head</value></data>
+  <data name="OrgA_Col_mgrMgr"><value>Manager's manager (inside)</value></data>
+  <data name="OrgA_Col_case"><value>Case</value></data>
+  <data name="OrgA_Col_why"><value>Likely cause</value></data>
+  <data name="OrgA_Col_mgrCode"><value>Manager code</value></data>
+  <data name="OrgA_Col_classification"><value>Classification</value></data>
+  <data name="OrgA_Col_hint"><value>Was</value></data>
+  <data name="OrgA_Col_mgrNameLeft"><value>Manager (left)</value></data>
+  <data name="OrgA_Col_level"><value>Level</value></data>
+  <data name="OrgA_Col_grade"><value>Grade</value></data>
+  <data name="OrgA_Col_mgrJob"><value>Mgr position</value></data>
+  <data name="OrgA_Col_mgrLevel"><value>Mgr level</value></data>
+  <data name="OrgA_Col_mgrGrade"><value>Mgr grade</value></data>
+  <data name="OrgA_Col_onlyReport"><value>Only report</value></data>
+  <data name="OrgA_Col_people"><value>People</value></data>
+  <data name="OrgA_Col_hodName"><value>HOD name</value></data>
+  <data name="OrgA_Col_chartName"><value>Chart name</value></data>
+  <data name="OrgA_Col_heads"><value>Heads</value></data>
+  <data name="OrgA_Col_sitsIn"><value>Sits in</value></data>
+  <data name="OrgA_Col_sitsInDivision"><value>Division</value></data>
+  <data name="OrgA_Col_reportsTo"><value>Reports to</value></data>
+  <data name="OrgA_Col_reportsToJob"><value>Their position</value></data>
+  <data name="OrgA_Col_otherCodes"><value>Also appears as</value></data>
+  <data name="OrgA_Col_divisions"><value>Divisions</value></data>
+  <data name="OrgA_Col_count"><value>Count</value></data>
+  <data name="OrgA_Col_mgrNameFile"><value>Manager name in file</value></data>
+  <data name="OrgA_Col_fromMgr"><value>Previous manager</value></data>
+  <data name="OrgA_Col_toMgr"><value>Manager now</value></data>
+  <data name="OrgA_Col_fromDept"><value>Previous department</value></data>
+  <data name="OrgA_Col_toDept"><value>Department now</value></data>
+  <data name="OrgA_Col_fromJob"><value>Previous position</value></data>
+  <data name="OrgA_Col_toJob"><value>Position now</value></data>
+  <data name="OrgA_Col_wasManagerOf"><value>Was manager of</value></data>
+  <data name="OrgA_F_missingSite_P"><value>once the HR export includes a Site column</value></data>
 </root>

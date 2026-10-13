@@ -1,5 +1,10 @@
 @model Saudization.Web.Services.ImportResult
-@{ ViewData["Title"] = T["Import_Result"].Value; var snap = ViewBag.Snapshot as Snapshot; }
+@{
+    ViewData["Title"] = T["Import_Result"].Value;
+    var snap = ViewBag.Snapshot as Snapshot;
+    var diff = ViewBag.Diff as Saudization.Web.Services.SnapshotDiff;
+    var madeDefault = ViewBag.MadeDefault as bool? ?? true;
+}
 <div class="page-head">
     <h1>@T["Import_Result"]</h1>
     @if (snap != null)
@@ -7,6 +12,22 @@
         <span class="pill">@T["Dash_Version"]: <strong>@snap.Label</strong> · @snap.WeekDate.ToString("yyyy-MM-dd")</span>
     }
 </div>
+
+@if (madeDefault)
+{
+    <div class="alert ok">★ @T["Import_MadeDefault"]</div>
+}
+else
+{
+    <div class="alert err">
+        @T["Import_SavedNotDefault"]
+        <a asp-controller="Versions" asp-action="Index">@T["Ver_Title"]</a>
+    </div>
+}
+@if (diff != null)
+{
+    <partial name="_PeopleDiff" model="diff" />
+}
 
 <div class="zonecards">
     <div class="zonecard"><div class="lbl">@T["Nav_Records"]</div><div class="pct">@Model.Records</div></div>
@@ -17,14 +38,21 @@
     <div class="zonecard"><div class="lbl">@T["Emp_Nationality"]</div><div class="pct">@Model.Nationalities</div></div>
 </div>
 
-@if (Model.SpecialMatched + Model.SpecialUnmatched + Model.DisabilityMatched + Model.DisabilityUnmatched > 0)
+@if (Model.SpecialCases + Model.Disabilities + Model.SpecialMatched + Model.SpecialUnmatched + Model.DisabilityMatched + Model.DisabilityUnmatched > 0)
 {
     <div class="card">
-        <strong>@T["Occ_Category"] / @T["Dash_Disabled"]</strong>
+        <strong>@T["Kpi_Special"] / @T["Kpi_Disabled"]</strong>
         <ul style="margin:8px 0 0">
-            <li>@T["Import_SpecialMatched"]: @Model.SpecialMatched (@T["Import_Unmatched2"]: @Model.SpecialUnmatched)</li>
-            <li>@T["Import_DisabilityMatched"]: @Model.DisabilityMatched (@T["Import_Unmatched2"]: @Model.DisabilityUnmatched)</li>
+            <li>
+                @T["Kpi_Special"]: @Model.SpecialMatched / @Model.SpecialCases @T["Import_Matched2"]
+                @if (Model.SpecialUnmatched > 0) { <span class="alert err" style="display:inline;padding:1px 8px;border-radius:6px">@T["Import_Unmatched2"]: @Model.SpecialUnmatched</span> }
+            </li>
+            <li>
+                @T["Kpi_Disabled"]: @Model.DisabilityMatched / @Model.Disabilities @T["Import_Matched2"]
+                @if (Model.DisabilityUnmatched > 0) { <span class="alert err" style="display:inline;padding:1px 8px;border-radius:6px">@T["Import_Unmatched2"]: @Model.DisabilityUnmatched</span> }
+            </li>
         </ul>
+        <span class="subtle">@T["Import_WeightHint"]</span>
     </div>
 }
 
@@ -46,5 +74,6 @@
 <div class="form-actions">
     <a class="btn" asp-controller="Dashboard" asp-action="Index" asp-route-snapshotId="@(snap?.Id)">@T["Nav_Dashboard"]</a>
     <a class="btn btn-soft" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
+    <a class="btn btn-soft" asp-controller="Versions" asp-action="People" asp-route-to="@(snap?.Id)">@T["Ver_People"]</a>
     <a class="btn btn-soft" asp-action="Index">@T["Import_Title"]</a>
 </div>

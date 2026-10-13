@@ -6,6 +6,12 @@
     var records = Model.Records;
     string Pct(decimal p) => (p * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
     string CatName(CategoryRow r) => isRtl ? r.NameAr : (string.IsNullOrWhiteSpace(r.NameEn) ? r.NameAr : r.NameEn!);
+    var showIcons = (bool)(ViewBag.ShowNatIcons ?? true);
+    // Saudi / non-Saudi / total column header — icon (with tooltip) or plain text, per the Settings toggle.
+    Microsoft.AspNetCore.Html.IHtmlContent NatHead(string kind, string textKey) =>
+        showIcons
+            ? new Microsoft.AspNetCore.Html.HtmlString(Saudization.Web.Services.NationalityIcons.Html(kind, T[textKey].Value))
+            : new Microsoft.AspNetCore.Html.HtmlString(System.Net.WebUtility.HtmlEncode(T[textKey].Value));
     var allRecords = ViewBag.Records as List<Saudization.Web.Models.Record> ?? new();
     var allSnapshots = ViewBag.Snapshots as List<Snapshot> ?? new();
     string modeParam = Model.Mode == DashboardMode.Plan ? "plan" : "current";
@@ -31,17 +37,24 @@
     return;
 }
 
+@{ var allCategories = ViewBag.Categories as List<Saudization.Web.Controllers.CatFilterOption> ?? new(); }
+<style>
+    #sgGrid td.sc-chg { background: #fff5db; }
+    #sgGrid td.sc-chg input { background: #fff5db; font-weight: 700; color: #8a5a00; }
+    .sg-chg-note { background: #fff5db; border: 1px solid #f0d98a; color: #8a6d1b; padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; margin: 6px 0 10px; display: inline-block; }
+</style>
 <div class="toolbar">
     <div class="seg">
         <a class="@(Model.Mode == DashboardMode.Current ? "on" : "")" title="@T["Dash_CurrentTip"]"
-           asp-action="Index" asp-route-mode="current" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Current"]</a>
+           asp-action="Index" asp-route-mode="current" asp-route-recordId="@Model.FilterRecordId" asp-route-categoryId="@Model.FilterCategoryId" asp-route-snapshotId="@Model.SnapshotId" asp-route-planId="@ViewBag.PlanId">@T["Dash_Current"]</a>
         <a class="@(Model.Mode == DashboardMode.Plan ? "on" : "")" title="@T["Dash_PlanTip"]"
-           asp-action="Index" asp-route-mode="plan" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Plan"]</a>
+           asp-action="Index" asp-route-mode="plan" asp-route-recordId="@Model.FilterRecordId" asp-route-categoryId="@Model.FilterCategoryId" asp-route-snapshotId="@Model.SnapshotId" asp-route-planId="@ViewBag.PlanId">@T["Dash_Plan"]</a>
+        <a title="@T["Dash_RoadmapHint"]" asp-action="Roadmap" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Roadmap"]</a>
     </div>
-    <span class="subtle mode-hint">@(Model.Mode == DashboardMode.Plan ? T["Dash_PlanTip"] : T["Dash_CurrentTip"])</span>
 
     <form method="get" asp-action="Index" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <input type="hidden" name="mode" value="@modeParam" />
+        <input type="hidden" name="planId" value="@ViewBag.PlanId" />   @* keep the loaded scenario when filtering *@
         <label class="subtle">@T["Dash_Version"]:</label>
         <select name="snapshotId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
             @foreach (var s in allSnapshots)
@@ -49,7 +62,7 @@
                 <option value="@s.Id" selected="@(Model.SnapshotId == s.Id)">@s.Label (@s.WeekDate.ToString("yyyy-MM-dd"))</option>
             }
         </select>
-        <label class="subtle">@T["Dash_Filter"]:</label>
+        <label class="subtle">@T["Dash_Registration"]:</label>
         <select name="recordId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
             <option value="">@T["Dash_AllRecords"]</option>
             @foreach (var r in allRecords)
@@ -57,8 +70,20 @@
                 <option value="@r.Id" selected="@(Model.FilterRecordId == r.Id)">@r.RegistrationLabel</option>
             }
         </select>
+        <label class="subtle">@T["Dash_Category"]:</label>
+        <select name="categoryId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
+            <option value="">@T["Dash_AllCategories"]</option>
+            @foreach (var c in allCategories)
+            {
+                <option value="@c.CategoryId" selected="@(Model.FilterCategoryId == c.CategoryId)">@c.Name</option>
+            }
+        </select>
         <a class="btn btn-soft btn-sm" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
     </form>
+
+    <button type="button" id="sgExport" class="btn btn-export" title="@T["Dash_ExportTip"]" style="margin-inline-start:auto">
+        ⭳ @T["Dash_ExportExcel"]<span class="btn-sub">@T["Dash_ExportSub"]</span>
+    </button>
 </div>
 
 <!-- Zone status cards per registration (§7: zone + current % + disabled %) -->
@@ -99,15 +124,15 @@
         <tr>
             @foreach (var rc in records)
             {
-                <th class="num rec-sep">@T["Dash_NonSaudi"]</th>
-                <th class="num">@T["Dash_Saudi"]</th>
-                <th class="num">@T["Dash_Total"]</th>
+                <th class="num rec-sep">@NatHead("non", "Dash_NonSaudi")</th>
+                <th class="num">@NatHead("saudi", "Dash_Saudi")</th>
+                <th class="num">@NatHead("total", "Dash_Total")</th>
                 <th class="num">@T["Dash_Pct"]</th>
                 <th class="num">@T["Dash_Action"]</th>
             }
-            <th class="num rec-sep">@T["Dash_NonSaudi"]</th>
-            <th class="num">@T["Dash_Saudi"]</th>
-            <th class="num">@T["Dash_Total"]</th>
+            <th class="num rec-sep">@NatHead("non", "Dash_NonSaudi")</th>
+            <th class="num">@NatHead("saudi", "Dash_Saudi")</th>
+            <th class="num">@NatHead("total", "Dash_Total")</th>
             <th class="num">@T["Dash_Pct"]</th>
         </tr>
     </thead>
@@ -128,20 +153,29 @@
                     <td class="num">
                         @if (c.Status == CellStatus.Red)
                         {
-                            <div class="act"><span class="act-rep" title="@T["Dash_Replace"]">↔ @c.ReplaceNeeded</span>
-                            <span class="act-hire" title="@T["Dash_Hire"]">＋ @c.HireNeeded</span>
-                            <span class="act-shed" title="@T["Dash_Shed"]">⤓ @c.ShedNonSaudi</span></div>
+                            <div class="act">
+                                <span class="act-btn act-rep" title="@T["Dash_ReplaceTip"]">↔ @c.ReplaceNeeded</span>
+                                <span class="act-btn act-hire" title="@T["Dash_HireTip"]">＋ @c.HireNeeded</span>
+                                @if (c.ShedToExemptNonSaudi is int se)
+                                {
+                                    <span class="act-btn act-exshed" title="@T["Dash_ShedExemptTip"]">⇩ @se</span>
+                                }
+                                else
+                                {
+                                    <span class="act-btn act-shed" title="@T["Dash_ShedTip"]">⤓ @c.ShedNonSaudi</span>
+                                }
+                            </div>
                         }
                         else if (c.Status == CellStatus.LightGreen || c.Status == CellStatus.HighGreen)
                         {
                             <div class="act">
-                                @if ((c.AbsorbNonSaudi ?? 0) > 0) { <span class="act-absorb" title="@T["Dash_Absorb"]">⤒ +@c.AbsorbNonSaudi</span> }
-                                @if ((c.SaudiSurplus ?? 0) > 0) { <span class="act-surplus" title="@T["Dash_Surplus"]">▽ @c.SaudiSurplus</span> }
+                                @if ((c.AbsorbNonSaudi ?? 0) > 0) { <span class="act-btn act-absorb" title="@T["Dash_AbsorbTip"]">⤒ +@c.AbsorbNonSaudi</span> }
+                                @if ((c.SaudiSurplus ?? 0) > 0) { <span class="act-btn act-surplus" title="@T["Dash_Surplus"]">▽ @c.SaudiSurplus</span> }
                             </div>
                         }
                         else if (c.Status == CellStatus.Exempt)
                         {
-                            <span class="act-exempt" title="@T["Dash_Exempt"]">✓ +@c.ExemptAddNonSaudi</span>
+                            <div class="act"><span class="act-btn act-exempt" title="@T["Dash_ExemptTip"]">✓ +@c.ExemptAddNonSaudi</span></div>
                         }
                     </td>
                 }
@@ -173,8 +207,15 @@
 </table>
 </div>
 
-<div class="subtle" style="margin-top:8px">
-    <span class="act-rep">↔ @T["Dash_Replace"]</span> · <span class="act-hire">＋ @T["Dash_Hire"]</span> · <span class="act-shed">⤓ @T["Dash_Shed"]</span> · <span class="act-absorb">⤒ @T["Dash_Absorb"]</span> · <span class="act-surplus">▽ @T["Dash_Surplus"]</span> · @T["Dash_CountedNote"]
+<div class="subtle act-legend" style="margin-top:8px">
+    <span class="act-btn act-rep">↔ @T["Dash_Replace"]</span>
+    <span class="act-btn act-hire">＋ @T["Dash_Hire"]</span>
+    <span class="act-btn act-shed">⤓ @T["Dash_Shed"]</span>
+    <span class="act-btn act-exshed">⇩ @T["Dash_ShedExempt"]</span>
+    <span class="act-btn act-absorb">⤒ @T["Dash_Absorb"]</span>
+    <span class="act-btn act-surplus">▽ @T["Dash_Surplus"]</span>
+    <span class="act-btn act-exempt">✓ @T["Dash_Exempt"]</span>
+    · @T["Dash_CountedNote"]
 </div>
 
 @{
@@ -191,19 +232,27 @@
 
     <div class="sg-controls">
         <input id="sgName" placeholder="@T["Dash_ScenarioName"]" />
-        <button id="sgSave" class="btn btn-sm">@T["Dash_SaveScenario"]</button>
-        <button id="sgExport" class="btn btn-soft btn-sm">⭳ @T["Dash_ExportBoth"]</button>
+        <button id="sgSave" class="btn btn-sm">💾 @T["Dash_SaveScenario"]</button>
+        <button id="sgUpdate" class="btn btn-sm" style="display:none">✔ @T["Dash_UpdateScenario"]</button>
         <button id="sgReset" class="btn btn-soft btn-sm">↺ @T["Dash_Reset"]</button>
-        @if (plans.Any())
+        <label class="subtle">@T["Dash_LoadScenario"]:</label>
+        <select id="sgLoad" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+            <option value="">—</option>
+            @foreach (var p in plans)
+            {
+                <option value="@p.Id" selected="@(curPlan == p.Id)">@p.Label</option>
+            }
+        </select>
+        @if (curPlan is int cp)
         {
-            <label class="subtle">@T["Dash_LoadScenario"]:</label>
-            <select id="sgLoad" class="btn-soft" style="padding:6px 10px;border-radius:8px">
-                <option value="">—</option>
-                @foreach (var p in plans)
-                {
-                    <option value="@p.Id" selected="@(curPlan == p.Id)">@p.Label</option>
-                }
-            </select>
+            <form method="post" asp-action="DeletePlan" style="display:inline"
+                  onsubmit="return confirm('@T["Dash_DeleteScenarioConfirm"].Value');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="planId" value="@cp" />
+                <input type="hidden" name="snapshotId" value="@Model.SnapshotId" />
+                <input type="hidden" name="mode" value="@modeParam" />
+                <button type="submit" class="btn btn-danger btn-sm">🗑 @T["Dash_DeleteScenario"]</button>
+            </form>
         }
         <span id="sgMsg" class="subtle"></span>
     </div>
@@ -222,8 +271,12 @@
     <script>
         window.SG_SNAPSHOT = @Model.SnapshotId;
         window.SG_MODE = '@modeParam';
+        window.SG_PLAN_ID = @(curPlan?.ToString() ?? "null");
         window.SG_LOAD_URL = '@Url.Action("Index", "Saudization")';
         window.SG_SAVE_URL = '@Url.Action("SavePlan", "Saudization")';
+        window.SG_UPDATE_URL = '@Url.Action("UpdatePlan", "Saudization")';
+        window.SG_RECORD_ID = @(Model.FilterRecordId?.ToString() ?? "null");
+        window.SG_CATEGORY_ID = @(Model.FilterCategoryId?.ToString() ?? "null");
     </script>
     <script src="~/js/saudization-grid.js" asp-append-version="true"></script>
 }

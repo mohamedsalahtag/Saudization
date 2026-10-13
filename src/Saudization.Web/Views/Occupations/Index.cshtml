@@ -8,6 +8,7 @@
     var sid = (int)(ViewBag.SnapshotId ?? 0);
     int totalEmp = (int)(ViewBag.TotalEmp ?? 0);
     int unclEmp = (int)(ViewBag.UnclassifiedEmp ?? 0);
+    int unclOcc = (int)(ViewBag.UnclassifiedOccCount ?? 0);
     string EPct(int n) => totalEmp > 0 ? (n * 100.0 / totalEmp).ToString("0.#") + "%" : "0%";
 }
 
@@ -37,9 +38,13 @@
 </div>
 
 <div class="card">
-    <form asp-action="ImportGuide" method="post" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        @Html.AntiForgeryToken()
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <strong>@T["Occ_Import"]</strong>
+        <a class="btn btn-soft btn-sm" asp-action="GuideTemplate">⭳ @T["Import_Download"]</a>
+        <span class="subtle">@T["Occ_TemplateHint"]</span>
+    </div>
+    <form asp-action="ImportGuide" method="post" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+        @Html.AntiForgeryToken()
         <input type="file" name="file" accept=".xlsx" required />
         <button class="btn btn-sm" type="submit">⭱ @T["Occ_Apply"]</button>
         <span class="subtle">@T["Occ_ImportHint"]</span>
@@ -62,6 +67,14 @@
                         <td class="num"><a asp-action="Employees" asp-route-categoryId="@g.CategoryId" asp-route-snapshotId="@sid">@g.EmpCount</a></td>
                     </tr>
                 }
+                @if (unclEmp > 0)
+                {
+                    <tr class="unmapped-row">
+                        <td dir="rtl"><a asp-action="Employees" asp-route-unclassified="true" asp-route-snapshotId="@sid"><strong>@T["Occ_Unclassified"]</strong> · @EPct(unclEmp)</a></td>
+                        <td class="num">@unclOcc</td>
+                        <td class="num"><a asp-action="Employees" asp-route-unclassified="true" asp-route-snapshotId="@sid">@unclEmp</a></td>
+                    </tr>
+                }
             </tbody>
         </table>
         </div>
@@ -76,22 +89,30 @@
     </div>
     <div class="table-scroll" style="max-height:520px;overflow:auto">
     <table class="grid" id="occTable">
-        <thead><tr><th style="width:110px">@T["Occ_Code"]</th><th>@T["Occ_Name"]</th><th style="width:320px">@T["Occ_Category"]</th></tr></thead>
+        <thead><tr><th style="width:110px">@T["Occ_Code"]</th><th>@T["Occ_Name"]</th><th class="num" style="width:110px">@T["Occ_Employees"]</th><th style="width:300px">@T["Occ_Category"]</th></tr></thead>
         <tbody>
         @foreach (var o in allOcc)
         {
-            <tr class="@(o.CategoryId == null ? "unmapped-row" : "")">
+            var catName = cats.FirstOrDefault(c => c.Id == o.CategoryId)?.NameAr;
+            <tr class="@(o.CategoryId == null ? "unmapped-row" : "")" data-s="@($"{o.Code} {o.NameAr} {catName}".ToLowerInvariant())">
                 <td>@o.Code</td>
                 <td dir="rtl">@o.NameAr</td>
+                <td class="num">
+                    @if (o.EmpCount > 0)
+                    {
+                        <a asp-action="Employees" asp-route-occupationId="@o.Id" asp-route-snapshotId="@sid">@o.EmpCount</a>
+                    }
+                    else
+                    {
+                        <span class="subtle">0</span>
+                    }
+                </td>
                 <td>
-                    <form asp-action="Map" method="post" style="margin:0">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="occupationName" value="@o.NameAr" />
-                        <select name="categoryId" class="btn-soft" style="padding:5px 8px;border-radius:7px;width:100%" onchange="this.form.submit()">
-                            <option value="">— @T["Occ_Category"] —</option>
-                            @foreach (var c in cats) { <option value="@c.Id" selected="@(o.CategoryId == c.Id)">@c.NameAr</option> }
-                        </select>
-                    </form>
+                    @* One shared picker (below) is moved into the row on click — instead of a form + select per row. *@
+                    <button type="button" class="btn-soft occ-pick" data-name="@o.NameAr" data-cat="@o.CategoryId"
+                            style="padding:5px 8px;border-radius:7px;width:100%;text-align:start;border:1px solid var(--line);cursor:pointer">
+                        @(catName ?? "— " + T["Occ_Category"].Value + " —") ✎
+                    </button>
                 </td>
             </tr>
         }
@@ -99,13 +120,37 @@
     </table>
     </div>
 </div>
+<form asp-action="Map" method="post" id="occMapForm" style="display:none">
+    <input type="hidden" name="occupationName" id="occMapName" />
+    <select name="categoryId" id="occMapSelect" class="btn-soft" style="padding:5px 8px;border-radius:7px;width:100%">
+        <option value="">— @T["Occ_Category"] —</option>
+        @foreach (var c in cats) { <option value="@c.Id">@c.NameAr</option> }
+    </select>
+</form>
 <script>
+    (function () {
+        var form = document.getElementById("occMapForm"), sel = document.getElementById("occMapSelect"),
+            nameInp = document.getElementById("occMapName"), current = null;
+        document.getElementById("occTable").addEventListener("click", function (e) {
+            var btn = e.target.closest(".occ-pick");
+            if (!btn) return;
+            if (current) current.style.display = "";
+            current = btn;
+            nameInp.value = btn.getAttribute("data-name");
+            sel.value = btn.getAttribute("data-cat") || "";
+            btn.style.display = "none";
+            btn.parentNode.appendChild(form);
+            form.style.display = "";
+            sel.focus();
+        });
+        sel.addEventListener("change", function () { if (sel.value) form.submit(); });
+    })();
+    // search the code, name and category of each row only (not the text of every dropdown option)
     function occFilter(q) {
-        q = (q || "").toLowerCase();
+        q = (q || "").toLowerCase().trim();
         var rows = document.querySelectorAll("#occTable tbody tr");
-        for (var i = 0; i < rows.length; i++) {
-            rows[i].style.display = rows[i].innerText.toLowerCase().indexOf(q) >= 0 ? "" : "none";
-        }
+        for (var i = 0; i < rows.length; i++)
+            rows[i].style.display = !q || rows[i].getAttribute("data-s").indexOf(q) >= 0 ? "" : "none";
     }
 </script>
 

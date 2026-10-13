@@ -1,0 +1,24 @@
+Windows Registry Editor Version 5.00
+
+; ============================================================================
+;  Fix: Microsoft Edge "Virus scan failed" when downloading files/templates
+;  from the Saudization app.
+;
+;  Cause: the app is served over plain HTTP by IP/hostname, so Windows puts it
+;  in the INTERNET zone. Every download then gets a "Mark of the Web" and Edge
+;  asks the local antivirus to scan it on release. On these machines that scan
+;  errors out, so Edge blocks the file with "Virus scan failed".
+;
+;  Fix: declare the app a LOCAL INTRANET site (zone 1). Intranet downloads are
+;  not marked "from the Internet", so the failing scan never runs. HTTPS does
+;  NOT fix this — the security ZONE is what matters.
+;
+;  This is the machine-wide (all users) equivalent of the GPO
+;  "Site to Zone Assignment List" set to zone 1 (Local Intranet).
+;  Deploy via Group Policy Preferences, SCCM/Intune, or import on each PC.
+; ============================================================================
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMapKey]
+"http://saudization.sharbatlyfruit.com"="1"
+"http://saudization"="1"
+"http://192.168.3.17"="1"

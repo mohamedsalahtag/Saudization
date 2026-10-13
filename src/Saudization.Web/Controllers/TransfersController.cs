@@ -14,8 +14,7 @@ public class TransfersController : Controller
 
     public async Task<IActionResult> Index(int? snapshotId, CancellationToken ct)
     {
-        var sid = snapshotId ?? await _db.Snapshots
-            .OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id).Select(s => s.Id).FirstOrDefaultAsync(ct);
+        var sid = await _db.ResolveSnapshotAsync(HttpContext, snapshotId, ct);
         var vm = new TransfersViewModel
         {
             SnapshotId = sid,

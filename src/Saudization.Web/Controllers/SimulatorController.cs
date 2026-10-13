@@ -14,8 +14,7 @@ public class SimulatorController : Controller
 
     public async Task<IActionResult> Index(int? snapshotId, CancellationToken ct)
     {
-        var sid = snapshotId ?? await _db.Snapshots
-            .OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id).Select(s => s.Id).FirstOrDefaultAsync(ct);
+        var sid = await _db.ResolveSnapshotAsync(HttpContext, snapshotId, ct);
 
         var vm = await _calc.BuildAsync(DashboardMode.Current, null, sid, ct);
         var recEntities = await _db.Records.ToDictionaryAsync(r => r.Id, ct);
@@ -26,6 +25,7 @@ public class SimulatorController : Controller
             SnapshotId = sid,
             Snapshot = await _db.Snapshots.FindAsync(new object[] { sid }, ct),
             LightGreenBand = settings.LightGreenBand,
+            DisabilityCapPct = settings.DisabilityCapPct,
             Records = vm.Records.Select(rc =>
             {
                 var r = recEntities[rc.RecordId];
@@ -33,8 +33,9 @@ public class SimulatorController : Controller
                 {
                     Id = rc.RecordId,
                     Label = rc.Label,
-                    Saudi = rc.SaudiCountedGeneral,                    // weighted (incl. special + capped disability)
-                    NonSaudi = rc.Headcount - rc.SaudiCountedGeneral,  // keeps Total == actual headcount
+                    Saudi = rc.BaseSaudi,                              // real people (Saudi nationals + special)
+                    NonSaudi = rc.Headcount - rc.BaseSaudi,
+                    DisabledExtraRaw = rc.DisabledExtraRaw,            // bonus recomputed (and capped) live in simulator.js
                     Low = r.LowGreenMin,
                     Medium = r.MediumGreenMin,
                     High = r.HighGreenMin,

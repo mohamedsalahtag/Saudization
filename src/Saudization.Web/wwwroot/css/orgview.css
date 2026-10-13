@@ -60,8 +60,11 @@
 .orgv .org-legend {padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); position: sticky; top: 0; background: var(--panel); z-index: 2;}
 .orgv #panel-org {height: calc(100vh - 210px); overflow: auto; padding: 0;}
 .orgv #orgtree {padding: 8px 10px;}
-.orgv .chart-card {position: relative; height: calc(100vh - 235px); min-height: 440px; overflow: hidden; padding: 0;}
-body.orient-vertical .orgv .chart-card {height: calc((100vh - 235px) * 1.3); min-height: 560px;}
+.orgv .chart-card {position: relative; height: calc(100vh - 210px); min-height: 460px; overflow: hidden; padding: 0;}
+body.orient-vertical .orgv .chart-card {height: calc(100vh - 210px); min-height: 520px;}
+/* maximize: fill the entire viewport on any screen size */
+.orgv #panel-chart.fs {position: fixed; inset: 0; z-index: 1000; width: 100vw; height: 100vh; min-height: 0; margin: 0; border-radius: 0; border: none;}
+body.chart-fs {overflow: hidden;}
 .orgv #chart {width: 100%; height: 100%; display: block; cursor: grab;}
 .orgv #chart:active {cursor: grabbing;}
 .orgv .chart-hint {position: absolute; left: 12px; bottom: 10px; font-size: 11.5px; color: var(--muted);
@@ -70,9 +73,9 @@ body.orient-vertical .orgv .chart-card {height: calc((100vh - 235px) * 1.3); min
 .orgv .zoom-ctrls button {width: 34px; height: 34px; padding: 0; font-size: 17px; line-height: 1; box-shadow: var(--shadow);}
 .orgv .node rect {rx: 8; ry: 8; stroke-width: 1.4; cursor: pointer; fill: #fff; stroke: #cfd8e3;}
 .orgv .node text {pointer-events: none;}
-.orgv .node .n-tag {font-size: 9px; font-weight: 800; letter-spacing: .5px; fill: var(--muted);}
-.orgv .node .n-name {font-size: 12.5px; font-weight: 700; fill: var(--ink);}
-.orgv .node .n-sub {font-size: 10.5px; fill: var(--muted);}
+.orgv .node .n-tag {font-size: 8.5px; font-weight: 800; letter-spacing: .5px; fill: var(--muted);}
+.orgv .node .n-name {font-size: 12px; font-weight: 700; fill: var(--ink);}
+.orgv .node .n-sub {font-size: 10px; fill: var(--muted);}
 .orgv .node .badge-c {fill: var(--brand);}
 .orgv .node .badge-t {fill: #fff; font-size: 10.5px; font-weight: 700;}
 .orgv .node.kind-root rect {fill: #16523d; stroke: #16523d;}
@@ -82,11 +85,72 @@ body.orient-vertical .orgv .chart-card {height: calc((100vh - 235px) * 1.3); min
 .orgv .node.kind-cat .n-tag {fill: var(--brand);}
 .orgv .node.kind-cat .n-name {fill: var(--brand-dk);}
 .orgv .node.kind-emp rect {fill: #fff; stroke: #cfd8e3;}
+/* manager boxes stand out (amber) from the green division/department container boxes */
+.orgv .node.mgr rect {fill: #fff5e6; stroke: #e08a1e;}
+.orgv .node.mgr .n-tag {fill: #c9781f;}
+.orgv .node.mgr .n-name {fill: #8a4b00;}
+.orgv .node.mgr .badge-c {fill: #e08a1e;}
 .orgv .node.collapsed rect {stroke-dasharray: 4 3;}
 .orgv .node.match rect {stroke: var(--accent); stroke-width: 2.6;}
 .orgv .node.onpath rect {stroke: var(--brand); stroke-width: 2.2;}
 .orgv .link {fill: none; stroke: #c2ccd8; stroke-width: 1.4;}
 .orgv .link.onpath {stroke: var(--brand); stroke-width: 2;}
+
+/* ---- dense employee-grid clusters (terminal groups) ---- */
+.orgv .node.terminal.collapsed rect {stroke-dasharray: 4 3;}
+.orgv .cl-spine {fill: none; stroke: #9fb0c3; stroke-width: 1.6;}
+.orgv .cl-bg {fill: #f7fafc; stroke: #e3e8ef; stroke-width: 1.2;}
+.orgv .cl-sum-bg {fill: #eef6f2; stroke: #cfe6dd; stroke-width: 1;}
+.orgv .cl-sum-title {font-size: 12.5px; font-weight: 800; fill: var(--brand-dk);}
+.orgv .cl-sum-k {font-size: 8.5px; font-weight: 800; letter-spacing: .4px; fill: var(--muted);}
+.orgv .cl-sum-v {font-size: 13px; font-weight: 800; fill: var(--ink);}
+.orgv .cl-sum-foot {font-size: 9.5px; fill: var(--muted);}
+.orgv .cl-sum-head {font-size: 11px; font-weight: 800; fill: #b8860b;}
+.orgv .cl-sum-bar-bg {fill: #dfe6ee;}
+.orgv .cl-sum-bar-sa {fill: #3a9c78;}
+.orgv .ecard rect {fill: #fff; stroke: #cfd8e3; stroke-width: 1.2; cursor: pointer;}
+.orgv .ecard:hover rect {stroke: var(--brand); stroke-width: 1.6;}
+.orgv .ecard.sel rect {stroke: var(--accent); stroke-width: 2.4;}
+.orgv .ecard .ec-flag {stroke: none;}
+.orgv .ecard .ec-name {font-size: 11.5px; font-weight: 700; fill: var(--ink);}
+.orgv .ecard .ec-pos {font-size: 10px; fill: var(--brand-dk);}
+.orgv .ecard .ec-meta {font-size: 9.5px; fill: var(--muted);}
+.orgv .ecard .ec-nat {font-size: 9.5px; font-weight: 700; fill: var(--accent);}
+
+/* ---- manager drill-down navigator (HTML, fills the chart card, wraps) ---- */
+.orgv #navigator {display: none;}
+.orgv #panel-chart.navmode #chart,
+.orgv #panel-chart.navmode .chart-hint,
+.orgv #panel-chart.navmode #zin,
+.orgv #panel-chart.navmode #zout,
+.orgv #panel-chart.navmode #zfit {display: none;}
+.orgv #panel-chart.navmode #navigator {display: block; position: absolute; inset: 0; overflow: auto; padding: 10px 14px 22px;}
+.orgv .nav-bar {position: sticky; top: 0; background: var(--panel); padding: 4px 0 8px; z-index: 3; border-bottom: 1px solid var(--line); margin-bottom: 8px;}
+.orgv .nav-crumbs {font-size: 13px; color: var(--muted);}
+.orgv .nav-crumbs a {color: var(--accent); text-decoration: none; font-weight: 700;}
+.orgv .nav-crumbs a:hover {text-decoration: underline;}
+.orgv .nav-crumbs .sep {color: var(--muted); margin: 0 3px;}
+.orgv .nav-head {margin: 2px 0 10px;}
+.orgv .nav-head .nh-title {font-size: 18px; font-weight: 800; color: var(--brand-dk); display: flex; align-items: center; gap: 10px;}
+.orgv .nav-head .nh-sub {font-size: 13px; color: var(--muted); margin-top: 2px;}
+.orgv .nh-det {font: inherit; font-size: 11px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--accent); cursor: pointer;}
+.orgv .nh-det:hover {border-color: var(--brand); background: var(--brand-lt);}
+.orgv .nav-sec {font-size: 11px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); margin: 14px 0 8px;}
+.orgv .nav-grid {display: flex; flex-wrap: wrap; gap: 8px;}
+.orgv .nav-box {width: 186px; border: 1.6px solid #2f6fed; background: #eef4ff; border-radius: 9px; padding: 7px 10px; cursor: pointer; border-left: 5px solid #2f6fed; transition: box-shadow .12s, transform .05s;}
+.orgv .nav-box:hover {box-shadow: 0 2px 10px rgba(47,111,237,.25); transform: translateY(-1px); background: #e4edff;}
+.orgv .nav-box .nb-tag {font-size: 8.5px; font-weight: 800; letter-spacing: .3px; color: #2f6fed; text-transform: uppercase; margin-bottom: 1px;}
+.orgv .nav-box .nb-name {font-size: 13px; font-weight: 800; color: #163e8c;}
+.orgv .nav-box .nb-pos {font-size: 11px; color: #4a5b52; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.orgv .nav-box .nb-meta {font-size: 10.5px; color: var(--muted); margin-top: 4px;}
+.orgv .nav-card {width: 170px; position: relative; border: 1.2px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 10px 7px 13px; cursor: pointer;}
+.orgv .nav-card:hover {border-color: var(--brand);}
+.orgv .nav-card .nc-flag {position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 8px 0 0 8px;}
+.orgv .nav-card .nc-name {font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.orgv .nav-card .nc-pos {font-size: 10.5px; color: var(--brand-dk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.orgv .nav-card .nc-meta {font-size: 10px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.orgv .nav-hit {outline: 2.5px solid var(--accent); outline-offset: 1px;}
+.orgv .nav-empty {padding: 20px; color: var(--muted);}
 .orgv #orgtree {padding: 6px 4px;}
 .orgv .tnode {margin-left: 14px;}
 .orgv .tnode > .row {display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; cursor: pointer;}
@@ -114,6 +178,29 @@ body.orient-vertical .orgv .chart-card {height: calc((100vh - 235px) * 1.3); min
 .orgv .dt-crumb .k {color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; font-weight: 700; margin-right: 6px;}
 .orgv .dt-crumb a {color: var(--accent); text-decoration: none;}
 .orgv .dt-crumb a:hover {text-decoration: underline;}
+.orgv .dt-fact .id-big {font-size: 15px; letter-spacing: .3px; color: var(--brand-dk);}
+/* Reporting line — a clear top-to-bottom "reports to" chain, each step with the employee ID */
+.orgv .dt-chain {border-top: 1px dashed var(--line); padding-top: 8px;}
+.orgv .dt-chain > .k {color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; font-weight: 700; display: block; margin-bottom: 6px;}
+.orgv .rl {display: inline-flex; flex-direction: column; align-items: stretch; gap: 0; max-width: 100%;}
+.orgv .rl-row {display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer;}
+.orgv .rl-row[data-code]:hover {border-color: var(--brand); background: var(--brand-lt);}
+.orgv .rl-row.me {cursor: default; background: var(--brand); border-color: var(--brand); color: #fff;}
+.orgv .rl-row .rl-id {font-weight: 800; font-size: 12.5px; font-variant-numeric: tabular-nums; background: rgba(0,0,0,.06); padding: 1px 7px; border-radius: 6px;}
+.orgv .rl-row.me .rl-id {background: rgba(255,255,255,.22);}
+.orgv .rl-row .rl-nm {font-weight: 700; font-size: 13px;}
+.orgv .rl-row .rl-po {font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.orgv .rl-row.me .rl-po {color: rgba(255,255,255,.85);}
+.orgv .rl-row .rl-tag {margin-left: auto; font-size: 10px; text-transform: uppercase; letter-spacing: .4px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,.22);}
+.orgv .rl-row .rl-tag.mgr {background: var(--brand-lt); color: var(--brand-dk);}
+.orgv .rl-up {font-size: 11px; color: var(--muted); font-weight: 700; padding: 2px 0 2px 12px;}
+.orgv .rl-none {font-size: 12px; color: var(--muted); padding: 4px 2px;}
+/* Managers-view upward chain */
+.orgv .nav-head .nh-chain {font-size: 12.5px; color: var(--ink); margin-top: 5px;}
+.orgv .nav-head .nh-chain .k {color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; font-weight: 700; margin-right: 6px;}
+.orgv .nav-head .nh-chain a {color: var(--accent); text-decoration: none; font-weight: 700;}
+.orgv .nav-head .nh-chain a:hover {text-decoration: underline;}
+.orgv .nav-head .nh-chain .sep {color: var(--muted); margin: 0 3px;}
 .orgv .dt .dt-close {border: none; background: transparent; font-size: 20px; line-height: 1; color: var(--muted); padding: 8px 12px; align-self: flex-start;}
 .orgv .dt .dt-close:hover {color: var(--danger); background: transparent;}
 @media (max-width: 700px) {
@@ -177,3 +264,55 @@ body.orient-vertical .orgv .chart-card {height: calc((100vh - 235px) * 1.3); min
 .orgv .gt-kids { margin-inline-start: 16px; border-inline-start: 1px solid #e2e8f0; padding-inline-start: 6px; }
 .orgv .gt-emp { padding: 3px 8px; font-size: 13px; }
 .orgv .gt-l0 > .gt-head .gt-label { color: #0b6b3a; }
+
+/* ===================== HR Analysis (redesigned page) ===================== */
+.orgv .sectnav { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 4px; background: var(--bg); padding: 6px 0; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+.orgv .sectnav a { padding: 6px 12px; border-radius: 7px; color: var(--muted); font-weight: 600; font-size: 13px; text-decoration: none; }
+.orgv .sectnav a.on, .orgv .sectnav a:hover { background: var(--panel); color: var(--brand-dk); box-shadow: var(--shadow); }
+.orgv .kpi .sub { font-size: 11.5px; color: var(--muted); }
+.orgv .kpi.alert { border-inline-start: 4px solid var(--danger); }
+.orgv .kpi.warn { border-inline-start: 4px solid var(--warn); }
+.orgv .note { font-size: 12.5px; color: var(--muted); }
+.orgv .code { font-family: Consolas, "IBM Plex Mono", monospace; font-size: 12.5px; }
+.orgv .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 900px) { .orgv .grid3 { grid-template-columns: 1fr; } }
+.orgv .hist { display: flex; align-items: flex-end; gap: 6px; height: 96px; padding-top: 18px; }
+.orgv .hist .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.orgv .hist .b { width: 100%; background: var(--brand); border-radius: 4px 4px 0 0; position: relative; }
+.orgv .hist .b span { position: absolute; top: -16px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); }
+.orgv .hist .x { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.orgv .section-title { flex-wrap: wrap; }
+.orgv .section-title .hint { font-weight: 400; color: var(--muted); font-size: 12.5px; flex-basis: 100%; }
+.orgv .section-title .spacer { flex: 1; }
+.orgv .toolbar .note { white-space: nowrap; }
+.orgv table.data th.num, .orgv table.data td.num { text-align: end; font-variant-numeric: tabular-nums; }
+.orgv table.data td { white-space: normal; }
+.orgv table.data tr.sel td { background: var(--brand-lt); }
+.orgv table.data tr.clickable { cursor: pointer; }
+.orgv table.data tr.accepted td { opacity: .5; }
+.orgv table.data td.acc { text-align: end; white-space: nowrap; }
+.orgv .meter { display: inline-grid; grid-template-columns: 44px 1fr; align-items: center; gap: 6px; min-width: 120px; }
+.orgv .meter .bar { height: 7px; border-radius: 4px; background: #eef1f5; overflow: hidden; }
+.orgv .meter .bar i { display: block; height: 100%; background: var(--brand); }
+.orgv .meter.bad .bar i { background: var(--danger); } .orgv .meter.mid .bar i { background: var(--warn); }
+.orgv .verdict { font-size: 12px; max-width: 36ch; }
+.orgv .verdict.bad { color: var(--danger); } .orgv .verdict.mid { color: var(--warn); } .orgv .verdict.ok { color: #2f9e44; }
+.orgv .detail { margin-top: 10px; padding: 14px 16px; border-inline-start: 4px solid var(--brand); }
+.orgv .detail .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.orgv .detail h3 { margin: 0; font-size: 14px; } .orgv .detail h4 { margin: 10px 0 6px; font-size: 12.5px; }
+.orgv .cause { background: #fdf0e0; color: var(--ink); border-radius: 8px; padding: 9px 12px; margin: 10px 0; font-size: 13px; } .orgv .cause b { color: var(--warn); }
+.orgv .bars .row { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 40px; gap: 8px; align-items: center; font-size: 12.5px; margin: 3px 0; }
+.orgv .bars .row > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.orgv .bars .track { height: 9px; background: #eef1f5; border-radius: 5px; overflow: hidden; } .orgv .bars .fill { height: 100%; background: var(--accent); }
+.orgv .bars .n { text-align: end; font-variant-numeric: tabular-nums; }
+.orgv ul.plain { margin: 6px 0 0; padding-inline-start: 18px; } .orgv ul.plain li { margin: 2px 0; }
+.orgv .group-title { font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin: 16px 0 6px; }
+.orgv .anom .ahead { display: grid; grid-template-columns: auto 1fr auto; gap: 10px 12px; align-items: center; }
+.orgv .anom .ahead .atext { min-width: 0; }
+.orgv .anom .ahead .adesc b { color: var(--ink); }
+.orgv .anom .ahead .acount { margin: 0; white-space: nowrap; }
+.orgv .anom .abody { padding: 0 0 10px; }
+.orgv .anom .abody .tbl-scroll { max-height: 380px; margin: 0 14px; }
+.orgv .facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-variant-numeric: tabular-nums; margin-bottom: 10px; } .orgv .facts b { font-size: 15px; padding: 2px 10px; }
+.orgv .pill.ok { background: #e6f4ea; color: #2f9e44; }
+html[dir=rtl] .orgv .hist .b span { left: 0; right: 0; }

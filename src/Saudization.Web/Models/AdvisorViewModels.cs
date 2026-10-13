@@ -29,8 +29,9 @@ public class SimRecord
 {
     public int Id { get; set; }
     public string Label { get; set; } = "";
-    public int Saudi { get; set; }        // counted Saudi (general, incl. special + capped disability)
+    public int Saudi { get; set; }        // Saudi heads (nationals + special); the disability bonus is added on top
     public int NonSaudi { get; set; }
+    public int DisabledExtraRaw { get; set; }   // uncapped يُحتسب بعدد extra; capped by Settings.DisabilityCapPct × Saudi
     public decimal Low { get; set; }
     public decimal Medium { get; set; }
     public decimal High { get; set; }
@@ -60,4 +61,5 @@ public class SimulatorViewModel
     public List<SimRecord> Records { get; set; } = new();
     public List<SimCategory> Categories { get; set; } = new();
     public decimal LightGreenBand { get; set; } = 0.05m;
+    public decimal DisabilityCapPct { get; set; } = 0.10m;
 }

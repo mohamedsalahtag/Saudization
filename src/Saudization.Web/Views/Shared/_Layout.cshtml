@@ -1,4 +1,5 @@
 @using System.Globalization
+@using System.Security.Claims
 @{
     var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var isRtl = culture == "ar";
@@ -24,26 +25,62 @@
         <nav class="mainnav">
             <a class="@(Active("Dashboard") ? "on" : "")" asp-controller="Dashboard" asp-action="Index">@T["Nav_Dashboard"]</a>
             <a class="@(Active("Saudization") ? "on" : "")" asp-controller="Saudization" asp-action="Index">@T["Nav_Saudization"]</a>
-            <a class="@(Active("Records") ? "on" : "")" asp-controller="Records" asp-action="Index">@T["Nav_Records"]</a>
+            <div class="navdrop">
+                <span class="navdrop-toggle @(Active("Records") || Active("Occupations") || Active("Categories") ? "on" : "")" tabindex="0" role="button" aria-haspopup="true">@T["Nav_MasterData"] ▾</span>
+                <div class="navdrop-menu">
+                    <a class="@(Active("Records") ? "on" : "")" asp-controller="Records" asp-action="Index">@T["Nav_Records"]</a>
+                    <a class="@(Active("Occupations") ? "on" : "")" asp-controller="Occupations" asp-action="Index">@T["Nav_Occupations"]</a>
+                    <a class="@(Active("Categories") ? "on" : "")" asp-controller="Categories" asp-action="Index">@T["Nav_Categories"]</a>
+                </div>
+            </div>
+            <div class="navdrop">
+                <span class="navdrop-toggle @(Active("Restructure") || Active("OrgView") ? "on" : "")" tabindex="0" role="button" aria-haspopup="true">@T["Nav_OrgStructure"] ▾</span>
+                <div class="navdrop-menu">
+                    <a class="@(Active("Restructure") && ViewContext.RouteData.Values["action"]?.ToString() == "Assignments" ? "on" : "")" asp-controller="Restructure" asp-action="Assignments">@T["Nav_StructureEditor"]</a>
+                    <a class="@(Active("Restructure") && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "on" : "")" asp-controller="Restructure" asp-action="Index">@T["Nav_Restructure"]</a>
+                    <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Chart" ? "on" : "")" asp-controller="OrgView" asp-action="Chart">@T["Nav_OrgChart"]</a>
+                    <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Analysis" ? "on" : "")" asp-controller="OrgView" asp-action="Analysis">@T["Nav_OrgAnalysis"]</a>
+                </div>
+            </div>
             <a class="@(Active("Versions") ? "on" : "")" asp-controller="Versions" asp-action="Index">@T["Nav_Versions"]</a>
-            <a class="@(Active("Restructure") ? "on" : "")" asp-controller="Restructure" asp-action="Index">@T["Nav_Restructure"]</a>
-            <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Chart" ? "on" : "")" asp-controller="OrgView" asp-action="Chart">@T["Nav_OrgChart"]</a>
-            <a class="@(Active("OrgView") && ViewContext.RouteData.Values["action"]?.ToString() == "Analysis" ? "on" : "")" asp-controller="OrgView" asp-action="Analysis">@T["Nav_OrgAnalysis"]</a>
-            <a class="@(Active("Occupations") ? "on" : "")" asp-controller="Occupations" asp-action="Index">@T["Nav_Occupations"]</a>
             <a class="@(Active("Import") ? "on" : "")" asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a>
-            <a class="@(Active("Audit") ? "on" : "")" asp-controller="Audit" asp-action="Index">@T["Nav_Audit"]</a>
-            <a class="@(Active("Settings") ? "on" : "")" asp-controller="Settings" asp-action="Index">@T["Nav_Settings"]</a>
+            <div class="navdrop">
+                <span class="navdrop-toggle @(Active("Settings") || Active("Audit") || Active("Users") ? "on" : "")" tabindex="0" role="button" aria-haspopup="true">@T["Nav_Settings"] ▾</span>
+                <div class="navdrop-menu">
+                    <a class="@(Active("Audit") ? "on" : "")" asp-controller="Audit" asp-action="Index">@T["Nav_Audit"]</a>
+                    <a class="@(Active("Users") ? "on" : "")" asp-controller="Users" asp-action="Index">@T["Nav_Users"]</a>
+                    <a class="@(Active("Settings") ? "on" : "")" asp-controller="Settings" asp-action="Index">@T["Nav_Settings"]</a>
+                </div>
+            </div>
         </nav>
         <form class="langswitch" asp-controller="Home" asp-action="SetLanguage" method="post">
             <input type="hidden" name="culture" value="@otherCulture" />
             <input type="hidden" name="returnUrl" value="@returnUrl" />
             <button type="submit" class="btn btn-ghost">@(isRtl ? T["Lang_English"] : T["Lang_Arabic"])</button>
         </form>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            var who = User.FindFirst(ClaimTypes.GivenName)?.Value;
+            if (string.IsNullOrWhiteSpace(who)) who = User.Identity?.Name;
+            <div class="userbox">
+                <span class="who">@T["Nav_SignedInAs"] <b>@who</b></span>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-ghost">@T["Nav_Logout"]</button>
+                </form>
+            </div>
+        }
     </header>
 
     <main class="container">
-        @if (TempData["ok"] is string ok) { <div class="alert ok">@ok</div> }
-        @if (TempData["err"] is string er) { <div class="alert err">@er</div> }
+        @if (TempData["ok"] is string ok) { <div class="alert ok js-flash" style="display:flex;align-items:center;gap:12px;justify-content:space-between"><span>@ok</span><button type="button" onclick="this.parentElement.remove()" title="Close" style="border:none;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:inherit;opacity:.65;padding:0 4px">×</button></div> }
+        @if (TempData["err"] is string er) { <div class="alert err js-flash" style="display:flex;align-items:center;gap:12px;justify-content:space-between"><span>@er</span><button type="button" onclick="this.parentElement.remove()" title="Close" style="border:none;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:inherit;opacity:.65;padding:0 4px">×</button></div> }
+        <script>
+            (function () {
+                document.querySelectorAll('.js-flash').forEach(function (el) {
+                    setTimeout(function () { el.style.transition = 'opacity .5s'; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 520); }, 6000);
+                });
+            })();
+        </script>
         @RenderBody()
     </main>
 

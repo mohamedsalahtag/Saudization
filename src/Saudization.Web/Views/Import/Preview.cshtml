@@ -1,0 +1,89 @@
+@model ImportPreviewViewModel
+@{
+    ViewData["Title"] = T["Prev_Title"].Value;
+    var res = Model.Result;
+    var warnings = res.Warnings.Where(w => !w.StartsWith("ERROR")).ToList();
+}
+<div class="page-head">
+    <h1>@T["Prev_Title"]</h1>
+    <span class="pill">@T["Dash_Version"]: <strong>@Model.Meta.Label</strong> · @Model.Meta.WeekDate.ToString("yyyy-MM-dd") · @Model.Meta.FileName</span>
+</div>
+<p class="subtle">@T["Prev_Intro"]</p>
+
+@if (Model.Identical != null)
+{
+    <div class="alert err">@string.Format(T["Prev_Identical"].Value, Model.Identical.Label, Model.Identical.WeekDate.ToString("yyyy-MM-dd"))</div>
+}
+@if (Model.SameWeek.Count > 0)
+{
+    <div class="alert err">@string.Format(T["Prev_SameWeek"].Value, string.Join(", ", Model.SameWeek))</div>
+}
+
+<div class="zonecards">
+    <div class="zonecard"><div class="lbl">@T["Prev_Employees"]</div><div class="pct">@Model.Employees</div></div>
+    <div class="zonecard"><div class="lbl">@T["Prev_Saudi"]</div><div class="pct">@Model.Saudi</div></div>
+    <div class="zonecard"><div class="lbl">@T["Prev_Sheets"]</div><div class="pct">@res.SheetEmployees.Count(kv => kv.Value > 0)</div></div>
+    <div class="zonecard"><div class="lbl">@T["Prev_Warnings"]</div><div class="pct">@warnings.Count</div></div>
+</div>
+
+@if (Model.Diff != null)
+{
+    <partial name="_PeopleDiff" model="Model.Diff" />
+}
+
+<div class="card">
+    <strong>@T["Prev_SheetCol"]</strong>
+    <table class="grid" style="margin-top:6px;max-width:520px">
+        <tbody>
+        @foreach (var kv in res.SheetEmployees)
+        {
+            <tr><td dir="ltr">@kv.Key</td><td class="num">@kv.Value</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@if (res.UnmatchedOccupations.Count > 0)
+{
+    <div class="card">
+        <strong>@T["Prev_Unmatched"]</strong>
+        <table class="grid" style="margin-top:6px;max-width:620px">
+            <tbody>
+            @foreach (var kv in res.UnmatchedOccupations.OrderByDescending(kv => kv.Value))
+            {
+                <tr><td>@kv.Key</td><td class="num">@kv.Value</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (warnings.Count > 0)
+{
+    <div class="card">
+        <strong>@T["Prev_Warnings"]</strong>
+        <ul style="margin:6px 0 0">@foreach (var w in warnings) { <li>@w</li> }</ul>
+    </div>
+}
+
+<div class="card">
+    @if (Model.Identical == null)
+    {
+        <form asp-action="Confirm" method="post" style="display:inline">
+            <input type="hidden" name="token" value="@Model.Token" />
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <input type="checkbox" name="makeDefault" value="true" style="width:auto" checked="@Model.SuggestDefault" />
+                @T["Prev_MakeDefault"]
+            </label>
+            @if (!Model.SuggestDefault && Model.Diff != null)
+            {
+                <div class="alert err" style="margin-bottom:10px">@string.Format(T["Prev_NoChangeHint"].Value, Model.Diff.OtherLabel)</div>
+            }
+            <button class="btn" type="submit">✓ @T["Prev_Confirm"]</button>
+        </form>
+    }
+    <form asp-action="Cancel" method="post" style="display:inline">
+        <input type="hidden" name="token" value="@Model.Token" />
+        <button class="btn btn-soft" type="submit">✕ @T["Prev_Cancel"]</button>
+    </form>
+</div>

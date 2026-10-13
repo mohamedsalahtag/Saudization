@@ -1,10 +1,11 @@
-@using Saudization.Web.Models
+@model Saudization.Web.Services.OrgAnalysisResult
 @{
     ViewData["Title"] = T["OrgAnalysis_Title"].Value;
-    var versions = ViewBag.Versions as List<OrgVersion> ?? new List<OrgVersion>();
-    var vid = ViewBag.VersionId as int?;
-    var empRaw = ViewBag.EmpRaw as string;
+    var json = ViewBag.ResultJson as string;
+    var vid = Model?.VersionId;
     var chartUrl = Url.Action("Chart", "OrgView", new { versionId = vid });
+    var exportUrl = Url.Action("AnalysisExport", "OrgView", new { versionId = vid, branch = Model?.Branch, site = Model?.Site, division = Model?.Division });
+    var acceptUrl = Url.Action("Accept", "OrgView");
 }
 
 @section Styles {
@@ -12,69 +13,98 @@
 }
 
 <div class="page-head">
-    <h1>@T["OrgAnalysis_Title"]</h1>
-    <form method="get" class="inline-form">
-        <label class="muted">@T["OrgView_Version"]</label>
-        <select name="versionId" onchange="this.form.submit()">
-            @foreach (var v in versions)
-            {
-                <option value="@v.Id" selected="@(v.Id == vid)">@v.Label</option>
-            }
-        </select>
-        <a class="btn btn-ghost" asp-action="Chart" asp-route-versionId="@vid">@T["Nav_OrgChart"] →</a>
-    </form>
+    <div>
+        <h1>@T["OrgAnalysis_Title"]</h1>
+        @if (Model != null) { <div class="muted">@Model.VersionLabel · @Model.Summary.Employees @T["OrgA_UI_People"]</div> }
+    </div>
+    @if (Model != null)
+    {
+        <form method="get" class="inline-form" id="scopeForm">
+            <label class="muted">@T["OrgView_Version"]</label>
+            <select name="versionId" onchange="this.form.submit()">
+                @foreach (var v in Model.Versions) { <option value="@v[0]" selected="@((int)v[0] == Model.VersionId)">@v[1]</option> }
+            </select>
+            <select name="branch" onchange="this.form.submit()">
+                <option value="">@T["OrgChart_AllBranches"]</option>
+                @foreach (var b in Model.Branches) { <option value="@b" selected="@(b == Model.Branch)">@b</option> }
+            </select>
+            <select name="site" onchange="this.form.submit()">
+                <option value="">@T["OrgChart_AllSites"]</option>
+                @foreach (var s in Model.SitesList) { <option value="@s" selected="@(s == Model.Site)">@s</option> }
+            </select>
+            <select name="division" onchange="this.form.submit()">
+                <option value="">@T["OrgChart_AllDivisions"]</option>
+                @foreach (var d in Model.DivisionsList) { <option value="@d" selected="@(d == Model.Division)">@d</option> }
+            </select>
+            <a class="btn btn-ghost" asp-action="Chart" asp-route-versionId="@vid">@T["Nav_OrgChart"] →</a>
+            <a class="btn btn-sm btn-primary" href="@exportUrl&kind=all" title="@T["OrgAnalysis_ExportTip"]">⭳ @T["OrgA_Page_ExportAll"]</a>
+        </form>
+    }
 </div>
 
-@if (empRaw is null)
+@if (Model == null)
 {
     <div class="card"><p class="muted">@T["OrgView_NoData"]</p></div>
 }
 else
 {
     <div class="orgv">
-        <div class="card" id="scopebar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;margin-bottom:14px">
-            <b>@T["OrgAnalysis_Analyze"]</b>
-            <select id="scopeBranch"><option value="">@T["OrgChart_AllBranches"]</option></select>
-            <select id="scopeSite"><option value="">@T["OrgChart_AllSites"]</option></select>
-            <select id="scopeDiv"><option value="">@T["OrgChart_AllDivisions"]</option></select>
-            <span class="muted" id="scopeHint"></span>
-        </div>
+        <nav class="sectnav" id="sectnav">
+            <a href="#sec-summary" class="on">@T["OrgA_Page_Summary"]</a><a href="#sec-depts">@T["OrgA_Page_Depts"]</a><a href="#sec-mgrs">@T["OrgA_Page_Mgrs"]</a>
+            <a href="#sec-findings">@T["OrgA_Page_Findings"]</a><a href="#sec-changes">@T["OrgA_Page_Changes"]</a>
+        </nav>
 
+        <div id="sec-summary"></div>
         <div class="kpis" id="kpis"></div>
-
-        <div class="section-title">@T["OrgAnalysis_Distribution"]</div>
         <div class="grid2">
-            <div class="card chart-block"><h3>@T["OrgAnalysis_ByDivision"]</h3><div id="cDiv"></div></div>
-            <div class="card chart-block"><h3>@T["OrgAnalysis_BySite"]</h3><div id="cSite"></div></div>
-            <div class="card chart-block"><h3>@T["OrgAnalysis_ByPosition"]</h3><div id="cPos"></div></div>
-            <div class="card chart-block"><h3>@T["OrgAnalysis_ByDepartment"]</h3><div id="cDept"></div></div>
-            <div class="card chart-block"><h3>@T["OrgAnalysis_ByNationality"]</h3><div id="cNat"></div></div>
+            <div class="card chart-block"><h3>@T["OrgA_UI_DepthTitle"]</h3><div class="hist" id="depthHist"></div><div class="note" id="depthNote"></div></div>
+            <div class="card chart-block"><h3>@T["OrgA_UI_SpanTitle"]</h3><div class="hist" id="spanHist"></div><div class="note" id="spanNote"></div></div>
         </div>
 
-        <div class="section-title">@T["OrgAnalysis_Breakdowns"]</div>
-        <div class="grid2">
-            <div class="card"><h3>@T["OrgAnalysis_ByPosDept"]</h3><div id="byPosTree" class="grouptree"></div></div>
-            <div class="card"><h3>@T["OrgAnalysis_ByManager"]</h3><div id="byMgrTree" class="grouptree"></div></div>
+        <div class="section-title" id="sec-depts">@T["OrgA_Page_Depts"]
+            <span class="spacer"></span><a class="btn btn-sm" href="@exportUrl&kind=departments">⭳ @T["OrgA_Page_Excel"]</a>
+            <span class="hint">@T["OrgA_Page_DeptsHint"]</span></div>
+        <div class="card">
+            <div class="toolbar"><input type="text" id="deptFilter" class="grow" placeholder="@T["OrgA_UI_FilterDepts"]"><span class="note" id="deptCount"></span></div>
+            <div class="tbl-scroll"><table class="data" id="deptTable"></table></div>
+            <div id="deptDetail"></div>
         </div>
 
-        <div class="section-title">@T["OrgAnalysis_Issues"]
-            <span class="pill danger" id="issuePill"></span>
-            <button class="btn btn-sm btn-primary" id="exportAll" style="margin-inline-start:auto" title="@T["OrgAnalysis_ExportTip"]">⭳ @T["OrgAnalysis_ExportAll"]</button>
+        <div class="section-title" id="sec-mgrs">@T["OrgA_Page_Mgrs"]
+            <span class="spacer"></span><a class="btn btn-sm" href="@exportUrl&kind=managers">⭳ @T["OrgA_Page_Excel"]</a>
+            <span class="hint">@T["OrgA_Page_MgrsHint"]</span></div>
+        <div class="card">
+            <div class="toolbar"><input type="text" id="mgrFilter" class="grow" placeholder="@T["OrgA_UI_FilterMgrs"]"><span class="note" id="mgrCount"></span></div>
+            <div class="tbl-scroll"><table class="data" id="mgrTable"></table></div>
         </div>
-        <div class="muted" style="margin:-4px 0 12px">@T["OrgAnalysis_IssuesHint"]</div>
-        <div id="anomalies"></div>
+
+        <div class="section-title" id="sec-findings">@T["OrgA_Page_Findings"]
+            <span class="pill danger" id="findingPill"></span>
+            <span class="hint">@T["OrgA_Page_FindingsHint"] @T["OrgA_UI_AcceptedHint"]</span></div>
+        <div id="findings"></div>
+
+        <div class="section-title" id="sec-changes">@T["OrgA_Page_Changes"]@(Model.Changes.PreviousLabel != null ? " (“" + Model.Changes.PreviousLabel + "”)" : "")
+            <span class="spacer"></span>
+            @if (Model.Changes.PreviousVersionId != null) { <a class="btn btn-sm" href="@exportUrl&kind=changes">⭳ @T["OrgA_Page_Excel"]</a> }
+            <span class="hint">@T["OrgA_Page_ChangesHint"]</span></div>
+        <div class="card">
+            <div class="facts" id="changeFacts"></div>
+            <div class="note" id="changeNote" style="margin-bottom:10px"></div>
+            <div id="changeList"></div>
+        </div>
     </div>
 }
 
 @section Scripts {
-    @if (empRaw is not null)
+    @if (Model != null)
     {
+        <script id="org-analysis" type="application/json">@Html.Raw(json)</script>
         <script>
-            window.EMP_RAW = @Html.Raw(empRaw);
             window.ORGV_CHART_URL = "@Html.Raw(chartUrl)";
+            window.ORGV_EXPORT_URL = "@Html.Raw(exportUrl)";
+            window.ORGV_ACCEPT_URL = "@Html.Raw(acceptUrl)";
         </script>
-        <script src="~/lib/xlsx.full.min.js"></script>
-        <script src="~/js/orgview/dataloader.js" asp-append-version="true"></script>
+        @Html.AntiForgeryToken()
         <script src="~/js/orgview/analysis.js" asp-append-version="true"></script>
     }
 }

@@ -1,0 +1,25 @@
+@model List<Saudization.Web.Services.PersonRow>
+<div class="table-scroll" style="max-height:420px;overflow:auto">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Diff_Name"]</th><th>@T["Diff_Id"]</th><th>@T["Field_Registration"]</th><th>@T["Field_Facility"]</th>
+            <th>@T["Field_Nationality"]</th><th>@T["Field_Occupation"]</th><th>@T["Field_Category"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.Name @if (r.Saudi || r.Special) { <span class="pill ok" style="font-size:11px">@T["Dash_Saudi"]</span> }</td>
+            <td dir="ltr">@(r.IqamaNo ?? r.WorkerNo)</td>
+            <td>@r.Registration</td>
+            <td dir="ltr">@r.Facility</td>
+            <td>@r.Nationality</td>
+            <td>@r.Occupation</td>
+            <td>@(r.Category ?? "—")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>

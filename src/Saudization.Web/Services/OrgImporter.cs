@@ -7,7 +7,7 @@ namespace Saudization.Web.Services;
 public class OrgImportResult
 {
     public int VersionId;
-    public int Divisions, Departments, Jobs, Employees;
+    public int Divisions, Departments, Jobs, Employees, Heads;
     public readonly List<string> Warnings = new();
 }
 
@@ -27,20 +27,24 @@ public class OrgImporter
     public async Task<OrgImportResult> ImportAsync(Stream xlsx, string label, string? user, CancellationToken ct = default)
     {
         var res = new OrgImportResult();
+        using var _culture = new InvariantCultureScope();
         using var wb = new XLWorkbook(xlsx);
         var ws = wb.Worksheets.FirstOrDefault(w => w.Name.Equals("Sheet2", StringComparison.OrdinalIgnoreCase))
                  ?? wb.Worksheets.First();
 
         var h = HeaderIndex(ws);
+        // exact names of the HR system export first ("Person Id", "Division (HR)", "Direct Manager ID"), then the template's
         int cBranch = Col(h, "branch code", "branch");
-        int cCode = Col(h, "employees code", "employee code", "employee");
-        int cName = Col(h, "name of employee", "employee name", "name");
+        int cCode = Col(h, "person id", "employees code", "employee code", "employee");
+        int cName = Col(h, "formal name", "name of employee", "employee name", "name");
         int cSite = Col(h, "site name", "site");
-        int cDiv = Col(h, "division");
-        int cDept = Col(h, "department");
-        int cJob = Col(h, "job", "position");           // optional
+        int cDiv = Col(h, "division (hr)", "division");
+        int cDept = Col(h, "department ( hr )", "department (hr)", "department");
+        int cJob = Col(h, "actual position", "job", "position");           // optional
         int cNat = Col(h, "nationality", "الجنسية");     // optional
-        int cMgr = Col(h, "direct manager code", "manager code", "manager");
+        int cMgr = Col(h, "direct manager id", "direct manager code", "manager code", "manager");
+        int cMgrName = Col(h, "direct manager name");    // optional — validates the manager code
+        int cGrade = Col(h, "grade");                     // optional — exact seniority
 
         var version = new OrgVersion
         {
@@ -105,6 +109,8 @@ public class OrgImporter
                 Site = Str(row, cSite),
                 Nationality = Str(row, cNat),
                 DirectManagerCode = Str(row, cMgr),
+                DirectManagerName = Str(row, cMgrName),
+                Grade = Str(row, cGrade),
                 Department = dept,
                 Job = job
             });
@@ -113,6 +119,25 @@ public class OrgImporter
 
         await _db.SaveChangesAsync(ct);
         res.VersionId = version.Id;
+
+        // the "HOD" sheet (Division · Department · Direct Manager ID · Name) travels with the version
+        var hod = wb.Worksheets.FirstOrDefault(w => w.Name.Equals("HOD", StringComparison.OrdinalIgnoreCase))
+                  ?? wb.Worksheets.FirstOrDefault(w => w != ws && Col(HeaderIndex(w), "direct manager id") > 0 && Col(HeaderIndex(w), "department") > 0);
+        if (hod is not null)
+        {
+            var hh = HeaderIndex(hod);
+            int hDiv = Col(hh, "division"), hDept = Col(hh, "department"), hCode = Col(hh, "direct manager id", "manager id", "head code"), hName = Col(hh, "direct manager name", "manager name", "head name");
+            var seen = new HashSet<string>();
+            foreach (var row in DataRows(hod))
+            {
+                var dv = Str(row, hDiv) ?? "(No Division)"; var dp = Str(row, hDept);
+                if (string.IsNullOrWhiteSpace(dp) || !seen.Add(dv + "|" + dp)) continue;
+                _db.DepartmentHeads.Add(new DepartmentHead { OrgVersionId = version.Id, Division = dv, Department = dp!, HeadCode = Str(row, hCode), HeadName = Str(row, hName) });
+                res.Heads++;
+            }
+            if (res.Heads > 0) await _db.SaveChangesAsync(ct);
+        }
+        else res.Warnings.Add("No HOD sheet in the file — the previous head-of-department reference is kept.");
         return res;
     }
 
@@ -149,13 +174,14 @@ public class OrgImporter
         }
         return -1;
     }
-    private static IEnumerable<IXLRangeRow> DataRows(IXLWorksheet ws)
+    // Worksheet rows (absolute columns), matching HeaderIndex's cell.Address.ColumnNumber — a range row would shift
+    // every column when the sheet's first used column isn't A.
+    private static IEnumerable<IXLRow> DataRows(IXLWorksheet ws)
     {
-        var used = ws.RangeUsed(); if (used is null) yield break;
-        bool first = true;
-        foreach (var row in used.RowsUsed()) { if (first) { first = false; continue; } yield return row; }
+        var header = ws.RowsUsed().FirstOrDefault(); if (header is null) yield break;
+        foreach (var row in ws.RowsUsed()) if (row.RowNumber() > header.RowNumber()) yield return row;
     }
-    private static string? Str(IXLRangeRow row, int col)
+    private static string? Str(IXLRow row, int col)
     {
         if (col < 1) return null;
         var v = row.Cell(col).GetString().Trim();

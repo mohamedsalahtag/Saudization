@@ -37,6 +37,30 @@
   <data name="Nav_Records"><value>السجلات</value></data>
   <data name="Nav_Import"><value>استيراد إكسل</value></data>
   <data name="Nav_Occupations"><value>المهن</value></data>
+  <data name="Nav_Categories"><value>الفئات</value></data>
+  <data name="Nav_MasterData"><value>البيانات الرئيسية</value></data>
+  <data name="Nav_OrgStructure"><value>الهيكل التنظيمي</value></data>
+  <data name="Nav_StructureEditor"><value>محرر الهيكل</value></data>
+  <data name="Org_Code"><value>الرمز</value></data>
+  <data name="Asg_Hint"><value>انقر على خلية الإدارة أو القسم لتغييرها؛ واكتب رمز المدير أو اسمه في عمود المدير. ثم حدّث هذا الإصدار أو احفظ كإصدار جديد.</value></data>
+  <data name="Asg_SaveNew"><value>حفظ كإصدار جديد</value></data>
+  <data name="Asg_UpdateVersion"><value>تحديث هذا الإصدار</value></data>
+  <data name="Asg_UpdateHint"><value>حفظ هذه التغييرات على الإصدار المحدد حالياً (في مكانه).</value></data>
+  <data name="Asg_UpdateConfirm"><value>تحديث الإصدار المحدد حالياً في مكانه؟ سيؤدي ذلك إلى استبدال التعيينات ولا يمكن التراجع.</value></data>
+  <data name="Cat_Title"><value>فئات التوطين</value></data>
+  <data name="Cat_Count"><value>فئة</value></data>
+  <data name="Cat_OccMapped"><value>مهنة مرتبطة</value></data>
+  <data name="Cat_Add"><value>إضافة فئة</value></data>
+  <data name="Cat_NameAr"><value>الاسم (عربي)</value></data>
+  <data name="Cat_NameEn"><value>الاسم (إنجليزي)</value></data>
+  <data name="Cat_CurrentPct"><value>النسبة المطلوبة</value></data>
+  <data name="Cat_Occupations"><value>المهن</value></data>
+  <data name="Cat_Employees"><value>الموظفون</value></data>
+  <data name="Cat_Delete"><value>حذف</value></data>
+  <data name="Cat_DeleteAll"><value>حذف الكل</value></data>
+  <data name="Cat_DeleteConfirm"><value>حذف هذه الفئة؟ ستصبح {0} مهنة غير مصنفة. لا يمكن التراجع.</value></data>
+  <data name="Cat_DeleteAllConfirm"><value>حذف جميع الفئات؟ ستصبح كل المهن المرتبطة غير مصنفة حتى إعادة الرفع. لا يمكن التراجع.</value></data>
+  <data name="Cat_Empty"><value>لا توجد فئات بعد — أضف فئة أعلاه أو ارفع ملف إكسل.</value></data>
   <data name="Nav_Audit"><value>سجل التغييرات</value></data>
   <data name="Lang_Arabic"><value>العربية</value></data>
   <data name="Lang_English"><value>English</value></data>
@@ -157,6 +181,10 @@
   <data name="Set_DisabilityCapHint"><value>0–1. لا تتجاوز إضافة ذوي الاحتياجات إلى عدد السعوديين هذه النسبة من سعوديي السجل (افتراضي 0.10 = 10%).</value></data>
   <data name="Set_LightBand"><value>نطاق الأخضر الفاتح</value></data>
   <data name="Set_LightBandHint"><value>0–1. كم يمكن أن تزيد النسبة الحالية عن المطلوبة وتبقى خضراء فاتحة (افتراضي 0.05 = 5%).</value></data>
+  <data name="Set_TabGeneral"><value>عام</value></data>
+  <data name="Set_ViewsScope"><value>تُطبَّق على قائمة «عرض حسب» في مخطط الهيكل التنظيمي، وتُحفظ على هذا الجهاز.</value></data>
+  <data name="Set_ViewsAll"><value>إظهار الكل</value></data>
+  <data name="Set_ViewsSaved"><value>تم الحفظ ✓</value></data>
 
   <data name="Records_Title"><value>السجلات التجارية</value></data>
   <data name="Records_New"><value>سجل جديد</value></data>
@@ -206,13 +234,18 @@
   <data name="Import_Intro"><value>ارفع ملفاً بنفس بنية dashboard.xlsx. تُقرأ الأوراق المرجعية وورقة لكل رقم منشأة وتُدمج في قاعدة البيانات.</value></data>
   <data name="Import_Choose"><value>اختر ملفاً</value></data>
   <data name="Import_Run"><value>استيراد</value></data>
+  <data name="Import_UpdateMaster"><value>تحديث البيانات الأساسية أيضاً (الفئات، المهن، السجلات) من هذا الملف</value></data>
+  <data name="Import_UpdateMasterHelp"><value>اترك الخيار بدون تحديد للرفع الأسبوعي المعتاد — فهو يضيف نسخة جديدة فقط ولا يمسّ بياناتك الأساسية. فعّله فقط عندما يكون هذا الملف نسخة معتمدة جديدة يجب أن تحلّ فئاتها ودليل مهنها وسجلاتها محل الموجود في التطبيق.</value></data>
   <data name="Import_Result"><value>ملخص الاستيراد</value></data>
   <data name="Import_Rule"><value>قاعدة الأوراق</value></data>
   <data name="Import_RulePerFacility"><value>ورقة لكل منشأة (حسب رقم المنشأة)</value></data>
   <data name="Import_RulePerReg"><value>ورقة لكل سجل / شركة (حسب السجل التجاري)</value></data>
   <data name="Import_RuleHelp"><value>كيف تُنظَّم أوراق الموظفين. تُقرأ الأوراق المرجعية (Records، الفئات، دليل المهن، الفئة الخاصة، ذوي الاحتياجات) بنفس الطريقة دائماً. في وضع «لكل سجل» يُوضع كل موظف في منشأته حسب عمود رقم المنشأة.</value></data>
   <data name="Import_Download"><value>تنزيل القالب</value></data>
-  <data name="Import_TemplateHelp"><value>احصل على ملف جاهز للتعبئة مطابق للقاعدة المختارة، معبّأ بالبيانات الحالية — عدّله وارفعه كأسبوع جديد.</value></data>
+  <data name="Import_TemplateHelp"><value>احصل على ملف جاهز للتعبئة مطابق للقاعدة المختارة. الرفع الأسبوعي لا يغيّر الفئات أو المهن أو إعدادات السجلات.</value></data>
+  <data name="Import_TplData"><value>مع البيانات</value></data>
+  <data name="Import_TplEmpty"><value>فارغ</value></data>
+  <data name="Import_TplSample"><value>عيّنة (≤5 صفوف)</value></data>
   <data name="Import_Unmatched"><value>عامل بمهنة غير موجودة في دليل المهن</value></data>
   <data name="Import_Unmatched2"><value>غير مطابق</value></data>
   <data name="Import_SpecialMatched"><value>موظفو الفئات الخاصة المطابقون</value></data>
@@ -252,6 +285,10 @@
   <data name="Ver_To"><value>إلى</value></data>
   <data name="Ver_ByDate"><value>قارن حسب المدى الزمني</value></data>
   <data name="Ver_View"><value>عرض</value></data>
+  <data name="Ver_Default"><value>الافتراضية</value></data>
+  <data name="Ver_DefaultHint"><value>هذه النسخة تُعرض افتراضياً في جميع أنحاء التطبيق.</value></data>
+  <data name="Ver_SetDefault"><value>تعيين كافتراضية</value></data>
+  <data name="Ver_SetDefaultHint"><value>اجعل هذه النسخة هي المعروضة افتراضياً في جميع أنحاء التطبيق.</value></data>
   <data name="Import_Label"><value>اسم الإصدار</value></data>
   <data name="Import_Week"><value>تاريخ الأسبوع</value></data>
   <data name="Import_Note"><value>ملاحظة (اختياري)</value></data>
@@ -260,16 +297,28 @@
   <data name="OrgChart_Title"><value>الهيكل التنظيمي</value></data>
   <data name="OrgAnalysis_Title"><value>تحليل الموارد البشرية</value></data>
   <data name="OrgView_Version"><value>الإصدار</value></data>
+  <data name="OrgView_DeleteVersion"><value>حذف الإصدار</value></data>
+  <data name="OrgView_DeleteVersionConfirm"><value>حذف هذا الإصدار وكل إداراته وأقسامه وموظفيه؟ لا يمكن التراجع.</value></data>
   <data name="OrgView_NoData"><value>لا توجد بيانات تنظيمية بعد. قم باستيراد الهيكل من صفحة إعادة الهيكلة أولاً.</value></data>
   <data name="OrgChart_TabChart"><value>مخطط التسلسل</value></data>
   <data name="OrgChart_TabOrg"><value>البنية التنظيمية</value></data>
   <data name="OrgChart_SelectHint"><value>اختر موظفاً لعرض بياناته وسلسلة التقارير والمرؤوسين المباشرين.</value></data>
   <data name="OrgChart_ViewBy"><value>عرض حسب</value></data>
   <data name="OrgChart_Dim_Manager"><value>المدير (خط التقارير)</value></data>
-  <data name="OrgChart_Dim_Division"><value>القطاع › المنصب</value></data>
-  <data name="OrgChart_Dim_Department"><value>الإدارة › المنصب</value></data>
+  <data name="OrgChart_Dim_ManagerTree"><value>المدير (شجرة)</value></data>
+  <data name="OrgChart_Dim_Division"><value>القطاع › التسلسل الإداري</value></data>
+  <data name="OrgChart_Dim_Department"><value>الإدارة › التسلسل الإداري</value></data>
+  <data name="OrgChart_ManageViews"><value>إدارة العروض</value></data>
+  <data name="OrgChart_ManageViewsTip"><value>اختر العروض التي تظهر في قائمة «عرض حسب»</value></data>
+  <data name="OrgChart_ViewsTitle"><value>إظهار / إخفاء العروض</value></data>
+  <data name="OrgChart_ViewsHint"><value>أزل التحديد عن أي عرض لإخفائه من قائمة «عرض حسب».</value></data>
   <data name="OrgChart_Dim_DivDept"><value>القطاع › الإدارة</value></data>
   <data name="OrgChart_Dim_Position"><value>المنصب (حسب المستوى)</value></data>
+  <data name="OrgChart_Dim_Nationality"><value>الجنسية</value></data>
+  <data name="OrgChart_Dim_Branch"><value>الفرع</value></data>
+  <data name="OrgChart_Dim_DivFlat"><value>الإدارة (كل الموظفين)</value></data>
+  <data name="OrgChart_Dim_DeptFlat"><value>القسم (كل الموظفين)</value></data>
+  <data name="OrgChart_Fullscreen"><value>ملء الشاشة / تصغير</value></data>
   <data name="OrgChart_Layout"><value>التخطيط</value></data>
   <data name="OrgChart_Layout_Vertical"><value>رأسي</value></data>
   <data name="OrgChart_Layout_Horizontal"><value>أفقي</value></data>
@@ -299,7 +348,16 @@
   <data name="Dash_Enhanced"><value>المحسّن</value></data>
   <data name="Dash_Editable"><value>خطة قابلة للتعديل (ماذا لو)</value></data>
   <data name="Dash_Reset"><value>إعادة تعيين</value></data>
-  <data name="Dash_SaveScenario"><value>حفظ السيناريو</value></data>
+  <data name="Dash_SaveScenario"><value>حفظ كجديد</value></data>
+  <data name="Dash_UpdateScenario"><value>تحديث السيناريو</value></data>
+  <data name="Dash_ScenarioChanges"><value>{0} خلية تختلف عن البيانات الحالية — مُميّزة. استخدم ↺ على الخلية أو زر إعادة الضبط للاستعادة.</value></data>
+  <data name="Dash_Roadmap"><value>خطة الترقية</value></data>
+  <data name="Dash_RoadmapHint"><value>كيفية الوصول إلى كل نطاق — حتى البلاتيني — لكل سجل، مع جميع الخيارات (توظيف / إحلال / تخفيض) وتفصيل حسب الفئة.</value></data>
+  <data name="Dash_ToReach"><value>للوصول إلى</value></data>
+  <data name="Dash_AlreadyPlatinum"><value>بلاتيني بالفعل — أعلى نطاق.</value></data>
+  <data name="Dash_NotEnoughNonSaudi"><value>غير كافٍ من غير السعوديين</value></data>
+  <data name="Dash_CategoryTarget"><value>النسبة المطلوبة للفئة</value></data>
+  <data name="Dash_Suggested"><value>المقترح</value></data>
   <data name="Dash_LoadScenario"><value>تحميل سيناريو</value></data>
   <data name="Dash_ExportBoth"><value>تصدير النسختين</value></data>
   <data name="Dash_Shed"><value>إزالة غير سعودي</value></data>
@@ -351,4 +409,380 @@
   <data name="OrgAnalysis_Breakdowns"><value>تفصيلات (الوصول للموظفين)</value></data>
   <data name="OrgAnalysis_ByPosDept"><value>القطاع › الإدارة › المنصب</value></data>
   <data name="OrgAnalysis_ByManager"><value>الموظفون حسب المدير المباشر</value></data>
+  <data name="Import_SecSaud"><value>بيانات التوطين (الموظفون)</value></data>
+  <data name="Import_SecOrg"><value>الهيكل التنظيمي (إعادة الهيكلة)</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>تسجيل الدخول</value></data>
+  <data name="Login_Prompt" xml:space="preserve"><value>سجّل الدخول بحساب الشركة</value></data>
+  <data name="Login_Username" xml:space="preserve"><value>اسم المستخدم</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="Login_Remember" xml:space="preserve"><value>إبقائي مسجّلاً</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>دخول</value></data>
+  <data name="Nav_Users" xml:space="preserve"><value>المستخدمون</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>تسجيل الخروج</value></data>
+  <data name="Nav_SignedInAs" xml:space="preserve"><value>مسجّل الدخول باسم</value></data>
+  <data name="Users_Title" xml:space="preserve"><value>المستخدمون</value></data>
+  <data name="Users_Intro" xml:space="preserve"><value>يمكن للمستخدمين المدرجين هنا فقط تسجيل الدخول. يتم التحقق من كلمات المرور دائماً عبر Active Directory.</value></data>
+  <data name="Users_AddHeading" xml:space="preserve"><value>إضافة مستخدم</value></data>
+  <data name="Users_AddBtn" xml:space="preserve"><value>إضافة</value></data>
+  <data name="Users_ListHeading" xml:space="preserve"><value>المستخدمون المسموح لهم</value></data>
+  <data name="Users_ColFullName" xml:space="preserve"><value>الاسم الكامل</value></data>
+  <data name="Users_ColUsername" xml:space="preserve"><value>اسم المستخدم في AD</value></data>
+  <data name="Users_ColEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Users_ColDept" xml:space="preserve"><value>القسم</value></data>
+  <data name="Users_ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Users_ColLastLogin" xml:space="preserve"><value>آخر دخول</value></data>
+  <data name="Users_ColActions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="Users_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Users_Disabled2" xml:space="preserve"><value>معطّل</value></data>
+  <data name="Users_You" xml:space="preserve"><value>(أنت)</value></data>
+  <data name="Users_EnableBtn" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="Users_DisableBtn" xml:space="preserve"><value>تعطيل</value></data>
+  <data name="Users_DeleteBtn" xml:space="preserve"><value>حذف</value></data>
+  <data name="Users_ConfirmDelete" xml:space="preserve"><value>إزالة صلاحية دخول هذا المستخدم؟</value></data>
+  <data name="Users_Added" xml:space="preserve"><value>تمت إضافة المستخدم '{0}'.</value></data>
+  <data name="Users_Enabled" xml:space="preserve"><value>تم تفعيل المستخدم '{0}'.</value></data>
+  <data name="Users_Disabled" xml:space="preserve"><value>تم تعطيل المستخدم '{0}'.</value></data>
+  <data name="Users_Deleted" xml:space="preserve"><value>تمت إزالة المستخدم '{0}'.</value></data>
+  <data name="Users_ErrNoName" xml:space="preserve"><value>أدخل اسم المستخدم في AD.</value></data>
+  <data name="Users_ErrExists" xml:space="preserve"><value>المستخدم '{0}' موجود بالفعل.</value></data>
+  <data name="Users_ErrSelf" xml:space="preserve"><value>لا يمكنك تغيير حسابك الخاص.</value></data>
+  <data name="AdBrowse_Title" xml:space="preserve"><value>الإضافة من Active Directory</value></data>
+  <data name="AdBrowse_Intro" xml:space="preserve"><value>تصفّح جميع موظفي الدليل وامنح صلاحية الدخول بنقرة واحدة — دون الحاجة لكتابة أسماء المستخدمين.</value></data>
+  <data name="AdBrowse_SearchPh" xml:space="preserve"><value>ابحث بالاسم أو اسم المستخدم أو البريد أو القسم</value></data>
+  <data name="AdBrowse_SearchBtn" xml:space="preserve"><value>بحث</value></data>
+  <data name="AdBrowse_Refresh" xml:space="preserve"><value>تحديث من AD</value></data>
+  <data name="AdBrowse_MassBtn" xml:space="preserve"><value>إضافة كل الجدد ({0})</value></data>
+  <data name="AdBrowse_ConfirmMass" xml:space="preserve"><value>منح صلاحية الدخول لجميع مستخدمي الدليل غير المضافين البالغ عددهم {0}؟</value></data>
+  <data name="AdBrowse_MassResult" xml:space="preserve"><value>تمت إضافة {0} مستخدم من Active Directory.</value></data>
+  <data name="AdBrowse_Count" xml:space="preserve"><value>عرض {0} من {1} من مستخدمي الدليل.</value></data>
+  <data name="AdBrowse_Empty" xml:space="preserve"><value>لم يتم إرجاع أي مستخدم من Active Directory. جرّب التحديث أو تحقق من اتصال AD.</value></data>
+  <data name="AdBrowse_AdStatus" xml:space="preserve"><value>حساب AD</value></data>
+  <data name="AdBrowse_Enabled" xml:space="preserve"><value>مُفعّل</value></data>
+  <data name="AdBrowse_DisabledAd" xml:space="preserve"><value>معطّل في AD</value></data>
+  <data name="AdBrowse_Registered" xml:space="preserve"><value>مُضاف بالفعل</value></data>
+  <data name="AdBrowse_Add" xml:space="preserve"><value>السماح بالدخول</value></data>
+  <data name="AdBrowse_BackToList" xml:space="preserve"><value>العودة للمستخدمين</value></data>
+  <data name="AdBrowse_NotConfigured" xml:space="preserve"><value>لم يتم إعداد Active Directory.</value></data>
+  <data name="AdBrowse_NoneFetched" xml:space="preserve"><value>تعذّر جلب أي مستخدمين من Active Directory.</value></data>
+  <data name="Users_AddManualHint" xml:space="preserve"><value>أو تصفّح Active Directory لإضافة المستخدمين دون كتابة.</value></data>
+  <data name="Occ_TemplateHint" xml:space="preserve"><value>معبّأ بالمهن الحالية — املأ خانات الفئة الفارغة ثم أعد الرفع.</value></data>
+  <data name="Set_DisabilityWeight" xml:space="preserve"><value>وزن ذوي الإعاقة الافتراضي (يُحتسب بعدد)</value></data>
+  <data name="Set_DisabilityWeightHint" xml:space="preserve"><value>يُطبَّق عند الاستيراد إذا تُرك حقل العدد فارغاً (القيمة الافتراضية في نطاقات = 4). لا يغيّر الموظفين المستوردين سابقاً.</value></data>
+  <data name="Import_Matched2" xml:space="preserve"><value>مطابق</value></data>
+  <data name="Import_WeightHint" xml:space="preserve"><value>موظفو الفئات الخاصة يُحتسبون سعوديين في النسبتين؛ وذوو الإعاقة السعوديون يضيفون مكافأة محدودة إلى نسبة السجل فقط.</value></data>
+  <data name="Weight_Title" xml:space="preserve"><value>وزن الفئات الخاصة وذوي الإعاقة</value></data>
+  <data name="Weight_Intro" xml:space="preserve"><value>كيفية احتساب الفئات الخاصة وذوي الإعاقة في نطاقات: الفئات الخاصة تُحتسب سعوديين في نسبة السجل ونسبة فئة المهنة معاً؛ وكل موظف من ذوي الإعاقة يضيف (الوزن − 1) رؤوساً إضافية إلى نسبة السجل فقط، بحد أقصى {0} من عدد السعوديين الأساسي.</value></data>
+  <data name="Weight_ByRegistration" xml:space="preserve"><value>الأثر لكل سجل</value></data>
+  <data name="Weight_BaseSaudi" xml:space="preserve"><value>السعوديون الأساسيون</value></data>
+  <data name="Weight_RawBonus" xml:space="preserve"><value>مكافأة الإعاقة (الخام)</value></data>
+  <data name="Weight_CappedBonus" xml:space="preserve"><value>مكافأة الإعاقة (المطبّقة)</value></data>
+  <data name="Weight_CountedSaudi" xml:space="preserve"><value>السعوديون المحتسبون</value></data>
+  <data name="Weight_CapHit" xml:space="preserve"><value>محدودة بـ {0} من السعوديين الأساسيين — الرؤوس الزائدة عن الحد لا تُحتسب.</value></data>
+  <data name="Weight_CapNote" xml:space="preserve"><value>⚠ تشير إلى سجل بلغت فيه مكافأة الإعاقة الحد الأقصى {0}.</value></data>
+  <data name="Weight_SpecialNote" xml:space="preserve"><value>يُحتسبون سعوديين في النسبتين</value></data>
+  <data name="Weight_SpecialCat" xml:space="preserve"><value>الفئة الخاصة</value></data>
+  <data name="Weight_DisabledNote" xml:space="preserve"><value>يضيفون مكافأة محدودة إلى نسبة السجل فقط</value></data>
+  <data name="Weight_Weight" xml:space="preserve"><value>الوزن</value></data>
+  <data name="Weight_HeadsAdded" xml:space="preserve"><value>رؤوس مضافة</value></data>
+  <data name="Dash_ShedExempt" xml:space="preserve"><value>تخفيض ← إعفاء</value></data>
+  <data name="Dash_ReplaceTip" xml:space="preserve"><value>إحلال: استبدال غير سعودي بسعودي (دون تغيير الإجمالي) للوصول للنسبة المطلوبة.</value></data>
+  <data name="Dash_HireTip" xml:space="preserve"><value>توظيف: إضافة موظفين سعوديين للوصول للنسبة المطلوبة.</value></data>
+  <data name="Dash_ShedTip" xml:space="preserve"><value>إزالة هذا العدد من غير السعوديين للوصول للنسبة المطلوبة عن طريق التخفيض.</value></data>
+  <data name="Dash_ShedExemptTip" xml:space="preserve"><value>خيار أوفر: إزالة هذا العدد فقط من غير السعوديين للنزول تحت الحد الأدنى للحساب — عندها تصبح الخانة معفاة من شرط النسبة.</value></data>
+  <data name="Dash_AbsorbTip" xml:space="preserve"><value>يمكن توظيف حتى هذا العدد من غير السعوديين مع البقاء عند/فوق النسبة المطلوبة.</value></data>
+  <data name="Dash_ExemptTip" xml:space="preserve"><value>تحت الحد الأدنى للحساب (معفاة): يمكن إضافة حتى هذا العدد من غير السعوديين مع البقاء معفاة من شرط النسبة.</value></data>
+  <data name="Dash_AllCategories" xml:space="preserve"><value>كل الفئات</value></data>
+  <data name="Dash_ExportSub" xml:space="preserve"><value>الأصل مقابل السيناريو</value></data>
+  <data name="Dash_ExportTip" xml:space="preserve"><value>تنزيل ملف Excel من ورقتين: البيانات الحالية مقابل السيناريو المعدّل/المحدد، ملوّنة حسب النطاق.</value></data>
+  <data name="Dash_DeleteScenario" xml:space="preserve"><value>حذف السيناريو</value></data>
+  <data name="Dash_DeleteScenarioConfirm" xml:space="preserve"><value>حذف السيناريو المحدد؟ لا يمكن التراجع.</value></data>
+  <data name="Dash_ScenarioDeleted" xml:space="preserve"><value>تم حذف السيناريو.</value></data>
+  <data name="Set_ShowIcons" xml:space="preserve"><value>إظهار السعودي / غير السعودي / الإجمالي كأيقونات</value></data>
+  <data name="Set_ShowIconsHint" xml:space="preserve"><value>عند الإيقاف، تعرض رؤوس جدول التوطين نصوصاً بدلاً من الأيقونات.</value></data>
+  <data name="Import_NotDefault"><value>هذا الملف يحتوي على نفس الأشخاص الموجودين في النسخة «{0}» (لم ينضم أحد ولم يغادر أحد؛ تغيّر {1} موظف)، لذلك تم حفظه ولكن لم يُجعل النسخة الافتراضية. إذا كانت هذه فعلاً بيانات هذا الأسبوع فافتح صفحة الإصدارات واضغط «تعيين كافتراضية»، وإذا كان ملفاً قديماً بالخطأ فاحذفه.</value></data>
+  <data name="Import_DiffTitle"><value>مقارنة مع «{0}»:</value></data>
+  <data name="Import_Joiners"><value>انضموا</value></data>
+  <data name="Import_Leavers"><value>غادروا</value></data>
+  <data name="Import_Changed"><value>تغيّروا</value></data>
+  <data name="Import_MadeDefault"><value>أصبحت هذه النسخة هي المعروضة افتراضياً في جميع أنحاء التطبيق.</value></data>
+  <data name="Ver_DeleteConfirm"><value>نقل النسخة «{0}» ({1} موظف) إلى النسخ المحذوفة؟ يمكنك استعادتها لاحقاً.</value></data>
+  <data name="Ver_Deleted"><value>النسخ المحذوفة</value></data>
+  <data name="Ver_DeletedHint"><value>مخفية من جميع الصفحات. استعد النسخة لإرجاعها، أو احذفها نهائياً.</value></data>
+  <data name="Ver_DeletedOn"><value>تاريخ الحذف</value></data>
+  <data name="Ver_Restore"><value>استعادة</value></data>
+  <data name="Ver_Purge"><value>حذف نهائي</value></data>
+  <data name="Ver_PurgeConfirm"><value>حذف النسخة «{0}» نهائياً مع {1} موظف والسيناريوهات المحفوظة؟ لا يمكن التراجع عن ذلك.</value></data>
+  <data name="Diff_SaudiDelta"><value>السعوديون {0}</value></data>
+  <data name="Diff_More"><value>… و {0} آخرون</value></data>
+  <data name="Diff_Name"><value>الاسم</value></data>
+  <data name="Diff_Id"><value>رقم الهوية / الإقامة</value></data>
+  <data name="Diff_Changes"><value>ما الذي تغيّر</value></data>
+  <data name="Field_WorkerNo"><value>رقم العامل</value></data>
+  <data name="Field_Facility"><value>المنشأة</value></data>
+  <data name="Field_Registration"><value>السجل التجاري</value></data>
+  <data name="Field_Nationality"><value>الجنسية</value></data>
+  <data name="Field_Occupation"><value>المهنة</value></data>
+  <data name="Field_Category"><value>الفئة</value></data>
+  <data name="Field_Special"><value>الفئة الخاصة</value></data>
+  <data name="Field_Disability"><value>وزن ذوي الإعاقة</value></data>
+  <data name="Prev_Title"><value>راجع الملف قبل الحفظ</value></data>
+  <data name="Prev_Intro"><value>لم يُحفظ أي شيء بعد. راجع محتوى الملف وما سيغيّره، ثم احفظه أو ألغِه.</value></data>
+  <data name="Prev_Identical"><value>هذا الملف يحتوي على نفس الموظفين تماماً الموجودين في النسخة «{0}» ({1})، لذلك لا يمكن حفظه. إذا قمت بتنزيل القالب «مع البيانات» فقم بتعبئته ببيانات هذا الأسبوع أولاً.</value></data>
+  <data name="Prev_SameWeek"><value>توجد نسخة لهذا الأسبوع بالفعل: {0}</value></data>
+  <data name="Prev_Employees"><value>الموظفون المقروؤون</value></data>
+  <data name="Prev_Saudi"><value>السعوديون (مع الفئة الخاصة)</value></data>
+  <data name="Prev_Sheets"><value>الأوراق المقروءة</value></data>
+  <data name="Prev_Warnings"><value>تنبيهات</value></data>
+  <data name="Prev_SheetCol"><value>الموظفون في كل ورقة</value></data>
+  <data name="Prev_Unmatched"><value>مهن غير موجودة في دليل المهن (ستُحتسب غير مصنّفة)</value></data>
+  <data name="Prev_MakeDefault"><value>اجعل هذه النسخة هي المعروضة افتراضياً في جميع أنحاء التطبيق</value></data>
+  <data name="Prev_NoChangeHint"><value>لم ينضم أحد ولم يغادر أحد مقارنة بالنسخة «{0}». إذا كان هذا ملفاً قديماً رُفع بالخطأ فألغِه.</value></data>
+  <data name="Prev_Confirm"><value>حفظ هذه النسخة</value></data>
+  <data name="Prev_Cancel"><value>إلغاء — بدون حفظ</value></data>
+  <data name="Import_SavedNotDefault"><value>تم الحفظ، لكن لم تُجعل النسخة الافتراضية. لعرضها في كل مكان استخدم «تعيين كافتراضية» في صفحة</value></data>
+  <data name="Ppl_Title"><value>من انضم أو غادر أو تغيّر</value></data>
+  <data name="Ppl_Intro"><value>تتم مطابقة الأشخاص برقم الهوية / الإقامة، لذلك يظهر تغيّر رقم العامل كتغيير — وليس كشخص غادر وآخر انضم.</value></data>
+  <data name="Ppl_From"><value>النسخة الأقدم</value></data>
+  <data name="Ppl_To"><value>النسخة الأحدث</value></data>
+  <data name="Ppl_Show"><value>مقارنة</value></data>
+  <data name="Ppl_NoDiff"><value>لا توجد فروقات: نفس الأشخاص بنفس البيانات في النسختين.</value></data>
+  <data name="Ver_People"><value>من تغيّر</value></data>
+  <data name="OrgA_Page_Summary"><value>الملخص</value></data>
+  <data name="OrgA_Page_Depts"><value>بطاقة الأقسام</value></data>
+  <data name="OrgA_Page_DeptsHint"><value>أين تقع المشاكل. اضغط على قسم لرؤية الأسباب وقائمة التصحيح. «تحت الرئيس» = سلسلة المدراء تصل إلى رئيس القسم؛ «مباشرة للرئيس» = رئيس القسم هو المدير المباشر.</value></data>
+  <data name="OrgA_Page_Mgrs"><value>بطاقة المدراء</value></data>
+  <data name="OrgA_Page_MgrsHint"><value>أكبر الفرق أولاً. «مشرفون فرعيون» = مرؤوسون مباشرون بمسمى إشرافي أو إداري يمكنهم تحمّل جزء من الفريق.</value></data>
+  <data name="OrgA_Page_Findings"><value>الملاحظات</value></data>
+  <data name="OrgA_Page_FindingsHint"><value>كل الفحوصات مجمّعة. كل فحص يذكر السبب المرجّح والحل؛ افتحه لرؤية الصفوف والتصفية والترتيب والتنزيل.</value></data>
+  <data name="OrgA_Page_Changes"><value>التغييرات منذ النسخة السابقة</value></data>
+  <data name="OrgA_Page_ChangesHint"><value>من انضم أو غادر أو تغيّر مديره أو قسمه أو وظيفته. مفيد للتأكد من الملف قبل العمل عليه.</value></data>
+  <data name="OrgA_Page_ExportAll"><value>تصدير كل الملاحظات (Excel)</value></data>
+  <data name="OrgA_Page_Excel"><value>Excel</value></data>
+  <data name="OrgA_UI_Summary"><value>الملخص</value></data>
+  <data name="OrgA_UI_Filter"><value>تصفية هذه الصفوف…</value></data>
+  <data name="OrgA_UI_FilterDepts"><value>تصفية الأقسام…</value></data>
+  <data name="OrgA_UI_FilterMgrs"><value>تصفية المدراء…</value></data>
+  <data name="OrgA_UI_Excel"><value>تنزيل Excel</value></data>
+  <data name="OrgA_UI_Csv"><value>تنزيل CSV</value></data>
+  <data name="OrgA_UI_FixList"><value>قائمة التصحيح (Excel)</value></data>
+  <data name="OrgA_UI_Accept"><value>قبول</value></data>
+  <data name="OrgA_UI_Undo"><value>تراجع</value></data>
+  <data name="OrgA_UI_AcceptedN"><value>{0} مقبول</value></data>
+  <data name="OrgA_UI_RowsOf"><value>{0} من {1} صف</value></data>
+  <data name="OrgA_UI_NoneFound"><value>لا توجد نتائج.</value></data>
+  <data name="OrgA_UI_OpenInChart"><value>فتح في الهيكل التنظيمي</value></data>
+  <data name="OrgA_UI_LikelyCause"><value>السبب المرجّح</value></data>
+  <data name="OrgA_UI_Head"><value>رئيس القسم</value></data>
+  <data name="OrgA_UI_SitsIn"><value>موجود في «{0}»</value></data>
+  <data name="OrgA_UI_UnderOf"><value>{0} من {1} تحت الرئيس</value></data>
+  <data name="OrgA_UI_DirectOf"><value>{0} يتبعون الرئيس مباشرة</value></data>
+  <data name="OrgA_UI_ManagersInside"><value>المدراء داخل القسم</value></data>
+  <data name="OrgA_UI_IntoOther"><value>يتبعون أقساماً أخرى ({0})</value></data>
+  <data name="OrgA_UI_SupsNoTeam"><value>مشرفون بلا فريق ({0} من {1})</value></data>
+  <data name="OrgA_UI_TeamsOver15"><value>فرق تزيد عن 15 في هذا القسم</value></data>
+  <data name="OrgA_UI_More"><value>… و {0} آخرون</value></data>
+  <data name="OrgA_UI_None"><value>لا يوجد</value></data>
+  <data name="OrgA_UI_People"><value>موظف</value></data>
+  <data name="OrgA_UI_SitesLbl"><value>المواقع</value></data>
+  <data name="OrgA_UI_NotInChart"><value>غير موجود في الهيكل</value></data>
+  <data name="OrgA_UI_NoHead"><value>بدون رئيس</value></data>
+  <data name="OrgA_UI_NoHodEntry"><value>لا يوجد في مرجع الرؤساء</value></data>
+  <data name="OrgA_UI_NotFoundVersion"><value>غير موجود في هذه النسخة</value></data>
+  <data name="OrgA_UI_Of"><value>من</value></data>
+  <data name="OrgA_UI_Top"><value>القمة</value></data>
+  <data name="OrgA_UI_Level"><value>مستوى</value></data>
+  <data name="OrgA_UI_Levels"><value>مستويات</value></data>
+  <data name="OrgA_UI_AvailableWhen"><value>يتوفر {0}.</value></data>
+  <data name="OrgA_UI_Pending"><value>قيد الانتظار</value></data>
+  <data name="OrgA_UI_AcceptedHint"><value>«قبول» يعلّم الصف على أنه متوقع؛ ويبقى خارج العدّ في كل رفع حتى التراجع عنه.</value></data>
+  <data name="OrgA_UI_AcceptFailed"><value>تعذّر الحفظ</value></data>
+  <data name="OrgA_UI_ChecksWith"><value>{0} فحصاً به ملاحظات</value></data>
+  <data name="OrgA_UI_Affected"><value>{0} موظفاً متأثراً</value></data>
+  <data name="OrgA_UI_K_Employees"><value>الموظفون</value></data>
+  <data name="OrgA_UI_K_EmployeesSub"><value>{0} إدارة · {1} قسم</value></data>
+  <data name="OrgA_UI_K_Managers"><value>المدراء</value></data>
+  <data name="OrgA_UI_K_ManagersSub"><value>{0} مرؤوساً مباشراً لكل مدير في المتوسط</value></data>
+  <data name="OrgA_UI_K_Shallow"><value>ضمن 3 مستويات من القمة</value></data>
+  <data name="OrgA_UI_K_ShallowSub"><value>{0} موظف — الهيكل مسطّح جداً</value></data>
+  <data name="OrgA_UI_K_Cross"><value>يتبعون خارج خطوطهم التنظيمية</value></data>
+  <data name="OrgA_UI_K_CrossSub"><value>{0}% — قسم أو إدارة أو موقع آخر</value></data>
+  <data name="OrgA_UI_K_NotUnder"><value>ليسوا تحت رئيس قسمهم</value></data>
+  <data name="OrgA_UI_K_NotUnderSub"><value>سلسلة المدراء لا تصل إلى رئيس القسم</value></data>
+  <data name="OrgA_UI_K_Hod"><value>اختلافات مرجع الرؤساء</value></data>
+  <data name="OrgA_UI_K_HodSub"><value>ورقة HOD مقابل هذه النسخة</value></data>
+  <data name="OrgA_UI_K_Issue"><value>موظفون لديهم ملاحظة واحدة على الأقل</value></data>
+  <data name="OrgA_UI_K_IssueSub"><value>{0}% من الموظفين</value></data>
+  <data name="OrgA_UI_DepthTitle"><value>المستويات تحت القمة</value></data>
+  <data name="OrgA_UI_SpanTitle"><value>المرؤوسون المباشرون لكل مدير</value></data>
+  <data name="OrgA_UI_DepthNote"><value>{0}% من الموظفين ضمن 3 مستويات من القمة: حقل المدير المباشر يحمل غالباً رئيس القسم وليس المشرف.</value></data>
+  <data name="OrgA_UI_SpanNote"><value>{0} مدير · المتوسط {1} · {2} مديراً لديهم أكثر من 30 مرؤوساً مباشراً.</value></data>
+  <data name="OrgA_UI_D_division"><value>الإدارة</value></data>
+  <data name="OrgA_UI_D_dept"><value>القسم</value></data>
+  <data name="OrgA_UI_D_people"><value>الموظفون</value></data>
+  <data name="OrgA_UI_D_head"><value>الرئيس (HOD)</value></data>
+  <data name="OrgA_UI_D_under"><value>تحت الرئيس</value></data>
+  <data name="OrgA_UI_D_direct"><value>مباشرة للرئيس</value></data>
+  <data name="OrgA_UI_D_external"><value>يتبعون الخارج</value></data>
+  <data name="OrgA_UI_D_sups"><value>مشرفون بلا فريق</value></data>
+  <data name="OrgA_UI_D_issues"><value>لديهم ملاحظات</value></data>
+  <data name="OrgA_UI_D_cause"><value>السبب المرجّح</value></data>
+  <data name="OrgA_UI_D_count"><value>{0} من {1} قسم</value></data>
+  <data name="OrgA_UI_M_name"><value>المدير</value></data>
+  <data name="OrgA_UI_M_job"><value>المسمى</value></data>
+  <data name="OrgA_UI_M_dept"><value>القسم</value></data>
+  <data name="OrgA_UI_M_reports"><value>المرؤوسون المباشرون</value></data>
+  <data name="OrgA_UI_M_depts"><value>الأقسام</value></data>
+  <data name="OrgA_UI_M_sites"><value>المواقع</value></data>
+  <data name="OrgA_UI_M_subSups"><value>مشرفون فرعيون</value></data>
+  <data name="OrgA_UI_M_from"><value>المرؤوسون من</value></data>
+  <data name="OrgA_UI_M_cause"><value>السبب المرجّح</value></data>
+  <data name="OrgA_UI_M_count"><value>{0} من {1} مدير</value></data>
+  <data name="OrgA_UI_C_joined"><value>انضموا</value></data>
+  <data name="OrgA_UI_C_left"><value>غادروا</value></data>
+  <data name="OrgA_UI_C_mgr"><value>تغيّر المدير</value></data>
+  <data name="OrgA_UI_C_dept"><value>تغيّر القسم</value></data>
+  <data name="OrgA_UI_C_job"><value>تغيّرت الوظيفة</value></data>
+  <data name="OrgA_UI_C_note"><value>{0}% من الموظفين لديهم مدير مختلف عن النسخة السابقة — معظمه في {1}. تأكد أنها إعادة هيكلة حقيقية وليست خلطاً في أعمدة الملف قبل العمل على الملاحظات.</value></data>
+  <data name="OrgA_UI_C_none"><value>لا توجد نسخة سابقة للمقارنة.</value></data>
+  <data name="OrgA_V_headGone"><value>رئيس القسم «{0}» غير موجود في الهيكل (غادر أو تغيّر رقمه). حدّث ورقة HOD.</value></data>
+  <data name="OrgA_V_noHead"><value>لا يوجد رئيس في مرجع HOD. أضف واحداً أو ادمج هذا القسم.</value></data>
+  <data name="OrgA_V_external"><value>{0}% يتبعون مدراء في أقسام أخرى ({1}). إما أن اسم القسم أو عمود المدير خاطئ لمعظم هذه المجموعة.</value></data>
+  <data name="OrgA_V_direct"><value>{0}% يتبعون رئيس القسم مباشرة بينما {1} مشرف بلا فريق. حقل المدير المباشر يتخطى مستوى المشرف.</value></data>
+  <data name="OrgA_V_under"><value>فقط {0}% تحت الرئيس عبر سلسلة المدراء. راجع مدراء البقية.</value></data>
+  <data name="OrgA_V_headElsewhere"><value>الرئيس موجود في «{0}» في الهيكل وليس في هذا القسم.</value></data>
+  <data name="OrgA_V_supsNoTeam"><value>{0} مشرف بلا مرؤوسين مباشرين — إما موظفون أفراد أو أن الحقل يتخطاهم.</value></data>
+  <data name="OrgA_V_ok"><value>خطوط التبعية متسقة مع رئيس القسم.</value></data>
+  <data name="OrgA_M_headForDepts"><value>مسجَّل كمدير مباشر لأقسام كاملة. وجّه الحقل إلى المشرفين الفرعيين.</value></data>
+  <data name="OrgA_M_subSups"><value>{0} مشرفين في الفريق يمكنهم تحمّل جزء منه.</value></data>
+  <data name="OrgA_M_noLayer"><value>فريق كبير بلا طبقة إشرافية.</value></data>
+  <data name="OrgA_Top_notTop"><value>ليس قمة: {0} بلا فريق. رقم المدير مفقود.</value></data>
+  <data name="OrgA_Top_real"><value>قمة حقيقية. يجب أن يكون NO_MANAGER بدلاً من أن يكون مديراً لنفسه.</value></data>
+  <data name="OrgA_Top_big"><value>فريق كبير بلا مدير فوقه — حدد مديره (غالباً مدير إدارة أو الرئيس التنفيذي للعمليات).</value></data>
+  <data name="OrgA_Top_small"><value>مدير لنفسه مع {0} مرؤوس — غالباً مشرف رقم مديره مفقود.</value></data>
+  <data name="OrgA_Dang_scope"><value>في الهيكل لكن خارج النطاق المحدد</value></data>
+  <data name="OrgA_Dang_left"><value>كان في النسخة السابقة (غادر)</value></data>
+  <data name="OrgA_Dang_payroll"><value>في قائمة الرواتب الأسبوعية وليس في الهيكل</value></data>
+  <data name="OrgA_Dang_typo"><value>رقم غير معروف (خطأ كتابي؟)</value></data>
+  <data name="OrgA_Hod_left"><value>في النسخة السابقة (غادر)</value></data>
+  <data name="OrgA_Hod_unknown"><value>الرقم غير موجود في هذه النسخة ولا السابقة</value></data>
+  <data name="OrgA_Lvl_Management"><value>إداري</value></data>
+  <data name="OrgA_Lvl_Supervisory"><value>إشرافي</value></data>
+  <data name="OrgA_Lvl_Professional"><value>مهني / فني</value></data>
+  <data name="OrgA_Lvl_Labor"><value>تشغيلي / عمالة</value></data>
+  <data name="OrgA_Lvl_Other"><value>أخرى</value></data>
+  <data name="OrgA_Case_noMgr"><value>بلا مدير</value></data>
+  <data name="OrgA_Case_ownMgr"><value>مدير لنفسه</value></data>
+  <data name="OrgA_Sev_site"><value>موقع مختلف</value></data>
+  <data name="OrgA_Sev_division"><value>إدارة مختلفة</value></data>
+  <data name="OrgA_Sev_department"><value>قسم مختلف</value></data>
+  <data name="OrgA_G_lines"><value>خطوط التبعية</value></data>
+  <data name="OrgA_G_heads"><value>رؤساء الأقسام (مرجع HOD مقابل هذه النسخة)</value></data>
+  <data name="OrgA_G_quality"><value>جودة البيانات</value></data>
+  <data name="OrgA_F_headAsManager_T"><value>المدير المباشر هو رئيس القسم وليس المشرف</value></data>
+  <data name="OrgA_F_headAsManager_C"><value>&lt;b&gt;السبب:&lt;/b&gt; الموارد البشرية تضع رئيس القسم في «المدير المباشر». &lt;b&gt;الحل:&lt;/b&gt; لهؤلاء المدراء الـ{0} (أكثر من 15 مرؤوساً) عيّن المشرفين الفرعيين المذكورين في تفاصيل القسم.</value></data>
+  <data name="OrgA_F_crossLine_T"><value>يتبعون خارج خطوطهم التنظيمية</value></data>
+  <data name="OrgA_F_crossLine_C"><value>&lt;b&gt;السبب:&lt;/b&gt; اسم القسم أو رقم المدير خاطئ. &lt;b&gt;الحل:&lt;/b&gt; استخدم بطاقة الأقسام — إذا كان معظم القسم يتبع جهة أخرى فالاسم خاطئ؛ وإذا كان القليل فالمدير خاطئ.</value></data>
+  <data name="OrgA_F_notUnder_T"><value>ليسوا تحت رئيس القسم</value></data>
+  <data name="OrgA_F_notUnder_C"><value>&lt;b&gt;السبب:&lt;/b&gt; سلسلة المدراء تصل إلى رئيس آخر أو مباشرة إلى الرئيس التنفيذي للعمليات. تتداخل مع الملاحظة السابقة؛ يُحسب الشخص مرة واحدة في الملخص.</value></data>
+  <data name="OrgA_F_around_T"><value>يتبعون حول القسم</value></data>
+  <data name="OrgA_F_around_C"><value>&lt;b&gt;السبب:&lt;/b&gt; المدير خارج القسم لكن مدير المدير داخله — خط يتجاوز رئيس القسم. &lt;b&gt;الحل:&lt;/b&gt; وجّه الموظف إلى المدير الداخلي.</value></data>
+  <data name="OrgA_F_tops_T"><value>قمة الهيكل: بلا مدير أو مدير لنفسه</value></data>
+  <data name="OrgA_F_tops_C"><value>&lt;b&gt;الحل:&lt;/b&gt; اجعل القمة الحقيقية NO_MANAGER واقبلها مرة واحدة؛ وحدد مديراً للآخرين الـ{0} — سائق بلا فريق ليس قمة، ومشرف «مدير لنفسه» رقم مديره مفقود.</value></data>
+  <data name="OrgA_F_dangling_T"><value>رقم المدير غير موجود</value></data>
+  <data name="OrgA_F_dangling_C"><value>مصنّف: كان في النسخة السابقة (غادر) · في قائمة الرواتب الأسبوعية وليس في الهيكل · خارج النطاق المحدد · خطأ كتابي.</value></data>
+  <data name="OrgA_F_leaverMgr_T"><value>مغادر ما زال مسجلاً كمدير</value></data>
+  <data name="OrgA_F_leaverMgr_C"><value>&lt;b&gt;السبب:&lt;/b&gt; المدير كان في النسخة السابقة وغادر الآن. &lt;b&gt;الحل:&lt;/b&gt; أعد تعيين مرؤوسيه.</value></data>
+  <data name="OrgA_F_cycles_T"><value>حلقة تبعية</value></data>
+  <data name="OrgA_F_cycles_C"><value>سلسلة المدراء تعود إلى الموظف نفسه (المدراء لأنفسهم مذكورون تحت «قمة الهيكل»).</value></data>
+  <data name="OrgA_F_inversion_T"><value>انعكاس الأقدمية</value></data>
+  <data name="OrgA_F_inversion_C"><value>مسمى المرؤوس أو درجته أعلى من مديره. دقيق عند وجود &lt;b&gt;الدرجة&lt;/b&gt; للطرفين؛ وإلا يُقدَّر من المسميات.</value></data>
+  <data name="OrgA_F_junior_T"><value>مسميات عمالية لديها مرؤوسون</value></data>
+  <data name="OrgA_F_junior_C"><value>مسمى عمالي أو تشغيلي لديه مرؤوسون مباشرون — غالباً رقم مدير مكتوب خطأ.</value></data>
+  <data name="OrgA_F_titleNoTeam_T"><value>مسمى مدير أو مشرف بلا فريق</value></data>
+  <data name="OrgA_F_titleNoTeam_C"><value>فريق شاغر أو موظف فرد أو أن حقل المدير المباشر يتخطاهم (حين يكون لرئيس القسم أكثر من 50 مرؤوساً مباشراً والمشرفون بلا أحد فهو الأخير).</value></data>
+  <data name="OrgA_F_single_T"><value>طبقة رفيعة: مرؤوس مباشر واحد فقط</value></data>
+  <data name="OrgA_F_single_C"><value>طبقة قد تكون زائدة ويمكن تسطيحها.</value></data>
+  <data name="OrgA_F_hodMissing_T"><value>أقسام في HOD لم تعد موجودة في الهيكل</value></data>
+  <data name="OrgA_F_hodMissing_C"><value>&lt;b&gt;السبب:&lt;/b&gt; أُعيدت تسمية إدارات أو أقسام. &lt;b&gt;الحل:&lt;/b&gt; أعد تسمية هذه الصفوف في ورقة HOD.</value></data>
+  <data name="OrgA_F_hodNoHead_T"><value>أقسام في الهيكل بلا رئيس في HOD</value></data>
+  <data name="OrgA_F_hodNoHead_C"><value>&lt;b&gt;الحل:&lt;/b&gt; أضف رئيساً أو ادمج القسم — عدد منها مجموعات «Management» عامة.</value></data>
+  <data name="OrgA_F_hodGone_T"><value>أرقام رؤساء غير موجودة في هذه النسخة</value></data>
+  <data name="OrgA_F_hodGone_C"><value>&lt;b&gt;السبب:&lt;/b&gt; الرئيس غادر أو تغيّر رقمه.</value></data>
+  <data name="OrgA_F_hodOtherDept_T"><value>الرئيس موجود في قسم غير الذي يرأسه</value></data>
+  <data name="OrgA_F_hodOtherDept_C"><value>&lt;b&gt;السبب:&lt;/b&gt; الرؤساء مسجلون تحت قسم «Management» عام. &lt;b&gt;الحل:&lt;/b&gt; انقلهم أو اقبل الحالة.</value></data>
+  <data name="OrgA_F_hodName_T"><value>اسم الرئيس يختلف عن اسمه في الهيكل لنفس الرقم</value></data>
+  <data name="OrgA_F_hodName_C"><value>اختلاف إملائي غالباً؛ أما شخص مختلف فيعني رقماً خاطئاً.</value></data>
+  <data name="OrgA_F_hodInverted_T"><value>رئيس قسم مديره داخل القسم نفسه</value></data>
+  <data name="OrgA_F_hodInverted_C"><value>&lt;b&gt;السبب:&lt;/b&gt; خط معكوس — الرئيس يتبع مرؤوساً. &lt;b&gt;الحل:&lt;/b&gt; بدّل أرقام المدراء.</value></data>
+  <data name="OrgA_F_dups_T"><value>نفس الشخص برقمين</value></data>
+  <data name="OrgA_F_dups_C"><value>&lt;b&gt;السبب:&lt;/b&gt; إعادة توظيف أو سجل مكرر. &lt;b&gt;الحل:&lt;/b&gt; ادمج الرقمين؛ المرؤوسون موزعون بين الرقمين حالياً.</value></data>
+  <data name="OrgA_F_generic_T"><value>أسماء أقسام عامة مستخدمة تحت عدة إدارات</value></data>
+  <data name="OrgA_F_generic_C"><value>الرؤساء المسجلون في «Management» لا يمكن مطابقتهم بالقسم الذي يرأسونه. &lt;b&gt;الحل:&lt;/b&gt; سمِّ المجموعة باسم إدارتها.</value></data>
+  <data name="OrgA_F_missingSite_T"><value>الموقع مفقود</value></data>
+  <data name="OrgA_F_missingSite_C"><value>موظفون بلا موقع مسجل.</value></data>
+  <data name="OrgA_F_mgrNameMismatch_T"><value>رقم المدير لا يطابق اسم المدير في الملف</value></data>
+  <data name="OrgA_F_mgrNameMismatch_C"><value>ملف الموارد البشرية يحمل &lt;b&gt;اسم المدير المباشر&lt;/b&gt; بجانب رقمه؛ عند الاختلاف يكون الرقم مكتوباً خطأ.</value></data>
+  <data name="OrgA_F_payroll_T"><value>في الهيكل وليس في قائمة الرواتب الأسبوعية (والعكس)</value></data>
+  <data name="OrgA_F_payroll_C"><value>الملفان لا يشتركان في مفتاح حالياً: أرقام الموظفين لا تطابق أرقام العمال.</value></data>
+  <data name="OrgA_F_chgMgr_T"><value>تغيّر المدير</value></data>
+  <data name="OrgA_F_chgMgr_C"><value>مقارنة برقم الموظف مع النسخة السابقة.</value></data>
+  <data name="OrgA_F_chgDept_T"><value>تغيّر القسم</value></data>
+  <data name="OrgA_F_chgDept_C"><value>يشمل الأقسام المعاد تسميتها.</value></data>
+  <data name="OrgA_F_chgJoined_T"><value>انضموا</value></data>
+  <data name="OrgA_F_chgJoined_C"><value>في هذه النسخة وليس في السابقة.</value></data>
+  <data name="OrgA_F_chgLeft_T"><value>غادروا</value></data>
+  <data name="OrgA_F_chgLeft_C"><value>في النسخة السابقة وليس في هذه. من كان مديراً يحتاج إعادة تعيين مرؤوسيه.</value></data>
+  <data name="OrgA_F_chgJob_T"><value>تغيّرت الوظيفة</value></data>
+  <data name="OrgA_F_chgJob_C"><value></value></data>
+  <data name="OrgA_F_mgrNameMismatch_P"><value>بعد الرفع التالي لملف يحتوي عمود «Direct Manager Name»</value></data>
+  <data name="OrgA_F_payroll_P"><value>عندما يحتوي ملف الموارد البشرية على رقم الإقامة / الهوية</value></data>
+  <data name="OrgA_Col_code"><value>الرقم</value></data>
+  <data name="OrgA_Col_name"><value>الاسم</value></data>
+  <data name="OrgA_Col_job"><value>المسمى</value></data>
+  <data name="OrgA_Col_dept"><value>القسم</value></data>
+  <data name="OrgA_Col_division"><value>الإدارة</value></data>
+  <data name="OrgA_Col_site"><value>الموقع</value></data>
+  <data name="OrgA_Col_reports"><value>المرؤوسون</value></data>
+  <data name="OrgA_Col_depts"><value>الأقسام</value></data>
+  <data name="OrgA_Col_sites"><value>المواقع</value></data>
+  <data name="OrgA_Col_subSups"><value>مشرفون فرعيون</value></data>
+  <data name="OrgA_Col_mgrName"><value>المدير</value></data>
+  <data name="OrgA_Col_mgrDept"><value>قسم المدير</value></data>
+  <data name="OrgA_Col_mgrDivision"><value>إدارة المدير</value></data>
+  <data name="OrgA_Col_mgrSite"><value>موقع المدير</value></data>
+  <data name="OrgA_Col_severity"><value>الشدة</value></data>
+  <data name="OrgA_Col_head"><value>رئيس القسم</value></data>
+  <data name="OrgA_Col_mgrMgr"><value>مدير المدير (داخل القسم)</value></data>
+  <data name="OrgA_Col_case"><value>الحالة</value></data>
+  <data name="OrgA_Col_why"><value>السبب المرجّح</value></data>
+  <data name="OrgA_Col_mgrCode"><value>رقم المدير</value></data>
+  <data name="OrgA_Col_classification"><value>التصنيف</value></data>
+  <data name="OrgA_Col_hint"><value>كان</value></data>
+  <data name="OrgA_Col_mgrNameLeft"><value>المدير (غادر)</value></data>
+  <data name="OrgA_Col_level"><value>المستوى</value></data>
+  <data name="OrgA_Col_grade"><value>الدرجة</value></data>
+  <data name="OrgA_Col_mgrJob"><value>مسمى المدير</value></data>
+  <data name="OrgA_Col_mgrLevel"><value>مستوى المدير</value></data>
+  <data name="OrgA_Col_mgrGrade"><value>درجة المدير</value></data>
+  <data name="OrgA_Col_onlyReport"><value>المرؤوس الوحيد</value></data>
+  <data name="OrgA_Col_people"><value>الموظفون</value></data>
+  <data name="OrgA_Col_hodName"><value>الاسم في HOD</value></data>
+  <data name="OrgA_Col_chartName"><value>الاسم في الهيكل</value></data>
+  <data name="OrgA_Col_heads"><value>يرأس</value></data>
+  <data name="OrgA_Col_sitsIn"><value>موجود في</value></data>
+  <data name="OrgA_Col_sitsInDivision"><value>الإدارة</value></data>
+  <data name="OrgA_Col_reportsTo"><value>يتبع</value></data>
+  <data name="OrgA_Col_reportsToJob"><value>مسماه</value></data>
+  <data name="OrgA_Col_otherCodes"><value>يظهر أيضاً برقم</value></data>
+  <data name="OrgA_Col_divisions"><value>الإدارات</value></data>
+  <data name="OrgA_Col_count"><value>العدد</value></data>
+  <data name="OrgA_Col_mgrNameFile"><value>اسم المدير في الملف</value></data>
+  <data name="OrgA_Col_fromMgr"><value>المدير السابق</value></data>
+  <data name="OrgA_Col_toMgr"><value>المدير الحالي</value></data>
+  <data name="OrgA_Col_fromDept"><value>القسم السابق</value></data>
+  <data name="OrgA_Col_toDept"><value>القسم الحالي</value></data>
+  <data name="OrgA_Col_fromJob"><value>المسمى السابق</value></data>
+  <data name="OrgA_Col_toJob"><value>المسمى الحالي</value></data>
+  <data name="OrgA_Col_wasManagerOf"><value>كان مديراً لـ</value></data>
+  <data name="OrgA_F_missingSite_P"><value>عندما يحتوي ملف الموارد البشرية على عمود الموقع</value></data>
 </root>

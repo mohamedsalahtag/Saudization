@@ -1,0 +1,43 @@
+@model PeopleCompareViewModel
+@{ ViewData["Title"] = T["Ppl_Title"].Value; }
+<div class="page-head">
+    <h1>@T["Ppl_Title"]</h1>
+    <a class="btn btn-soft" asp-action="Index">← @T["Ver_Title"]</a>
+</div>
+<p class="subtle">@T["Ppl_Intro"]</p>
+
+@if (Model.Snapshots.Count < 2)
+{
+    <div class="card">@T["Ver_NeedTwo"]</div>
+}
+else
+{
+    <form method="get" asp-action="People" class="card" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+        <div class="field">
+            <label>@T["Ppl_From"]</label>
+            <select name="from" class="btn-soft" style="padding:8px 10px;border-radius:8px">
+                @foreach (var s in Model.Snapshots) { <option value="@s.Id" selected="@(s.Id == Model.FromId)">@s.Label · @s.WeekDate.ToString("yyyy-MM-dd")</option> }
+            </select>
+        </div>
+        <div class="field">
+            <label>@T["Ppl_To"]</label>
+            <select name="to" class="btn-soft" style="padding:8px 10px;border-radius:8px">
+                @foreach (var s in Model.Snapshots) { <option value="@s.Id" selected="@(s.Id == Model.ToId)">@s.Label · @s.WeekDate.ToString("yyyy-MM-dd")@(s.IsDefault ? " ★" : "")</option> }
+            </select>
+        </div>
+        <button class="btn" type="submit">@T["Ppl_Show"]</button>
+    </form>
+    @if (Model.Diff != null)
+    {
+        @if (Model.Diff.Joiners + Model.Diff.Leavers + Model.Diff.Changed == 0)
+        {
+            <div class="alert ok">@T["Ppl_NoDiff"]</div>
+        }
+        else
+        {
+            ViewData["DiffOpen"] = true;
+            ViewData["DiffLimit"] = 2000;
+            <partial name="_PeopleDiff" model="Model.Diff" view-data="ViewData" />
+        }
+    }
+}

@@ -1,0 +1,148 @@
+@model DashboardViewModel
+@using System.Globalization
+@using Saudization.Web.Services
+@{
+    ViewData["Title"] = T["Dash_Roadmap"].Value;
+    string Pct(decimal p) => (p * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+    var allRecords = ViewBag.Records as List<Saudization.Web.Models.Record> ?? new();
+    var allSnapshots = ViewBag.Snapshots as List<Snapshot> ?? new();
+    var roadmaps = ViewBag.Roadmaps as List<RecordRoadmap> ?? new();
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Dash_Roadmap"]</h1>
+        <div class="subtle">@T["Dash_RoadmapHint"]</div>
+    </div>
+    @if (Model.Snapshot != null)
+    {
+        <div class="subtle">
+            <span class="pill">@T["Dash_Version"]: <strong>@Model.Snapshot.Label</strong></span>
+            <span class="pill">@T["Ver_Week"]: @Model.Snapshot.WeekDate.ToString("yyyy-MM-dd")</span>
+        </div>
+    }
+</div>
+
+@if (!allSnapshots.Any())
+{
+    <div class="card">@T["Import_Intro"] <a asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a></div>
+    return;
+}
+
+<style>
+    .rm-cards { display:flex; flex-direction:column; gap:14px; }
+    .rm-card { border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:var(--shadow); overflow:hidden; }
+    .rm-head { display:flex; align-items:center; gap:12px; padding:11px 16px; border-top:4px solid; flex-wrap:wrap; }
+    .rm-head .rm-lbl { font-weight:800; font-size:16px; }
+    .rm-head .rm-pct { font-size:20px; font-weight:800; }
+    .rm-levels { padding:8px 12px 14px; display:flex; flex-direction:column; gap:10px; }
+    .rm-level { border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+    .rm-level-h { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+    .rm-to { font-weight:800; display:flex; align-items:center; gap:6px; }
+    .rm-opts { display:flex; gap:8px; flex-wrap:wrap; }
+    .rm-opt { border:1px solid var(--line); border-radius:8px; padding:4px 10px; font-size:12.5px; background:#f7fafc; }
+    .rm-opt b { font-size:15px; }
+    .rm-opt.hire { border-color:#2f9e44; }
+    .rm-opt.swap { border-color:#2f6fed; }
+    .rm-opt.remove { border-color:#c0392b; }
+    .rm-opt.infeasible { opacity:.55; }
+    table.rm-bd { width:100%; border-collapse:collapse; margin-top:8px; font-size:12.5px; }
+    table.rm-bd th, table.rm-bd td { text-align:start; padding:5px 9px; border-bottom:1px solid var(--line); white-space:nowrap; }
+    table.rm-bd th { background:#f0f3f8; font-weight:700; }
+    table.rm-bd tr.red td { background:#fdecec; }
+    .rm-plat { padding:14px 16px; color:#8a6d1b; font-weight:700; }
+    .rm-suggest .sw { color:#2f6fed; font-weight:700; }
+    .rm-suggest .hi { color:#2f9e44; font-weight:700; }
+</style>
+
+<div class="toolbar">
+    <div class="seg">
+        <a asp-action="Index" asp-route-mode="current" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Current"]</a>
+        <a asp-action="Index" asp-route-mode="plan" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Plan"]</a>
+        <a class="on" asp-action="Roadmap" asp-route-recordId="@Model.FilterRecordId" asp-route-snapshotId="@Model.SnapshotId">@T["Dash_Roadmap"]</a>
+    </div>
+    <form method="get" asp-action="Roadmap" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label class="subtle">@T["Dash_Version"]:</label>
+        <select name="snapshotId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
+            @foreach (var s in allSnapshots)
+            {
+                <option value="@s.Id" selected="@(Model.SnapshotId == s.Id)">@s.Label (@s.WeekDate.ToString("yyyy-MM-dd"))</option>
+            }
+        </select>
+        <label class="subtle">@T["Dash_Registration"]:</label>
+        <select name="recordId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px;">
+            <option value="">@T["Dash_AllRecords"]</option>
+            @foreach (var r in allRecords)
+            {
+                <option value="@r.Id" selected="@(Model.FilterRecordId == r.Id)">@r.RegistrationLabel</option>
+            }
+        </select>
+    </form>
+</div>
+
+<div class="rm-cards">
+    @foreach (var rm in roadmaps)
+    {
+        <div class="rm-card">
+            <div class="rm-head @ZoneDisplay.CardCss(rm.CurrentZone)" style="border-top-color:@rm.ZoneColor">
+                <span class="rm-lbl">@rm.Label</span>
+                <span class="zonebadge @ZoneDisplay.Css(rm.CurrentZone)">@T[ZoneDisplay.Key(rm.CurrentZone)]</span>
+                <span class="rm-pct">@Pct(rm.CurrentPct)</span>
+                <span class="subtle">@rm.Saudi @T["Dash_Saudi"] / @rm.Headcount @T["Dash_Total"] · @rm.NonSaudi @T["Dash_NonSaudi"]</span>
+            </div>
+            @if (rm.Headcount == 0)
+            {
+                <div class="rm-plat subtle">—</div>
+            }
+            else if (!rm.Levels.Any())
+            {
+                <div class="rm-plat">★ @T["Dash_AlreadyPlatinum"]</div>
+            }
+            else
+            {
+                <div class="rm-levels">
+                    @foreach (var lp in rm.Levels)
+                    {
+                        <div class="rm-level">
+                            <div class="rm-level-h">
+                                <span class="rm-to">↗ @T["Dash_ToReach"] <span class="zonebadge @ZoneDisplay.Css(lp.Level)">@T[ZoneDisplay.Key(lp.Level)]</span> @Pct(lp.TargetPct)</span>
+                                <div class="rm-opts">
+                                    <span class="rm-opt hire">@T["Dash_Hire"] <b>@lp.HireSaudi</b> @T["Dash_Saudi"]</span>
+                                    <span class="rm-opt swap @(lp.SwapFeasible ? "" : "infeasible")">@T["Dash_Replace"] <b>@lp.SwapNonSaudi</b> @T["Dash_NonSaudi"]→@T["Dash_Saudi"]@(lp.SwapFeasible ? "" : " (" + T["Dash_NotEnoughNonSaudi"].Value + ")")</span>
+                                    <span class="rm-opt remove @(lp.RemoveFeasible ? "" : "infeasible")">@T["Dash_Shed"] <b>@lp.RemoveNonSaudi</b> @T["Dash_NonSaudi"]@(lp.RemoveFeasible ? "" : " (" + T["Dash_NotEnoughNonSaudi"].Value + ")")</span>
+                                </div>
+                            </div>
+                            @if (lp.Breakdown.Any())
+                            {
+                                <table class="rm-bd">
+                                    <thead>
+                                        <tr>
+                                            <th>@T["Dash_Category"]</th>
+                                            <th>@T["Dash_Saudi"]/@T["Dash_NonSaudi"] (%)</th>
+                                            <th>@T["Dash_CategoryTarget"]</th>
+                                            <th>@T["Dash_Suggested"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var b in lp.Breakdown)
+                                        {
+                                            <tr class="@(b.IsRed ? "red" : "")">
+                                                <td dir="auto">@b.Category</td>
+                                                <td>@b.Saudi / @b.NonSaudi (@Pct(b.Pct))</td>
+                                                <td>@Pct(b.ReqPct)</td>
+                                                <td class="rm-suggest">
+                                                    @if (b.Swap > 0) { <span class="sw">@T["Dash_Replace"] @b.Swap</span> }
+                                                    @if (b.Hire > 0) { <span class="hi">@(b.Swap > 0 ? " · " : "")@T["Dash_Hire"] @b.Hire</span> }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

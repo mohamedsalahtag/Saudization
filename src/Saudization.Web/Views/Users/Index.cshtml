@@ -1,0 +1,70 @@
+@model List<Saudization.Web.Models.AppUser>
+@{
+    ViewData["Title"] = T["Users_Title"].Value;
+    var me = (string)(ViewBag.Me ?? "");
+}
+<div class="page-head" style="display:flex; justify-content:space-between; align-items:center; gap:12px">
+    <h1>@T["Users_Title"]</h1>
+    <a class="btn" asp-action="AdBrowse">@T["AdBrowse_Title"] →</a>
+</div>
+<p class="subtle">@T["Users_Intro"]</p>
+
+<div class="card">
+    <h2 style="margin-top:0">@T["Users_ListHeading"] <span class="subtle">(@Model.Count)</span></h2>
+    <table class="grid">
+        <thead>
+            <tr>
+                <th>@T["Users_ColFullName"]</th>
+                <th>@T["Users_ColUsername"]</th>
+                <th>@T["Users_ColEmail"]</th>
+                <th>@T["Users_ColDept"]</th>
+                <th>@T["Users_ColStatus"]</th>
+                <th>@T["Users_ColLastLogin"]</th>
+                <th style="text-align:end">@T["Users_ColActions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var u in Model)
+        {
+            var isMe = u.AdUsername == me;
+            <tr>
+                <td>@u.FullName @(isMe ? T["Users_You"].Value : "")</td>
+                <td dir="ltr">@u.AdUsername</td>
+                <td dir="ltr">@u.Email</td>
+                <td>@u.Department</td>
+                <td>
+                    @if (u.IsActive)
+                    {
+                        <span class="badge ok">@T["Users_Active"]</span>
+                    }
+                    else
+                    {
+                        <span class="badge">@T["Users_Disabled2"]</span>
+                    }
+                </td>
+                <td>@(u.LastLogin?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                <td style="text-align:end; white-space:nowrap">
+                    @if (!isMe)
+                    {
+                        <form asp-action="ToggleActive" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@u.Id" />
+                            <button class="btn btn-soft" type="submit">@(u.IsActive ? T["Users_DisableBtn"] : T["Users_EnableBtn"])</button>
+                        </form>
+                        <form asp-action="Delete" method="post" style="display:inline"
+                              onsubmit="return confirm('@T["Users_ConfirmDelete"].Value');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@u.Id" />
+                            <button class="btn btn-danger" type="submit">@T["Users_DeleteBtn"]</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="subtle">—</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

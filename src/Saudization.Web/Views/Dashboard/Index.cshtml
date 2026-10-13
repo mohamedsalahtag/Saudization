@@ -73,11 +73,22 @@
 <div class="kpis">
     @foreach (var k in Model.Kpis)
     {
-        <div class="kpi @k.Tone">
-            <div class="k-val">@k.Value</div>
-            <div class="k-lbl">@T[k.LabelKey]</div>
-            @if (!string.IsNullOrEmpty(k.Sub)) { <div class="k-sub">@k.Sub</div> }
-        </div>
+        if (!string.IsNullOrEmpty(k.Href))
+        {
+            <a class="kpi @k.Tone kpi-link" href="@k.Href">
+                <div class="k-val">@k.Value</div>
+                <div class="k-lbl">@T[k.LabelKey] →</div>
+                @if (!string.IsNullOrEmpty(k.Sub)) { <div class="k-sub">@k.Sub</div> }
+            </a>
+        }
+        else
+        {
+            <div class="kpi @k.Tone">
+                <div class="k-val">@k.Value</div>
+                <div class="k-lbl">@T[k.LabelKey]</div>
+                @if (!string.IsNullOrEmpty(k.Sub)) { <div class="k-sub">@k.Sub</div> }
+            </div>
+        }
     }
 </div>
 

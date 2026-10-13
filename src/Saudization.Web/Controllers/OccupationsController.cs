@@ -8,14 +8,24 @@ namespace Saudization.Web.Controllers;
 
 public class OccupationsController : Controller
 {
+    private const string Xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private readonly AppDbContext _db;
     private readonly ExcelImporter _importer;
-    public OccupationsController(AppDbContext db, ExcelImporter importer) { _db = db; _importer = importer; }
+    private readonly ExcelTemplateService _template;
+    public OccupationsController(AppDbContext db, ExcelImporter importer, ExcelTemplateService template)
+    { _db = db; _importer = importer; _template = template; }
+
+    // Download an occupation-guide template pre-filled with the current catalog (fill الفئة, re-upload).
+    public async Task<IActionResult> GuideTemplate(CancellationToken ct = default)
+    {
+        var bytes = await _template.BuildOccupationGuideAsync(ct);
+        return File(bytes, Xlsx, "occupation-guide-template.xlsx");
+    }
 
     public async Task<IActionResult> Index(int? snapshotId, CancellationToken ct = default)
     {
         var snaps = await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id).ToListAsync(ct);
-        var sid = snapshotId ?? snaps.FirstOrDefault()?.Id ?? 0;
+        var sid = await _db.ResolveSnapshotAsync(HttpContext, snapshotId, ct);
 
         // employees on this version that carry an occupation with no category → the review queue (by employee headcount)
         var unmapped = await _db.Employees
@@ -49,24 +59,41 @@ public class OccupationsController : Controller
         ViewBag.Categories = await _db.Categories.OrderBy(c => c.NameAr).ToListAsync(ct);
         ViewBag.MappedCount = await _db.Occupations.CountAsync(o => o.CategoryId != null, ct);
         ViewBag.TotalOccupations = await _db.Occupations.CountAsync(ct);
-        ViewBag.AllOccupations = await _db.Occupations
-            .OrderBy(o => o.CategoryId != null).ThenBy(o => o.NameAr)
-            .Select(o => new OccRow { Code = o.Code, NameAr = o.NameAr, CategoryId = o.CategoryId })
+
+        // employees per occupation (this version) → the clickable counts in the "All occupations" table
+        var empByOcc = await _db.Employees
+            .Where(e => e.SnapshotId == sid && e.OccupationId != null)
+            .GroupBy(e => e.OccupationId!.Value)
+            .Select(g => new { OccId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.OccId, x => x.Count, ct);
+
+        var allOcc = await _db.Occupations
+            .Select(o => new OccRow { Id = o.Id, Code = o.Code, NameAr = o.NameAr, CategoryId = o.CategoryId })
             .ToListAsync(ct);
+        foreach (var o in allOcc) o.EmpCount = empByOcc.GetValueOrDefault(o.Id, 0);
+        // most-used first (surfaces the big unmapped roles), then alphabetical
+        ViewBag.AllOccupations = allOcc.OrderByDescending(o => o.EmpCount).ThenBy(o => o.NameAr).ToList();
+
+        // "Unclassified" pseudo-category: how many distinct occupations feed the unclassified bucket
+        ViewBag.UnclassifiedOccCount = await _db.Employees
+            .Where(e => e.SnapshotId == sid && (e.OccupationId == null || e.Occupation!.CategoryId == null))
+            .Select(e => e.OccupationId).Distinct().CountAsync(ct);
+
         ViewBag.Snapshots = snaps;
         ViewBag.SnapshotId = sid;
         return View(unmapped);
     }
 
-    // Drill-down: the employees behind a category, an occupation, or the whole Unclassified bucket (for a version).
-    public async Task<IActionResult> Employees(int? categoryId, string? occupation, bool unclassified, int? snapshotId, CancellationToken ct = default)
+    // Drill-down: the employees behind a category, a single occupation, or the whole Unclassified bucket (for a version).
+    public async Task<IActionResult> Employees(int? categoryId, string? occupation, int? occupationId, bool unclassified, int? snapshotId, CancellationToken ct = default)
     {
         var snaps = await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id).ToListAsync(ct);
-        var sid = snapshotId ?? snaps.FirstOrDefault()?.Id ?? 0;
+        var sid = await _db.ResolveSnapshotAsync(HttpContext, snapshotId, ct);
 
         IQueryable<Employee> q = _db.Employees.Where(e => e.SnapshotId == sid);
         string title;
-        if (!string.IsNullOrEmpty(occupation)) { q = q.Where(e => e.OccupationRaw == occupation); title = occupation!; }
+        if (occupationId is int oid) { q = q.Where(e => e.OccupationId == oid); title = (await _db.Occupations.FindAsync(new object[] { oid }, ct))?.NameAr ?? ""; }
+        else if (!string.IsNullOrEmpty(occupation)) { q = q.Where(e => e.OccupationRaw == occupation); title = occupation!; }
         else if (categoryId is int cid) { q = q.Where(e => e.Occupation != null && e.Occupation.CategoryId == cid); title = (await _db.Categories.FindAsync(new object[] { cid }, ct))?.NameAr ?? ""; }
         else if (unclassified) { q = q.Where(e => e.OccupationId == null || e.Occupation!.CategoryId == null); title = "—"; }
         else return RedirectToAction(nameof(Index), new { snapshotId = sid });
@@ -75,6 +102,7 @@ public class OccupationsController : Controller
             .Select(e => new EmpRow
             {
                 WorkerNo = e.WorkerNo,
+                IqamaNo = e.IqamaNo,
                 Name = e.Name,
                 Nationality = e.Nationality != null ? e.Nationality.NameAr : null,
                 IsSaudi = e.Nationality != null && e.Nationality.IsSaudi,
@@ -110,15 +138,17 @@ public class OccupationsController : Controller
             .Where(e => e.OccupationRaw != null && (e.Occupation == null || e.Occupation.CategoryId == null))
             .Select(e => e.OccupationRaw!).Distinct().ToListAsync(ct);
 
+        // two queries in total (was two per occupation): all occupations, and every not-yet-linked employee
+        var occByName = (await _db.Occupations.ToListAsync(ct)).GroupBy(o => o.NameAr.Trim()).ToDictionary(g => g.Key, g => g.First());
+        var unlinked = (await _db.Employees.Where(e => e.OccupationRaw != null && e.OccupationId == null).ToListAsync(ct))
+            .ToLookup(e => e.OccupationRaw!);
         int emps = 0;
         foreach (var raw in rawNames)
         {
             var nm = raw.Trim();
-            var occ = await _db.Occupations.FirstOrDefaultAsync(o => o.NameAr == nm, ct);
-            if (occ is null) { occ = new Occupation { NameAr = nm }; _db.Occupations.Add(occ); }
+            if (!occByName.TryGetValue(nm, out var occ)) { occ = new Occupation { NameAr = nm }; _db.Occupations.Add(occ); occByName[nm] = occ; }
             occ.Category = cat;
-            var linked = await _db.Employees.Where(e => e.OccupationRaw == raw && e.OccupationId == null).ToListAsync(ct);
-            foreach (var e in linked) { e.Occupation = occ; emps++; }
+            foreach (var e in unlinked[raw]) { e.Occupation = occ; emps++; }
         }
         await _db.SaveChangesAsync(ct);
         TempData["ok"] = $"Assigned {rawNames.Count} occupations to “{cat.NameAr}” ({emps} employees linked).";
@@ -169,9 +199,11 @@ public class UnmappedOccupation
 
 public class OccRow
 {
+    public int Id { get; set; }
     public string? Code { get; set; }
     public string NameAr { get; set; } = "";
     public int? CategoryId { get; set; }
+    public int EmpCount { get; set; }
 }
 
 public class CatSummary
@@ -185,6 +217,7 @@ public class CatSummary
 public class EmpRow
 {
     public string? WorkerNo { get; set; }
+    public string? IqamaNo { get; set; }
     public string Name { get; set; } = "";
     public string? Nationality { get; set; }
     public bool IsSaudi { get; set; }

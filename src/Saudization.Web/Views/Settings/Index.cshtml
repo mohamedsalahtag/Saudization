@@ -1,20 +1,126 @@
 @model Saudization.Web.Models.Settings
-@{ ViewData["Title"] = T["Set_Title"].Value; }
+@{
+    ViewData["Title"] = T["Set_Title"].Value;
+    var views = new (string val, string label)[]
+    {
+        ("manager",     T["OrgChart_Dim_Manager"].Value),
+        ("managertree", T["OrgChart_Dim_ManagerTree"].Value),
+        ("divflat",     T["OrgChart_Dim_DivFlat"].Value),
+        ("deptflat",    T["OrgChart_Dim_DeptFlat"].Value),
+        ("division",    T["OrgChart_Dim_Division"].Value),
+        ("department",  T["OrgChart_Dim_Department"].Value),
+        ("divdept",     T["OrgChart_Dim_DivDeptPos"].Value),
+        ("divdeptmgr",  T["OrgChart_Dim_DivDeptMgr"].Value),
+        ("position",    T["OrgChart_Dim_Position"].Value),
+        ("nationality", T["OrgChart_Dim_Nationality"].Value),
+        ("branch",      T["OrgChart_Dim_Branch"].Value),
+    };
+}
+
 <div class="page-head"><h1>@T["Set_Title"]</h1></div>
-<form asp-action="Index" method="post" class="stack card">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" />
-    <div class="field">
-        <label asp-for="DisabilityCapPct">@T["Set_DisabilityCap"]</label>
-        <input asp-for="DisabilityCapPct" type="number" step="0.0001" min="0" max="1" />
-        <span class="hint">@T["Set_DisabilityCapHint"]</span>
+
+<div class="set-tabs">
+    <button type="button" class="set-tab on" data-t="general">@T["Set_TabGeneral"]</button>
+    <button type="button" class="set-tab" data-t="views">@T["OrgChart_ManageViews"]</button>
+</div>
+
+<section class="set-pane" data-p="general">
+    <form asp-action="Index" method="post" class="stack card">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="field">
+            <label asp-for="DisabilityCapPct">@T["Set_DisabilityCap"]</label>
+            <input asp-for="DisabilityCapPct" type="number" step="0.0001" min="0" max="1" />
+            <span class="hint">@T["Set_DisabilityCapHint"]</span>
+        </div>
+        <div class="field">
+            <label asp-for="LightGreenBand">@T["Set_LightBand"]</label>
+            <input asp-for="LightGreenBand" type="number" step="0.0001" min="0" max="1" />
+            <span class="hint">@T["Set_LightBandHint"]</span>
+        </div>
+        <div class="field">
+            <label asp-for="DisabilityDefaultWeight">@T["Set_DisabilityWeight"]</label>
+            <input asp-for="DisabilityDefaultWeight" type="number" step="1" min="1" max="99" />
+            <span class="hint">@T["Set_DisabilityWeightHint"]</span>
+        </div>
+        <div class="field">
+            <label style="display:flex;align-items:center;gap:8px">
+                <input asp-for="ShowNationalityIcons" type="checkbox" style="width:auto" />
+                @T["Set_ShowIcons"]
+            </label>
+            <span class="hint">@T["Set_ShowIconsHint"]</span>
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">@T["Common_Save"]</button>
+        </div>
+    </form>
+</section>
+
+<section class="set-pane" data-p="views" style="display:none">
+    <div class="card stack">
+        <div>
+            <h2 style="margin:0 0 2px;font-size:17px">@T["OrgChart_ViewsTitle"]</h2>
+            <p class="hint" style="margin:0">@T["OrgChart_ViewsHint"] @T["Set_ViewsScope"]</p>
+        </div>
+        <div id="viewsList" class="views-list">
+            @foreach (var v in views)
+            {
+                <label class="views-row"><input type="checkbox" class="vw" value="@v.val" /> <span>@v.label</span></label>
+            }
+        </div>
+        <div class="views-actions">
+            <button type="button" class="btn btn-ghost btn-sm" id="vwAll">@T["Set_ViewsAll"]</button>
+            <span class="hint" id="vwSaved" style="opacity:0">@T["Set_ViewsSaved"]</span>
+        </div>
     </div>
-    <div class="field">
-        <label asp-for="LightGreenBand">@T["Set_LightBand"]</label>
-        <input asp-for="LightGreenBand" type="number" step="0.0001" min="0" max="1" />
-        <span class="hint">@T["Set_LightBandHint"]</span>
-    </div>
-    <div class="form-actions">
-        <button class="btn" type="submit">@T["Common_Save"]</button>
-    </div>
-</form>
+</section>
+
+<style>
+    .set-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+    .set-tab { border: 1px solid transparent; border-bottom: none; background: transparent; padding: 9px 16px;
+        font: inherit; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 8px 8px 0 0; }
+    .set-tab:hover { color: var(--ink); }
+    .set-tab.on { color: var(--brand-dk); background: var(--panel, #fff); border-color: var(--line); margin-bottom: -1px; }
+    .views-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 18px; }
+    .views-row { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .views-row:hover { background: var(--brand-lt); }
+    .views-row input { width: auto; margin: 0; }
+    .views-actions { display: flex; align-items: center; gap: 12px; }
+    .views-actions .hint { transition: opacity .4s; }
+</style>
+
+<script>
+    (function () {
+        var KEY = "orgv_hidden_views";
+        function get() { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } }
+        function set(a) { try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) { } }
+        var boxes = [].slice.call(document.querySelectorAll(".vw"));
+        var saved = document.getElementById("vwSaved");
+        function flashSaved() { if (!saved) return; saved.style.opacity = "1"; clearTimeout(flashSaved._t); flashSaved._t = setTimeout(function () { saved.style.opacity = "0"; }, 1400); }
+
+        var hidden = get();
+        boxes.forEach(function (b) { b.checked = hidden.indexOf(b.value) < 0; });
+
+        boxes.forEach(function (b) {
+            b.addEventListener("change", function () {
+                var h = get(), i = h.indexOf(b.value);
+                if (b.checked) { if (i >= 0) h.splice(i, 1); }
+                else {
+                    if (boxes.filter(function (x) { return x.checked; }).length < 1) { b.checked = true; return; } // keep ≥1
+                    if (i < 0) h.push(b.value);
+                }
+                set(h); flashSaved();
+            });
+        });
+
+        var all = document.getElementById("vwAll");
+        if (all) all.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = true; }); set([]); flashSaved(); });
+
+        document.querySelectorAll(".set-tab").forEach(function (t) {
+            t.addEventListener("click", function () {
+                document.querySelectorAll(".set-tab").forEach(function (x) { x.classList.toggle("on", x === t); });
+                document.querySelectorAll(".set-pane").forEach(function (p) { p.style.display = p.getAttribute("data-p") === t.getAttribute("data-t") ? "" : "none"; });
+            });
+        });
+    })();
+</script>

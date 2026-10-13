@@ -14,15 +14,17 @@ public class OverviewBuilder
     public OverviewBuilder(AppDbContext db, NitaqatCalculator calc, TransferAdvisor advisor)
     { _db = db; _calc = calc; _advisor = advisor; }
 
-    public async Task<DashboardOverviewViewModel> BuildAsync(int? snapshotId, CancellationToken ct = default)
+    /// <param name="full">false = KPIs + registration columns only (no suggestions, no trend across versions).</param>
+    public async Task<DashboardOverviewViewModel> BuildAsync(int? snapshotId, CancellationToken ct = default, bool full = true)
     {
         var snaps = await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id).ToListAsync(ct);
         var o = new DashboardOverviewViewModel { Snapshots = snaps };
         if (snaps.Count == 0) return o;
 
         o.HasData = true;
-        // resolve the requested version, falling back to the latest if it's missing (e.g. a stale bookmark)
-        o.Snapshot = (snapshotId is int id ? snaps.FirstOrDefault(s => s.Id == id) : null) ?? snaps.First();
+        // resolve the requested version, falling back to the default (else latest) if it's missing (e.g. a stale bookmark)
+        o.Snapshot = (snapshotId is int id ? snaps.FirstOrDefault(s => s.Id == id) : null)
+            ?? snaps.FirstOrDefault(s => s.IsDefault) ?? snaps.First();
         o.SnapshotId = o.Snapshot.Id;
 
         var vm = await _calc.BuildAsync(DashboardMode.Current, null, o.SnapshotId, ct);
@@ -81,8 +83,9 @@ public class OverviewBuilder
         o.Kpis.Add(new KpiTile { LabelKey = "Kpi_Headcount", Value = o.Headcount.ToString(), Sub = $"{o.NonSaudi} + {o.BaseSaudi}" });
         o.Kpis.Add(new KpiTile { LabelKey = "Kpi_RedRegs", Value = o.RedRegs.ToString(), Sub = $"/ {o.RegCount}", Tone = o.RedRegs > 0 ? "bad" : "ok" });
         o.Kpis.Add(new KpiTile { LabelKey = "Kpi_RedCells", Value = o.RedCellCount.ToString(), Tone = o.RedCellCount > 0 ? "warn" : "ok" });
-        o.Kpis.Add(new KpiTile { LabelKey = "Kpi_Special", Value = o.SpecialCount.ToString() });
-        o.Kpis.Add(new KpiTile { LabelKey = "Kpi_Disabled", Value = o.DisabledCount.ToString() });
+        var weightHref = $"/Dashboard/Weighting?snapshotId={o.SnapshotId}";
+        o.Kpis.Add(new KpiTile { LabelKey = "Kpi_Special", Value = o.SpecialCount.ToString(), Href = weightHref });
+        o.Kpis.Add(new KpiTile { LabelKey = "Kpi_Disabled", Value = o.DisabledCount.ToString(), Href = weightHref });
 
         // ---- findings (most severe first) ----
         foreach (var rc in vm.Records.Where(r => r.Zone == NitaqatZone.Red))
@@ -94,7 +97,8 @@ public class OverviewBuilder
             o.Findings.Add(new Finding { Kind = FindingKind.RegistrationNoRequired, Severity = FindingSeverity.Info, Name = rc.Label, RecordId = rc.RecordId });
 
         // ---- suggestions ----
-        o.Suggestions = (await _advisor.SuggestAsync(o.SnapshotId, ct)).Take(6).ToList();
+        if (!full) return o;
+        o.Suggestions = _advisor.Suggest(vm).Take(6).ToList();   // same calculation, not rebuilt
 
         // ---- trend across all versions ----
         var trend = await _calc.BuildTrendAsync(snaps.Select(s => s.Id).ToList(), ct);

@@ -15,7 +15,7 @@ public class EmployeesController : Controller
         var fac = await _db.Facilities.Include(f => f.Record).FirstOrDefaultAsync(f => f.Id == facilityId, ct);
         if (fac is null) return NotFound();
 
-        var sid = snapshotId ?? await LatestSnapshotIdAsync(ct);
+        var sid = await _db.ResolveSnapshotAsync(HttpContext, snapshotId, ct);
 
         var query = _db.Employees
             .Include(e => e.Nationality).Include(e => e.Occupation)
@@ -136,9 +136,7 @@ public class EmployeesController : Controller
         ModelState.Remove(nameof(Employee.Snapshot));
     }
 
-    private async Task<int> LatestSnapshotIdAsync(CancellationToken ct) =>
-        await _db.Snapshots.OrderByDescending(s => s.WeekDate).ThenByDescending(s => s.Id)
-            .Select(s => s.Id).FirstOrDefaultAsync(ct);
+    private Task<int> LatestSnapshotIdAsync(CancellationToken ct) => _db.ResolveSnapshotAsync(HttpContext, null, ct);
 
     private async Task PopulateLookups(CancellationToken ct)
     {

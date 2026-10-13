@@ -71,6 +71,12 @@
             <a class="btn btn-soft btn-sm" asp-action="Compare" asp-route-versionId="@Model.Model.VersionId">@T["Ver_Compare"]</a>
             <a class="btn btn-soft btn-sm" asp-action="Template" asp-route-versionId="@Model.Model.VersionId">⭳ @T["Import_Download"]</a>
             <a class="btn btn-soft btn-sm" asp-action="Export" asp-route-versionId="@Model.Model.VersionId">⭳ Excel</a>
+            <form method="post" asp-action="DeleteVersion" style="display:inline"
+                  onsubmit="return confirm('@T["OrgView_DeleteVersionConfirm"].Value')">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Model.VersionId" />
+                <button type="submit" class="btn btn-soft btn-sm" style="color:#c0392b">🗑 @T["OrgView_DeleteVersion"]</button>
+            </form>
             <input id="saveLabel" class="btn-soft" style="padding:6px 10px;border-radius:8px;display:none" placeholder="@T["Org_VersionName"]" />
             <button id="saveBtn" class="btn" type="button" disabled
                     data-save-url="@Url.Action("Save")" data-index-url="@Url.Action("Index")">@T["Org_Save"]</button>

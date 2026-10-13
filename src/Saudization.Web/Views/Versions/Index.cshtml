@@ -1,15 +1,24 @@
 @model List<Saudization.Web.Controllers.VersionListItem>
-@{ ViewData["Title"] = T["Ver_Title"].Value; }
+@{
+    ViewData["Title"] = T["Ver_Title"].Value;
+    var active = Model.Where(m => m.Snapshot.DeletedAtUtc == null).ToList();
+    var deleted = Model.Where(m => m.Snapshot.DeletedAtUtc != null).OrderByDescending(m => m.Snapshot.DeletedAtUtc).ToList();
+}
+<style>
+    .grid tr.row-default td { background: #eef8f0; }
+    .grid tr.row-default td:first-child { box-shadow: inset 3px 0 0 #2f9e44; }
+</style>
 
 <div class="page-head">
     <h1>@T["Ver_Title"]</h1>
     <div>
         <a class="btn btn-soft" asp-controller="Versions" asp-action="Compare">@T["Ver_Compare"]</a>
+        <a class="btn btn-soft" asp-controller="Versions" asp-action="People">@T["Ver_People"]</a>
         <a class="btn" asp-controller="Import" asp-action="Index">+ @T["Nav_Import"]</a>
     </div>
 </div>
 
-@if (Model.Count == 0)
+@if (active.Count == 0)
 {
     <div class="card">@T["Ver_NeedTwo"] <a asp-controller="Import" asp-action="Index">@T["Nav_Import"]</a></div>
 }
@@ -28,20 +37,76 @@ else
         </tr>
     </thead>
     <tbody>
-    @foreach (var it in Model)
+    @foreach (var it in active)
     {
-        <tr>
-            <td><strong>@it.Snapshot.Label</strong></td>
+        <tr class="@(it.Snapshot.IsDefault ? "row-default" : "")">
+            <td>
+                <strong>@it.Snapshot.Label</strong>
+                @if (it.Snapshot.IsDefault)
+                {
+                    <span class="pill ok" title="@T["Ver_DefaultHint"]">★ @T["Ver_Default"]</span>
+                }
+            </td>
             <td>@it.Snapshot.WeekDate.ToString("yyyy-MM-dd")</td>
             <td class="num">@it.Employees</td>
             <td>@it.Snapshot.Note</td>
             <td class="subtle">@it.Snapshot.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") · @it.Snapshot.CreatedByUser</td>
             <td class="center">
                 <a class="btn btn-sm btn-soft" asp-controller="Dashboard" asp-action="Index" asp-route-snapshotId="@it.Snapshot.Id">@T["Ver_View"]</a>
+                @if (!it.Snapshot.IsDefault)
+                {
+                    <form asp-action="SetDefault" asp-route-id="@it.Snapshot.Id" method="post" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-soft" type="submit" title="@T["Ver_SetDefaultHint"]">★ @T["Ver_SetDefault"]</button>
+                    </form>
+                }
                 <form asp-action="Delete" asp-route-id="@it.Snapshot.Id" method="post" style="display:inline"
-                      onsubmit="return confirm('@T["Common_Confirm"].Value')">
+                      data-confirm="@string.Format(T["Ver_DeleteConfirm"].Value, it.Snapshot.Label, it.Employees)"
+                      onsubmit="return confirm(this.dataset.confirm)">
                     @Html.AntiForgeryToken()
                     <button class="btn btn-sm btn-danger" type="submit">@T["Common_Delete"]</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+}
+
+@if (deleted.Count > 0)
+{
+<h2 style="margin-top:28px">@T["Ver_Deleted"]</h2>
+<p class="subtle">@T["Ver_DeletedHint"]</p>
+<div class="table-scroll">
+<table class="grid">
+    <thead>
+        <tr>
+            <th>@T["Ver_Label"]</th>
+            <th>@T["Ver_Week"]</th>
+            <th class="num">@T["Ver_Employees"]</th>
+            <th>@T["Ver_Created"]</th>
+            <th>@T["Ver_DeletedOn"]</th>
+            <th class="center">@T["Common_Actions"]</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var it in deleted)
+    {
+        <tr>
+            <td><strong>@it.Snapshot.Label</strong></td>
+            <td>@it.Snapshot.WeekDate.ToString("yyyy-MM-dd")</td>
+            <td class="num">@it.Employees</td>
+            <td class="subtle">@it.Snapshot.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") · @it.Snapshot.CreatedByUser</td>
+            <td class="subtle">@it.Snapshot.DeletedAtUtc?.ToString("yyyy-MM-dd HH:mm") · @it.Snapshot.DeletedByUser</td>
+            <td class="center">
+                <form asp-action="Restore" asp-route-id="@it.Snapshot.Id" method="post" style="display:inline">
+                    <button class="btn btn-sm btn-soft" type="submit">↺ @T["Ver_Restore"]</button>
+                </form>
+                <form asp-action="Purge" asp-route-id="@it.Snapshot.Id" method="post" style="display:inline"
+                      data-confirm="@string.Format(T["Ver_PurgeConfirm"].Value, it.Snapshot.Label, it.Employees)"
+                      onsubmit="return confirm(this.dataset.confirm)">
+                    <button class="btn btn-sm btn-danger" type="submit">@T["Ver_Purge"]</button>
                 </form>
             </td>
         </tr>

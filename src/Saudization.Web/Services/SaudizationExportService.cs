@@ -103,7 +103,8 @@ public class SaudizationExportService
         {
             recColStart[rc.RecordId] = col;
             sepCols.Add(col);
-            ws.Range(r1, col, r1, col + 4).Merge();
+            // Action column is intentionally NOT exported — the exported grid is the numbers only.
+            ws.Range(r1, col, r1, col + 3).Merge();
             var h = ws.Cell(r1, col);
             h.Value = rc.Label + "  —  " + t(ZoneDisplay.Key(rc.Zone)) + " " + Pct(rc.Pct);
             h.Style.Fill.BackgroundColor = XLColor.FromHtml(rc.ZoneColor ?? ZoneDisplay.DefaultColor(rc.Zone));
@@ -113,8 +114,7 @@ public class SaudizationExportService
             ws.Cell(r2, col + 1).Value = t("Dash_Saudi");
             ws.Cell(r2, col + 2).Value = t("Dash_Total");
             ws.Cell(r2, col + 3).Value = t("Dash_Pct");
-            ws.Cell(r2, col + 4).Value = t("Dash_Action");
-            col += 5;
+            col += 4;
         }
         int grandCol = col;
         sepCols.Add(grandCol);
@@ -142,7 +142,6 @@ public class SaudizationExportService
                 var pctCell = ws.Cell(row, cc + 3);
                 pctCell.Value = Pct(c.Pct);
                 if (c.Status != CellStatus.NA) pctCell.Style.Fill.BackgroundColor = XLColor.FromHtml(StatusFill(c.Status));
-                ws.Cell(row, cc + 4).Value = ActionText(c, t);
             }
             ws.Cell(row, grandCol).Value = cr.Grand.NonSaudi;
             ws.Cell(row, grandCol + 1).Value = cr.Grand.Saudi;

@@ -22,6 +22,7 @@ public class Cell
     public int? ReplaceNeeded { get; set; }   // إحلال: swap non-Saudi → Saudi (total unchanged)
     public int? HireNeeded { get; set; }       // توظيف: add Saudi (total grows)
     public int? ShedNonSaudi { get; set; }     // red: remove this many non-Saudi to reach req by removal (T − ⌊S/req⌋)
+    public int? ShedToExemptNonSaudi { get; set; } // red: remove this many non-Saudi to drop below MinForCalc → exempt (T − (min−1))
 
     /// <summary>Green-cell headroom. Set only when Status is Light/High green.</summary>
     public int? AbsorbNonSaudi { get; set; }   // non-Saudi it can still add staying ≥ req (⌊S/req⌋ − T)
@@ -53,6 +54,9 @@ public class RecordColumn
     public decimal DisabledPct { get; set; }          // نسبة ذوي الاحتياجات الخاصة (share of workforce)
     public string? ZoneColor { get; set; }            // resolved hex (override or default)
     public decimal LowGreenMin { get; set; }          // Red→Green boundary (leave-red threshold)
+    public decimal MediumGreenMin { get; set; }       // Nitaqat zone thresholds (for the Roadmap tab)
+    public decimal HighGreenMin { get; set; }
+    public decimal PlatinumMin { get; set; }
 
     /// <summary>Saudis to hire to lift the general % up to LowGreenMin (leave Red). 0 when already green.</summary>
     public int HiresToGreen =>
@@ -89,6 +93,7 @@ public class DashboardViewModel
 
     // optional filters echoed back to the view
     public int? FilterRecordId { get; set; }
+    public int? FilterCategoryId { get; set; }
 
     // the version being shown
     public int SnapshotId { get; set; }

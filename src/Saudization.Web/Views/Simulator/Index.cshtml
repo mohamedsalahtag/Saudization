@@ -8,6 +8,7 @@
     var cfgJson = JsonSerializer.Serialize(new
     {
         band = Model.LightGreenBand,
+        capPct = Model.DisabilityCapPct,
         zones = new[] { T["Zone_Unknown"].Value, T["Zone_Red"].Value, T["Zone_LowGreen"].Value,
                         T["Zone_MediumGreen"].Value, T["Zone_HighGreen"].Value, T["Zone_Platinum"].Value },
         zoneCss = new[] { "zone-unknown", "zone-red", "zone-lowgreen", "zone-medgreen", "zone-highgreen", "zone-platinum" },

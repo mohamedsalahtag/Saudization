@@ -27,6 +27,7 @@ public class KpiTile
     public string Value { get; set; } = "";
     public string? Sub { get; set; }
     public string Tone { get; set; } = "";   // "" | ok | warn | bad
+    public string? Href { get; set; }        // when set, the tile is a link (e.g. drill-down)
 }
 
 public class DashboardOverviewViewModel

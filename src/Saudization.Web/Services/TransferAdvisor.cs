@@ -12,9 +12,12 @@ public class TransferAdvisor
     private readonly NitaqatCalculator _calc;
     public TransferAdvisor(NitaqatCalculator calc) => _calc = calc;
 
-    public async Task<List<TransferSuggestion>> SuggestAsync(int snapshotId, CancellationToken ct = default)
+    public async Task<List<TransferSuggestion>> SuggestAsync(int snapshotId, CancellationToken ct = default) =>
+        Suggest(await _calc.BuildAsync(DashboardMode.Current, null, snapshotId, ct));
+
+    /// <summary>Suggestions from an already-built (current-mode, unfiltered) dashboard — avoids recalculating.</summary>
+    public List<TransferSuggestion> Suggest(DashboardViewModel vm)
     {
-        var vm = await _calc.BuildAsync(DashboardMode.Current, null, snapshotId, ct);
         var recs = vm.Records;
         var outList = new List<TransferSuggestion>();
 

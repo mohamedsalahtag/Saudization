@@ -1,0 +1,129 @@
+@model Saudization.Web.Controllers.WeightingViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = T["Weight_Title"].Value;
+    var inv = CultureInfo.InvariantCulture;
+    string Pct(decimal p) => (p * 100).ToString("0.#", inv) + "%";
+    var capPct = Pct(Model.DisabilityCapPct);
+    var specByReg = Model.Special.GroupBy(x => x.Registration ?? "").ToDictionary(g => g.Key, g => g.Count());
+    var disByReg = Model.Disabled.GroupBy(x => x.Registration ?? "").ToDictionary(g => g.Key, g => g.Count());
+    var summaryRows = Model.Records
+        .Where(r => r.DisabledExtraRaw > 0 || specByReg.ContainsKey(r.Label) || disByReg.ContainsKey(r.Label))
+        .ToList();
+}
+
+<div class="page-head">
+    <div>
+        <h1>@T["Weight_Title"]</h1>
+        <div class="subtle">@Model.Snapshot?.Label @if (Model.Snapshot != null) { <text>(@Model.Snapshot.WeekDate.ToString("yyyy-MM-dd"))</text>}</div>
+    </div>
+    <a class="btn btn-soft btn-sm" asp-action="Index" asp-route-snapshotId="@Model.SnapshotId">← @T["Nav_Dashboard"]</a>
+</div>
+
+<div class="card">
+    <p class="subtle" style="margin:0">@string.Format(T["Weight_Intro"].Value, capPct)</p>
+</div>
+
+@if (summaryRows.Any())
+{
+    <div class="card">
+        <strong>@T["Weight_ByRegistration"]</strong>
+        <div class="table-scroll" style="margin-top:10px">
+        <table class="grid">
+            <thead><tr>
+                <th>@T["Dash_Registration"]</th>
+                <th class="num">@T["Weight_BaseSaudi"]</th>
+                <th class="num">@T["Kpi_Special"]</th>
+                <th class="num">@T["Kpi_Disabled"]</th>
+                <th class="num">@T["Weight_RawBonus"]</th>
+                <th class="num">@T["Weight_CappedBonus"]</th>
+                <th class="num">@T["Weight_CountedSaudi"]</th>
+                <th class="num">@T["Dash_Total"]</th>
+                <th class="num">%</th>
+            </tr></thead>
+            <tbody>
+            @foreach (var r in summaryRows)
+            {
+                var capped = r.DisabledExtra < r.DisabledExtraRaw;
+                <tr>
+                    <td>@r.Label</td>
+                    <td class="num">@r.BaseSaudi</td>
+                    <td class="num">@(specByReg.GetValueOrDefault(r.Label, 0))</td>
+                    <td class="num">@(disByReg.GetValueOrDefault(r.Label, 0))</td>
+                    <td class="num">@r.DisabledExtraRaw</td>
+                    <td class="num @(capped ? "unmapped-row" : "")" title="@(capped ? string.Format(T["Weight_CapHit"].Value, capPct) : "")">@r.DisabledExtra@(capped ? " ⚠" : "")</td>
+                    <td class="num">@r.SaudiCountedGeneral</td>
+                    <td class="num">@r.Headcount</td>
+                    <td class="num">@Pct(r.Pct)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+        <span class="subtle">@string.Format(T["Weight_CapNote"].Value, capPct)</span>
+    </div>
+}
+
+<div class="card">
+    <strong>@T["Kpi_Special"]</strong> <span class="subtle">(@Model.Special.Count) · @T["Weight_SpecialNote"]</span>
+    @if (Model.Special.Count == 0)
+    {
+        <p class="subtle" style="margin-top:8px">—</p>
+    }
+    else
+    {
+        <div class="table-scroll" style="margin-top:10px;max-height:420px;overflow:auto">
+        <table class="grid">
+            <thead><tr>
+                <th>@T["Emp_Name"]</th><th>@T["Emp_Iqama"]</th><th>@T["Weight_SpecialCat"]</th>
+                <th>@T["Dash_Registration"]</th><th>@T["Occ_Name"]</th>
+            </tr></thead>
+            <tbody>
+            @foreach (var e in Model.Special)
+            {
+                <tr>
+                    <td dir="rtl">@e.Name</td>
+                    <td dir="ltr">@e.IqamaNo</td>
+                    <td dir="rtl">@e.Info</td>
+                    <td>@e.Registration</td>
+                    <td dir="rtl">@e.Occupation</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>
+
+<div class="card">
+    <strong>@T["Kpi_Disabled"]</strong> <span class="subtle">(@Model.Disabled.Count) · @T["Weight_DisabledNote"]</span>
+    @if (Model.Disabled.Count == 0)
+    {
+        <p class="subtle" style="margin-top:8px">—</p>
+    }
+    else
+    {
+        <div class="table-scroll" style="margin-top:10px;max-height:420px;overflow:auto">
+        <table class="grid">
+            <thead><tr>
+                <th>@T["Emp_Name"]</th><th>@T["Emp_Iqama"]</th>
+                <th class="num">@T["Weight_Weight"]</th><th class="num">@T["Weight_HeadsAdded"]</th>
+                <th>@T["Dash_Registration"]</th><th>@T["Occ_Name"]</th>
+            </tr></thead>
+            <tbody>
+            @foreach (var e in Model.Disabled)
+            {
+                <tr>
+                    <td dir="rtl">@e.Name</td>
+                    <td dir="ltr">@e.IqamaNo</td>
+                    <td class="num">×@e.Weight</td>
+                    <td class="num">+@(e.Weight - 1)</td>
+                    <td>@e.Registration</td>
+                    <td dir="rtl">@e.Occupation</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>

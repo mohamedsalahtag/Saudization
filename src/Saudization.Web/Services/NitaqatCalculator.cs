@@ -21,18 +21,21 @@ public class NitaqatCalculator
         : pct >= r.LowGreenMin ? NitaqatZone.LowGreen
         : NitaqatZone.Red;
 
+    private Settings? _settings;   // scoped service → read once per request
+
+    /// <summary>The singleton settings row (Id = 1), read once per request.</summary>
     public async Task<Settings> GetSettingsAsync(CancellationToken ct = default) =>
-        await _db.Settings.FirstOrDefaultAsync(ct) ?? new Settings();
+        _settings ??= await _db.Settings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1, ct) ?? new Settings();
 
     public async Task<DashboardViewModel> BuildAsync(DashboardMode mode, int? filterRecordId, int snapshotId, CancellationToken ct = default)
     {
-        var records = await _db.Records
+        var records = await _db.Records.AsNoTracking()
             .Where(r => filterRecordId == null || r.Id == filterRecordId)
             .OrderBy(r => r.RegistrationLabel)
             .ToListAsync(ct);
         var recById = records.ToDictionary(r => r.Id);
         var recIds = records.Select(r => r.Id).ToHashSet();
-        var categories = await _db.Categories.OrderBy(c => c.NameAr).ToListAsync(ct);
+        var categories = await _db.Categories.AsNoTracking().OrderBy(c => c.NameAr).ToListAsync(ct);
         var settings = await GetSettingsAsync(ct);
 
         // per-employee facts for the selected version
@@ -85,7 +88,7 @@ public class NitaqatCalculator
             var a = agg[e.RecordId];
             a.Headcount++;
             if (occSaudi) a.BaseSaudi++;
-            if (e.CountAs > 1) { a.DisabledExtraRaw += e.CountAs - 1; a.DisabledCount++; }
+            if (e.CountAs > 1 && occSaudi) { a.DisabledExtraRaw += e.CountAs - 1; a.DisabledCount++; }   // يُحتسب بعدد applies to Saudis only
         }
 
         // record columns with capped disability bonus + zone
@@ -111,7 +114,10 @@ public class NitaqatCalculator
                 RequiredPct = r.RequiredPct,
                 DisabledPct = a.Headcount > 0 ? (decimal)a.DisabledCount / a.Headcount : 0m,
                 ZoneColor = ResolveZoneColor(r, zone),
-                LowGreenMin = r.LowGreenMin
+                LowGreenMin = r.LowGreenMin,
+                MediumGreenMin = r.MediumGreenMin,
+                HighGreenMin = r.HighGreenMin,
+                PlatinumMin = r.PlatinumMin
             });
 
             vm.GrandHeadcount += a.Headcount;
@@ -130,8 +136,7 @@ public class NitaqatCalculator
         }
         vm.Rows = allRows.OrderBy(r => r.IsUnclassified ? 1 : 0).ThenBy(r => r.NameAr).ToList();
 
-        var refRecord = records.FirstOrDefault();
-        vm.GrandZone = (refRecord != null && vm.GrandHeadcount > 0) ? ZoneFor(vm.GrandPct, refRecord) : NitaqatZone.Unknown;
+        vm.GrandZone = WorstZone(vm.Records);
         return vm;
     }
 
@@ -147,7 +152,8 @@ public class NitaqatCalculator
 
         // disability weighting is a property of the real workforce; edits to counts don't change it.
         var disRaw = await _db.Employees
-            .Where(e => e.SnapshotId == snapshotId && e.DisabilityCountAs > 1 && recIds.Contains(e.Facility!.RecordId))
+            .Where(e => e.SnapshotId == snapshotId && e.DisabilityCountAs > 1 && recIds.Contains(e.Facility!.RecordId)
+                        && ((e.Nationality != null && e.Nationality.IsSaudi) || e.CountsAsSaudiSpecial))
             .Select(e => new { RecordId = e.Facility!.RecordId, Extra = e.DisabilityCountAs - 1 })
             .ToListAsync(ct);
         var disByRec = disRaw.GroupBy(x => x.RecordId).ToDictionary(g => g.Key, g => g.Sum(x => x.Extra));
@@ -195,7 +201,8 @@ public class NitaqatCalculator
             {
                 RecordId = r.Id, Label = r.RegistrationLabel, NameAr = r.NameAr, RegistrationNumber = r.RegistrationNumber,
                 Headcount = a.Headcount, BaseSaudi = a.BaseSaudi, DisabledExtra = extra, DisabledExtraRaw = raw,
-                Zone = zone, RequiredPct = r.RequiredPct, ZoneColor = ResolveZoneColor(r, zone), LowGreenMin = r.LowGreenMin
+                Zone = zone, RequiredPct = r.RequiredPct, ZoneColor = ResolveZoneColor(r, zone),
+                LowGreenMin = r.LowGreenMin, MediumGreenMin = r.MediumGreenMin, HighGreenMin = r.HighGreenMin, PlatinumMin = r.PlatinumMin
             });
             vm.GrandHeadcount += a.Headcount; vm.GrandBaseSaudi += a.BaseSaudi; vm.GrandDisabledExtra += extra;
             Add(vm.Grand, a.BaseSaudi, a.Headcount - a.BaseSaudi);
@@ -210,8 +217,7 @@ public class NitaqatCalculator
         }
         vm.Rows = allRows.OrderBy(r => r.IsUnclassified ? 1 : 0).ThenBy(r => r.NameAr).ToList();
 
-        var refRecord = records.FirstOrDefault();
-        vm.GrandZone = (refRecord != null && vm.GrandHeadcount > 0) ? ZoneFor(vm.GrandPct, refRecord) : NitaqatZone.Unknown;
+        vm.GrandZone = WorstZone(vm.Records);
         return vm;
     }
 
@@ -221,6 +227,7 @@ public class NitaqatCalculator
     {
         cell.Status = CellStatus.NA;
         cell.Gap = null; cell.ReplaceNeeded = null; cell.HireNeeded = null; cell.ShedNonSaudi = null;
+        cell.ShedToExemptNonSaudi = null;
         cell.AbsorbNonSaudi = null; cell.SaudiSurplus = null; cell.ExemptAddNonSaudi = null; cell.ExemptSaudiDrop = null;
         if (row.IsUnclassified || row.RequiredPct <= 0) return;
 
@@ -249,6 +256,16 @@ public class NitaqatCalculator
                 ? (int)Math.Ceiling((req * T - S) / (1 - req))
                 : Math.Max(0, T - S);
             cell.ShedNonSaudi = Math.Max(0, T - cap);                       // remove non-Saudi to reach req by removal
+
+            // Alternative escape: drop the cell below MinForCalc so it becomes exempt (no % requirement).
+            // Reachable only by removing non-Saudi when S < min; surfaced only when it's cheaper than
+            // shedding to meet the ratio (e.g. T=5,S=1,req=30%,min=5 → shed 1 → exempt, vs shed 2 → 30%).
+            if (row.MinForCalc > 0 && S < row.MinForCalc)
+            {
+                int shedToExempt = Math.Max(0, T - (row.MinForCalc - 1));
+                if (shedToExempt >= 1 && shedToExempt < cell.ShedNonSaudi)
+                    cell.ShedToExemptNonSaudi = shedToExempt;
+            }
         }
         else
         {
@@ -284,7 +301,9 @@ public class NitaqatCalculator
         var records = await _db.Records.OrderBy(r => r.RegistrationLabel).ToListAsync(ct);
         var settings = await GetSettingsAsync(ct);
 
-        var raw = await _db.Employees
+        // aggregate to (snapshot, record) in SQL: headcount, baseSaudi, disability extra (Saudis only) —
+        // one row per registration per version instead of one row per employee of every version
+        var grouped = await _db.Employees
             .Where(e => snapshotIds.Contains(e.SnapshotId))
             .Select(e => new
             {
@@ -293,18 +312,17 @@ public class NitaqatCalculator
                 Base = (e.Nationality != null && e.Nationality.IsSaudi) || e.CountsAsSaudiSpecial,
                 e.DisabilityCountAs
             })
+            .GroupBy(e => new { e.SnapshotId, e.RecordId })
+            .Select(g => new
+            {
+                g.Key.SnapshotId,
+                g.Key.RecordId,
+                Head = g.Count(),
+                BaseS = g.Count(x => x.Base),
+                Extra = g.Sum(x => x.Base && x.DisabilityCountAs > 1 ? x.DisabilityCountAs - 1 : 0)
+            })
             .ToListAsync(ct);
-
-        // aggregate to (snapshot, record): headcount, baseSaudi, disability extra
-        var agg = new Dictionary<(int, int), (int head, int baseS, int extra)>();
-        foreach (var e in raw)
-        {
-            agg.TryGetValue((e.SnapshotId, e.RecordId), out var v);
-            v.head++;
-            if (e.Base) v.baseS++;
-            if (e.DisabilityCountAs > 1) v.extra += e.DisabilityCountAs - 1;
-            agg[(e.SnapshotId, e.RecordId)] = v;
-        }
+        var agg = grouped.ToDictionary(g => (g.SnapshotId, g.RecordId), g => (head: g.Head, baseS: g.BaseS, extra: g.Extra));
         (int saudi, int total) Weighted(int sid, int rid)
         {
             if (!agg.TryGetValue((sid, rid), out var v) || v.head == 0) return (0, 0);
@@ -334,6 +352,11 @@ public class NitaqatCalculator
         }
         return vm;
     }
+
+    /// <summary>Nitaqat zones are per registration, so there is no official company-wide zone. The overall
+    /// indicator shows the worst zone among registrations that have employees.</summary>
+    private static NitaqatZone WorstZone(IEnumerable<RecordColumn> recs) =>
+        recs.Where(r => r.Headcount > 0).Select(r => r.Zone).DefaultIfEmpty(NitaqatZone.Unknown).Min();
 
     private static void Add(Cell c, bool isSaudi) { if (isSaudi) c.Saudi++; else c.NonSaudi++; }
     private static void Add(Cell c, int saudi, int nonSaudi) { c.Saudi += saudi; c.NonSaudi += nonSaudi; }

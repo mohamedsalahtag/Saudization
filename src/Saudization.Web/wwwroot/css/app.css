@@ -36,6 +36,30 @@ a:hover { text-decoration: underline; }
 .mainnav a.on { background: rgba(255,255,255,.20); color: #fff; }
 .langswitch { margin: 0; }
 
+/* nav dropdown (Settings group) */
+.navdrop { position: relative; }
+/* transparent bridge across the toggle→menu gap so the submenu stays open while the mouse moves to it */
+.navdrop::after { content:''; position:absolute; top:100%; inset-inline-start:0; width:100%; height:10px; }
+.navdrop:not(:hover):not(:focus-within)::after { display:none; }
+.navdrop-toggle { display:inline-block; color:#dff3e7; padding:7px 12px; border-radius:7px; font-weight:500; cursor:pointer; -webkit-user-select:none; user-select:none; }
+.navdrop-toggle:hover { background: rgba(255,255,255,.12); }
+.navdrop-toggle.on { background: rgba(255,255,255,.20); color:#fff; }
+.navdrop-menu { position:absolute; top:100%; inset-inline-start:0; margin-top:4px; min-width:190px; background:var(--card); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); padding:6px; display:none; z-index:60; }
+.navdrop:hover .navdrop-menu, .navdrop:focus-within .navdrop-menu { display:block; }
+.navdrop-menu a { display:block; color:var(--ink); padding:8px 12px; border-radius:6px; font-weight:500; }
+.navdrop-menu a:hover { background:#eef2f6; text-decoration:none; }
+.navdrop-menu a.on { background: rgba(11,107,58,.12); color: var(--brand); }
+
+/* status badge (Users page) */
+.badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:700; background:#eceff3; color:#5b6672; }
+.badge.ok { background: var(--green-bg, #e6f5ec); color: var(--green, #0b6b3a); }
+
+/* signed-in user chip + logout in the topbar */
+.userbox { display:flex; align-items:center; gap:10px; margin-inline-start:8px; }
+.userbox .who { color:#dff3e7; font-size:.9rem; white-space:nowrap; }
+.userbox .who b { color:#fff; }
+.userbox form { margin:0; }
+
 /* Full page width with a small margin — this is an analysis app, tables want room. */
 .container { max-width: none; margin: 18px 22px; padding: 0; }
 
@@ -102,13 +126,16 @@ table.grid tbody tr:hover { background: #f8fafc; }
 .cell-lightgreen{ background: #eef7e8;            color: #4c7a2e;          font-weight:700; }
 .cell-highgreen { background: var(--highgreen-bg); color: var(--highgreen); font-weight:700; }
 .cell-exempt    { background: #eef3f7;            color: #5a7d9a;          font-weight:700; }
-.act { display:flex; flex-flow:row wrap; gap:2px 8px; line-height:1.2; white-space:nowrap; }
-.act-rep    { color:#b45309; font-weight:700; }   /* إحلال / replace */
-.act-hire   { color:#b83232; font-weight:700; }   /* توظيف / hire */
-.act-shed   { color:#8a5a00; font-weight:700; }   /* remove non-Saudi to reach req */
-.act-absorb { color:#2f7d32; font-weight:700; }   /* green headroom: can add non-Saudi */
-.act-surplus{ color:#5a7d9a; font-weight:700; }   /* green: Saudi surplus */
-.act-exempt { color:#5a7d9a; font-weight:700; }   /* below MinForCalc */
+.act { display:flex; flex-flow:row wrap; gap:3px; line-height:1.2; justify-content:flex-end; }
+.act-btn { display:inline-flex; align-items:center; gap:2px; border-radius:6px; padding:1px 6px; font-weight:700; font-size:11.5px; white-space:nowrap; }
+.act-rep    { color:#b45309; background:#fff3e0; }   /* إحلال / replace non-Saudi with Saudi */
+.act-hire   { color:#b83232; background:#fdeaea; }   /* توظيف / hire Saudi */
+.act-shed   { color:#8a5a00; background:#fdf3d6; }   /* remove non-Saudi to reach req */
+.act-exshed { color:#0b6b3a; background:#e6f5ec; }   /* remove non-Saudi to drop below min → exempt (cheaper) */
+.act-absorb { color:#2f7d32; background:#e9f6ea; }   /* green headroom: can hire non-Saudi safely */
+.act-surplus{ color:#3f6d8f; background:#eaf1f7; }   /* green: Saudi surplus */
+.act-exempt { color:#3f6d8f; background:#eaf1f7; }   /* below MinForCalc: can add non-Saudi & stay exempt */
+.act-legend { display:flex; flex-flow:row wrap; gap:6px; align-items:center; }
 
 /* compact pivot: keep rows short, category + headers on one line */
 table.grid.compact th, table.grid.compact td { padding: 3px 7px; line-height: 1.25; }
@@ -123,8 +150,8 @@ table.grid th.rec-sep, table.grid td.rec-sep { border-inline-start: 3px solid #4
 table.grid.compact thead th.grp.rec-sep { border-top: 3px solid #475569; }
 
 /* click an action segment in the editable grid to apply it */
-.act-btn { cursor:pointer; border-radius:5px; padding:0 4px; white-space:nowrap; }
-#sgGrid .act-btn:hover { background:#eef2f6; outline:1px solid #c3ccd6; }
+#sgGrid .act-btn { cursor:pointer; }
+#sgGrid .act-btn:hover { outline:1px solid #c3ccd6; filter:brightness(.96); }
 #sgGrid td.num.chg { background:#fff7e6; box-shadow: inset 0 0 0 1px #f0c36d; }
 .cell-reset { cursor:pointer; margin-inline-start:6px; color:#b45309; font-weight:700; }
 .cell-reset:hover { text-decoration:none; color:#7c3d06; }
@@ -175,6 +202,16 @@ form.stack { display: grid; gap: 12px; max-width: 620px; }
 .kpi .k-lbl { color:var(--muted); font-size:12px; margin-top:4px; }
 .kpi .k-sub { color:var(--muted); font-size:12px; }
 .kpi.ok .k-val{ color:var(--highgreen); } .kpi.warn .k-val{ color:#b45309; } .kpi.bad .k-val{ color:var(--red); }
+.kpi-link { display:block; color:inherit; text-decoration:none; transition:box-shadow .12s, transform .12s; }
+.kpi-link:hover { box-shadow:0 4px 14px rgba(0,0,0,.12); transform:translateY(-1px); text-decoration:none; }
+
+/* nationality tally icons (Saudi / non-Saudi / total) in table headers */
+.nat-ic { display:inline-flex; align-items:center; justify-content:center; cursor:help; }
+.nat-ic svg { width:20px; height:20px; display:block; }
+
+/* prominent Export-to-Excel button at the top of the Saudization page */
+.btn-export { display:inline-flex; flex-direction:column; align-items:flex-start; line-height:1.15; padding:9px 16px; font-size:14.5px; font-weight:700; }
+.btn-export .btn-sub { font-size:11px; font-weight:500; opacity:.9; }
 .grid2 { display:grid; grid-template-columns: 1.2fr 1fr; gap:16px; align-items:start; }
 @media (max-width:900px){ .grid2 { grid-template-columns:1fr; } }
 

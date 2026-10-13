@@ -1,0 +1,73 @@
+@model RestructureViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = T["Nav_StructureEditor"].Value;
+    var modelJson = Model.HasData ? JsonSerializer.Serialize(Model.Model, new JsonSerializerOptions { PropertyNamingPolicy = null }) : "null";
+}
+
+<div class="page-head">
+    <h1>@T["Nav_StructureEditor"]</h1>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        @if (Model.Versions.Any())
+        {
+            <form method="get" style="margin:0">
+                <select name="versionId" onchange="this.form.submit()" class="btn-soft" style="padding:6px 10px;border-radius:8px">
+                    @foreach (var v in Model.Versions)
+                    {
+                        <option value="@v.Id" selected="@(Model.Model != null && Model.Model.VersionId == v.Id)">@v.Label @(v.IsOriginal ? "★" : "")</option>
+                    }
+                </select>
+            </form>
+        }
+        @if (Model.HasData)
+        {
+            <input id="asgSearch" class="btn-soft" placeholder="@T["Common_Search"]" style="padding:6px 10px;border-radius:8px;min-width:200px" />
+            <button id="asgUpdate" class="btn btn-soft" type="button" title="@T["Asg_UpdateHint"]">✔ @T["Asg_UpdateVersion"]</button>
+            <input id="asgLabel" class="btn-soft" placeholder="@T["Org_VersionName"]" style="padding:6px 10px;border-radius:8px" />
+            <button id="asgSave" class="btn" type="button">💾 @T["Asg_SaveNew"]</button>
+            <span id="asgMsg" class="subtle"></span>
+        }
+    </div>
+</div>
+
+@if (!Model.HasData)
+{
+    <div class="card">@T["Org_Empty"] <a asp-action="Import" asp-controller="Restructure">@T["Org_Import"]</a></div>
+    return;
+}
+
+<style>
+    #asgTable .asg-cell { cursor: pointer; }
+    #asgTable .asg-cell:hover { background: #eef4ff; outline: 1px dashed #9db8e8; }
+    #asgTable .asg-inline, #asgTable .asg-mgr { font: inherit; padding: 3px 6px; border: 1px solid #cfd8e3; border-radius: 6px; width: 100%; box-sizing: border-box; background: #fff; }
+    #asgTable td { vertical-align: middle; }
+</style>
+<div class="subtle" style="margin-bottom:8px">@T["Asg_Hint"]</div>
+@Html.AntiForgeryToken()
+
+<div class="card" style="padding:0">
+    <div class="table-scroll" style="max-height:calc(100vh - 240px);overflow:auto">
+        <table class="grid" id="asgTable">
+            <thead>
+                <tr>
+                    <th>@T["Emp_Name"]</th>
+                    <th style="width:90px">@T["Org_Code"]</th>
+                    <th style="width:200px">@T["Org_Division"]</th>
+                    <th style="width:220px">@T["Org_Department"]</th>
+                    <th style="width:240px">@T["Org_Manager"]</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<datalist id="asgMgrList"></datalist>
+<script id="asg-model" type="application/json">@Html.Raw(modelJson)</script>
+<script>
+    window.ASG_SAVE_URL = '@Url.Action("Save", "Restructure")';
+    window.ASG_UPDATE_URL = '@Url.Action("UpdateAssignments", "Restructure")';
+    window.ASG_BACK_URL = '@Url.Action("Assignments", "Restructure")';
+    window.ASG_UPDATE_CONFIRM = '@T["Asg_UpdateConfirm"].Value';
+</script>
+<script src="~/js/assignments.js" asp-append-version="true"></script>

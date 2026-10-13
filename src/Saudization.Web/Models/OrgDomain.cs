@@ -65,6 +65,32 @@ public class OrgJob
     public OrgDepartment? Department { get; set; }
 }
 
+/// <summary>Authoritative head-of-department reference (the "HOD" sheet: Division · Department · Direct
+/// Manager ID · Name). Global reference data — not tied to a version; matched to chart groups by
+/// Division + Department name so the org chart shows the real head instead of a guess.</summary>
+public class DepartmentHead
+{
+    public int Id { get; set; }
+    /// <summary>Null = the legacy global reference; otherwise the HOD sheet imported with that org version.</summary>
+    public int? OrgVersionId { get; set; }
+    [Required, MaxLength(200)] public string Division { get; set; } = "";
+    [Required, MaxLength(200)] public string Department { get; set; } = "";
+    [MaxLength(60)] public string? HeadCode { get; set; }
+    [MaxLength(300)] public string? HeadName { get; set; }
+}
+
+/// <summary>A finding row the HR team has accepted as expected (e.g. the COO as their own manager). Global, not
+/// per version: it stays hidden from the counts on every later upload until it is undone.</summary>
+public class OrgFindingAccept
+{
+    public int Id { get; set; }
+    [Required, MaxLength(60)] public string FindingId { get; set; } = "";
+    [Required, MaxLength(160)] public string RowKey { get; set; } = "";
+    [MaxLength(300)] public string? RowLabel { get; set; }
+    [MaxLength(200)] public string? AcceptedByUser { get; set; }
+    public DateTime AcceptedAtUtc { get; set; }
+}
+
 public class OrgEmployee
 {
     public int Id { get; set; }
@@ -87,6 +113,14 @@ public class OrgEmployee
 
     [MaxLength(60)]
     public string? DirectManagerCode { get; set; }
+
+    /// <summary>"Direct Manager Name" as written in the HR export — a second source to validate the manager code.</summary>
+    [MaxLength(300)]
+    public string? DirectManagerName { get; set; }
+
+    /// <summary>HR grade text, e.g. "Grade 12 - Deputy Manager"; the number makes seniority checks exact.</summary>
+    [MaxLength(100)]
+    public string? Grade { get; set; }
 
     public int OrgDepartmentId { get; set; }        // Division is Department.Division
     public OrgDepartment? Department { get; set; }

@@ -24,6 +24,31 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
 
+        // Login whitelist: guarantee the initial admin (mohamed.tag) can always sign in.
+        // Idempotent — only inserts when missing, and re-enables the row if it was disabled.
+        const string bootstrapUser = "mohamed.tag";
+        var seedUser = await db.AppUsers.FirstOrDefaultAsync(u => u.AdUsername == bootstrapUser);
+        if (seedUser == null)
+        {
+            db.AppUsers.Add(new AppUser
+            {
+                AdUsername = bootstrapUser,
+                FullName = "Mohamed Tag",
+                Email = "itc-mgm@sharbatlyfruit.com",
+                Department = "IT",
+                IsActive = true,
+                CreatedByUser = "seed"
+            });
+            await db.SaveChangesAsync();
+            logger.LogInformation("Seeded login whitelist with bootstrap user '{User}'.", bootstrapUser);
+        }
+        else if (!seedUser.IsActive)
+        {
+            seedUser.IsActive = true;
+            await db.SaveChangesAsync();
+            logger.LogWarning("Re-enabled bootstrap user '{User}'.", bootstrapUser);
+        }
+
         if (!await db.Records.AnyAsync())
         {
             var seedPath = config["Seed:FilePath"];
@@ -51,8 +76,9 @@ public static class DbInitializer
         await SeedZoneThresholdsAsync(db, logger);
     }
 
-    /// <summary>Sets each registration's Nitaqat zone thresholds from the Qiwa screenshots in /Levels.
-    /// Idempotent — matches by Arabic name and only writes records whose thresholds differ.</summary>
+    /// <summary>Fills each registration's Nitaqat zone thresholds from the Qiwa screenshots in /Levels.
+    /// Only touches records still on the model defaults (10/15/20/40%), so thresholds edited by users
+    /// on the Records page survive restarts and deploys.</summary>
     private static async Task SeedZoneThresholdsAsync(AppDbContext db, ILogger logger)
     {
         // (distinctive Arabic keyword, LowGreenMin, MediumGreenMin, HighGreenMin, PlatinumMin) — specific first
@@ -77,7 +103,8 @@ public static class DbInitializer
             var hay = Normalize($"{r.NameAr} {r.RegistrationLabel} {r.NameEn}");
             var hit = map.FirstOrDefault(m => hay.Contains(Normalize(m.kw)));
             if (hit.kw is null) { unmatched.Add(r.RegistrationLabel); continue; }
-            if (r.LowGreenMin == hit.low && r.MediumGreenMin == hit.med && r.HighGreenMin == hit.high && r.PlatinumMin == hit.plat) continue;
+            bool atDefaults = r.LowGreenMin == 0.10m && r.MediumGreenMin == 0.15m && r.HighGreenMin == 0.20m && r.PlatinumMin == 0.40m;
+            if (!atDefaults) continue;
             r.LowGreenMin = hit.low; r.MediumGreenMin = hit.med; r.HighGreenMin = hit.high; r.PlatinumMin = hit.plat;
             changed++;
         }

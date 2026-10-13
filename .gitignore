@@ -23,6 +23,18 @@ publish/
 # Nitaqat zone screenshots (company-specific)
 /Levels/
 
+# ---- deployment copies and runtime state (never commit) ----
+_stage/
+_releases/
+_backup-*/
+uploads/
+# ASP.NET data-protection keys — anyone holding them can forge login cookies
+dp-keys/
+# large installers (GitHub rejects files over 100 MB)
+*.exe
+*.msi
+*.bak
+
 # ---- misc / temp ----
 ~$*
 *.tmp

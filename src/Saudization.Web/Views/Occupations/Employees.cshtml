@@ -29,6 +29,7 @@ else
         <thead>
             <tr>
                 <th style="width:120px">@T["Emp_WorkerNo"]</th>
+                <th style="width:140px">@T["Emp_Iqama"]</th>
                 <th>@T["Emp_Name"]</th>
                 <th>@T["Emp_Nationality"]</th>
                 <th>@T["Dash_Registration"]</th>
@@ -40,6 +41,7 @@ else
             {
                 <tr>
                     <td>@e.WorkerNo</td>
+                    <td dir="ltr">@e.IqamaNo</td>
                     <td dir="rtl">@e.Name</td>
                     <td><span class="zonebadge @(e.IsSaudi ? "zone-highgreen" : "zone-unknown")">@e.Nationality</span></td>
                     <td>@e.Registration</td>

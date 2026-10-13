@@ -9,8 +9,13 @@
   var RECS = model.records, CFG = model.cfg, L = CFG.L;
   var origRows = model.rows;
   var rows = clone(origRows);
+  // tally column headers: icons (raw HTML) or plain text, per the Settings toggle
+  var HN = CFG.useIcons ? CFG.icons.non : esc(L.nonSaudi),
+      HS = CFG.useIcons ? CFG.icons.saudi : esc(L.saudi),
+      HT = CFG.useIcons ? CFG.icons.total : esc(L.total);
 
-  function clone(src) { return src.map(function (r) { var n = Object.assign({}, r); n.Cells = r.Cells.map(function (c) { return { s: c.s, n: c.n }; }); return n; }); }
+  function clone(src) { return src.map(function (r) { var n = Object.assign({}, r); n.Cells = r.Cells.map(function (c) { return { s: c.s, n: c.n, bs: c.bs, bn: c.bn }; }); return n; }); }
+  function cellChanged(c) { return c.s !== c.bs || c.n !== c.bn; }   // differs from the current data
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
   function fmt(p) { return (p * 100).toFixed(1).replace(/\.0$/, "") + "%"; }
 
@@ -19,15 +24,22 @@
     var t = s + n;
     if (req <= 0 || t === 0) return { st: 0 };
     if (t < min) return { st: 4, exemptAdd: Math.max(0, min - 1 - t) };
-    var need = Math.ceil(req * t), cap = Math.floor(s / req), p = s / t;
-    if (p < req) return { st: 1, replace: Math.max(0, need - s), hire: req < 1 ? Math.ceil((req * t - s) / (1 - req)) : Math.max(0, t - s), shed: Math.max(0, t - cap) };
+    // the 1e-9 nudges undo float error (0.35 * 20 = 7.000000000000001) so results match NitaqatCalculator's decimal maths
+    var need = Math.ceil(req * t - 1e-9), cap = Math.floor(s / req + 1e-9), p = s / t;
+    if (p < req) {
+        var shed = Math.max(0, t - cap);
+        // cheaper escape: shed non-Saudi to fall below min → exempt (only when reachable & cheaper)
+        var shedEx = 0;
+        if (min > 0 && s < min) { var e = Math.max(0, t - (min - 1)); if (e >= 1 && e < shed) shedEx = e; }
+        return { st: 1, replace: Math.max(0, need - s), hire: req < 1 ? Math.ceil((req * t - s) / (1 - req) - 1e-9) : Math.max(0, t - s), shed: shed, shedExempt: shedEx };
+    }
     return { st: p <= req + CFG.band ? 2 : 3, absorb: Math.max(0, cap - t), surplus: Math.max(0, s - need) };
   }
-  function genExtra(rec, base) { return Math.min(rec.DisabledExtraRaw, Math.floor(CFG.capPct * base)); }
+  function genExtra(rec, base) { return Math.min(rec.DisabledExtraRaw, Math.floor(CFG.capPct * base + 1e-9)); }
   function genPct(rec, base, head) { return head <= 0 ? 0 : (base + genExtra(rec, base)) / head; }
   function zoneIdx(rec, base, head) {
     if (head <= 0) return 0;
-    var p = genPct(rec, base, head);
+    var p = genPct(rec, base, head) + 1e-12;
     if (p >= rec.Platinum) return 5; if (p >= rec.High) return 4; if (p >= rec.Medium) return 3; if (p >= rec.Low) return 2; return 1;
   }
 
@@ -36,15 +48,21 @@
       "' title='" + esc(title) + "'>" + icon + " " + v + "</span>";
   }
   function actionHtml(cl, ri, k) {
-    if (cl.st === 1) return "<div class='act'>" + seg(ri, k, "rep", cl.replace, "↔", L.replace, "act-rep") +
-      seg(ri, k, "hire", cl.hire, "＋", L.hire, "act-hire") + seg(ri, k, "shed", cl.shed, "⤓", L.shed, "act-shed") + "</div>";
-    if (cl.st === 2 || cl.st === 3) {
-      var h = "";
-      if (cl.absorb > 0) h += seg(ri, k, "absorb", cl.absorb, "⤒ +", L.absorb, "act-absorb");
-      if (cl.surplus > 0) h += seg(ri, k, "surplus", cl.surplus, "▽", L.surplus, "act-surplus");
+    if (cl.st === 1) {
+      var h = seg(ri, k, "rep", cl.replace, "↔", L.replaceTip, "act-rep") +
+        seg(ri, k, "hire", cl.hire, "＋", L.hireTip, "act-hire");
+      // one removal recommendation only: the cheaper "→ exempt" shed dominates the "→ ratio" shed
+      if (cl.shedExempt > 0) h += seg(ri, k, "shed", cl.shedExempt, "⇩", L.shedExemptTip, "act-exshed");
+      else h += seg(ri, k, "shed", cl.shed, "⤓", L.shedTip, "act-shed");
       return "<div class='act'>" + h + "</div>";
     }
-    if (cl.st === 4) return "<div class='act'>" + seg(ri, k, "exempt", cl.exemptAdd, "✓ +", L.exempt + " · " + L.addBeforeCalc, "act-exempt") + "</div>";
+    if (cl.st === 2 || cl.st === 3) {
+      var g = "";
+      if (cl.absorb > 0) g += seg(ri, k, "absorb", cl.absorb, "⤒ +", L.absorbTip, "act-absorb");
+      if (cl.surplus > 0) g += seg(ri, k, "surplus", cl.surplus, "▽", L.surplus, "act-surplus");
+      return "<div class='act'>" + g + "</div>";
+    }
+    if (cl.st === 4) return "<div class='act'>" + seg(ri, k, "exempt", cl.exemptAdd, "✓ +", L.exemptTip, "act-exempt") + "</div>";
     return "";
   }
 
@@ -57,18 +75,19 @@
     });
     thead += "<th colspan='4' class='grp rec-sep'>" + esc(L.grand) + "</th></tr><tr>";
     RECS.forEach(function (rec, k) {
-      thead += "<th class='num rec-sep'>" + esc(L.nonSaudi) + "</th><th class='num'>" + esc(L.saudi) + "</th><th class='num'>" +
-        esc(L.total) + "</th><th class='num'>" + esc(L.pct) + "</th><th class='num'>" + esc(L.action) + "</th>";
+      thead += "<th class='num rec-sep'>" + HN + "</th><th class='num'>" + HS + "</th><th class='num'>" +
+        HT + "</th><th class='num'>" + esc(L.pct) + "</th><th class='num'>" + esc(L.action) + "</th>";
     });
-    thead += "<th class='num rec-sep'>" + esc(L.nonSaudi) + "</th><th class='num'>" + esc(L.saudi) + "</th><th class='num'>" +
-      esc(L.total) + "</th><th class='num'>" + esc(L.pct) + "</th></tr>";
+    thead += "<th class='num rec-sep'>" + HN + "</th><th class='num'>" + HS + "</th><th class='num'>" +
+      HT + "</th><th class='num'>" + esc(L.pct) + "</th></tr>";
     document.querySelector("#sgGrid thead").innerHTML = thead;
 
     var body = rows.map(function (row, ri) {
       var tds = RECS.map(function (rec, k) {
         var c = row.Cells[k];
-        return "<td class='num rec-sep'><input type='text' inputmode='numeric' data-r='" + ri + "' data-k='" + k + "' data-f='n' value='" + c.n + "'></td>" +
-          "<td class='num'><input type='text' inputmode='numeric' data-r='" + ri + "' data-k='" + k + "' data-f='s' value='" + c.s + "'></td>" +
+        var sc = cellChanged(c) ? " sc-chg" : "";   // differs from current data → highlight amber
+        return "<td class='num rec-sep" + sc + "'><input type='text' inputmode='numeric' data-r='" + ri + "' data-k='" + k + "' data-f='n' value='" + c.n + "'></td>" +
+          "<td class='num" + sc + "'><input type='text' inputmode='numeric' data-r='" + ri + "' data-k='" + k + "' data-f='s' value='" + c.s + "'></td>" +
           "<td class='num' id='tot_" + ri + "_" + k + "'></td>" +
           "<td class='num' id='pct_" + ri + "_" + k + "'></td>" +
           "<td class='num' id='act_" + ri + "_" + k + "'></td>";
@@ -92,6 +111,17 @@
     refresh();
   }
 
+  // Amber note above the grid counting how many cells differ from the current data (scenario + any edits).
+  function markScenarioBanner() {
+    var count = 0;
+    rows.forEach(function (r) { r.Cells.forEach(function (c) { if (cellChanged(c)) count++; }); });
+    var grid = document.getElementById("sgGrid");
+    var host = document.getElementById("sgChgNote");
+    if (!host) { host = document.createElement("div"); host.id = "sgChgNote"; host.className = "sg-chg-note"; grid.parentNode.insertBefore(host, grid); }
+    if (count > 0) { host.style.display = ""; host.textContent = "★ " + (L.scenarioChanges || "{0} cell(s) differ from the current data — highlighted. Use ↺ on a cell, or Reset, to restore.").replace("{0}", count); }
+    else host.style.display = "none";
+  }
+
   /* ---- refresh derived cells only (inputs untouched → stable typing) ---- */
   function refresh() {
     var base = RECS.map(function () { return 0; }), head = RECS.map(function () { return 0; });
@@ -101,7 +131,7 @@
       RECS.forEach(function (rec, k) {
         var c = row.Cells[k], t = c.s + c.n; base[k] += c.s; head[k] += t; gs += c.s; gn += c.n;
         var cl = row.IsUnclassified ? { st: 0 } : classify(c.s, c.n, row.Required, row.MinForCalc);
-        var o = origRows[ri].Cells[k], changed = (c.s !== o.s || c.n !== o.n);
+        var changed = cellChanged(c);
         var totEl = document.getElementById("tot_" + ri + "_" + k);
         totEl.textContent = t; totEl.className = changed ? "num chg" : "num";
         var pc = document.getElementById("pct_" + ri + "_" + k);
@@ -111,15 +141,17 @@
       });
       set("gn_" + ri, gn); set("gs_" + ri, gs); set("gt_" + ri, gs + gn); set("gp_" + ri, fmt(gs + gn > 0 ? gs / (gs + gn) : 0));
     });
+    var GC = 0;   // counted Saudis incl. each registration's capped disability bonus (matches Grid 1's grand %)
     RECS.forEach(function (rec, k) {
-      GB += base[k]; GH += head[k];
+      GB += base[k]; GH += head[k]; GC += head[k] > 0 ? base[k] + genExtra(rec, base[k]) : 0;
       var zi = zoneIdx(rec, base[k], head[k]);
       document.getElementById("hz_" + k).innerHTML = "<span class='grp-lbl'>" + esc(rec.Label) + "</span> <span class='zonebadge " +
         CFG.zoneCss[zi] + "'>" + esc(CFG.zones[zi]) + " " + fmt(genPct(rec, base[k], head[k])) + "</span>";
       set("fn_" + k, head[k] - base[k]); set("fs_" + k, base[k]); set("ft_" + k, head[k]); set("fp_" + k, fmt(genPct(rec, base[k], head[k])));
     });
-    set("gfn", GH - GB); set("gfs", GB); set("gft", GH); set("gfp", fmt(GH > 0 ? GB / GH : 0));
+    set("gfn", GH - GB); set("gfs", GB); set("gft", GH); set("gfp", fmt(GH > 0 ? GC / GH : 0));
     renderTransfers();
+    markScenarioBanner();
   }
   function set(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
 
@@ -156,7 +188,7 @@
     else if (doType === "surplus") { c.s = Math.max(0, c.s - v); }
     else if (doType === "exempt") { c.n += v; }
   }
-  function resetCell(ri, k) { var o = origRows[ri].Cells[k]; rows[ri].Cells[k] = { s: o.s, n: o.n }; }
+  function resetCell(ri, k) { var c = rows[ri].Cells[k]; c.s = c.bs; c.n = c.bn; }   // reset this cell to the current value
 
   /* ---- transfer planner (same-category deficit ↔ surplus tolerance), with per-move detail ---- */
   function computeTransfers() {
@@ -205,7 +237,8 @@
   function collectCells() {
     var out = [];
     rows.forEach(function (row) {
-      row.Cells.forEach(function (c, k) { if (c.s > 0 || c.n > 0) out.push({ RecordId: RECS[k].Id, CategoryId: row.CategoryId, Saudi: c.s, NonSaudi: c.n }); });
+      // include cells edited down to 0/0 — otherwise a reloaded scenario shows the original counts again
+      row.Cells.forEach(function (c, k) { if (c.s > 0 || c.n > 0 || cellChanged(c)) out.push({ RecordId: RECS[k].Id, CategoryId: row.CategoryId, Saudi: c.s, NonSaudi: c.n }); });
     });
     return out;
   }
@@ -213,25 +246,78 @@
   function msg(t) { var m = document.getElementById("sgMsg"); if (m) m.textContent = t; }
 
   var saveBtn = document.getElementById("sgSave");
+  var updateBtn = document.getElementById("sgUpdate");
+  var nameInput = document.getElementById("sgName");
+  var loadSelEl = document.getElementById("sgLoad");
+
+  function refreshScenarioButtons() { if (updateBtn) updateBtn.style.display = window.SG_PLAN_ID ? "" : "none"; }
+  refreshScenarioButtons();
+
+  function postPlan(url, body) {
+    return fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "RequestVerificationToken": token() }, body: JSON.stringify(body) })
+      .then(function (r) { return r.ok ? r.json() : r.text().then(function (t) { throw new Error(t); }); });
+  }
+
+  // Save = always a NEW scenario; requires a name; appears in the list immediately.
   if (saveBtn) saveBtn.addEventListener("click", function () {
-    var body = { SnapshotId: window.SG_SNAPSHOT, Label: (document.getElementById("sgName").value || "").trim(), Cells: collectCells() };
-    fetch(window.SG_SAVE_URL, { method: "POST", headers: { "Content-Type": "application/json", "RequestVerificationToken": token() }, body: JSON.stringify(body) })
-      .then(function (r) { return r.ok ? r.json() : r.text().then(function (t) { throw new Error(t); }); })
-      .then(function (res) { msg("✓ " + res.label); })
-      .catch(function (e) { msg("✗ " + e.message); });
+    if (saveBtn.disabled) return;
+    var name = (nameInput.value || "").trim();
+    if (!name) { msg("✗ Enter a name for the new scenario"); if (nameInput) nameInput.focus(); return; }
+    saveBtn.disabled = true;
+    postPlan(window.SG_SAVE_URL, { SnapshotId: window.SG_SNAPSHOT, Label: name, Cells: collectCells() })
+      .then(function (res) {
+        if (loadSelEl && !loadSelEl.querySelector("option[value='" + res.planId + "']")) {
+          var o = document.createElement("option"); o.value = res.planId; o.textContent = res.label; loadSelEl.appendChild(o);
+        }
+        if (loadSelEl) loadSelEl.value = res.planId;   // select it (no navigation — setting value doesn't fire change)
+        window.SG_PLAN_ID = res.planId; refreshScenarioButtons();
+        msg("✓ Saved “" + res.label + "”");
+      })
+      .catch(function (e) { msg("✗ " + e.message); })
+      .finally(function () { saveBtn.disabled = false; });
+  });
+
+  // Update = overwrite the currently-loaded scenario (no new row).
+  if (updateBtn) updateBtn.addEventListener("click", function () {
+    if (updateBtn.disabled) return;
+    if (!window.SG_PLAN_ID) { msg("✗ Load a scenario first, or use Save for a new one"); return; }
+    updateBtn.disabled = true;
+    postPlan(window.SG_UPDATE_URL, { PlanId: window.SG_PLAN_ID, SnapshotId: window.SG_SNAPSHOT, Cells: collectCells() })
+      .then(function (res) { msg("✓ Updated “" + res.label + "”"); })
+      .catch(function (e) { msg("✗ " + e.message); })
+      .finally(function () { updateBtn.disabled = false; });
   });
   var exportBtn = document.getElementById("sgExport");
   if (exportBtn) exportBtn.addEventListener("click", function () {
-    document.getElementById("sgExportPayload").value = JSON.stringify({ SnapshotId: window.SG_SNAPSHOT, Mode: window.SG_MODE, Cells: collectCells() });
+    // Export EXACTLY what is on screen (full merged grid) + the current filter, so % / zone and the
+    // shown registrations/categories match the page.
+    document.getElementById("sgExportPayload").value = JSON.stringify({
+      SnapshotId: window.SG_SNAPSHOT, Mode: window.SG_MODE, PlanId: window.SG_PLAN_ID,
+      RecordId: window.SG_RECORD_ID, CategoryId: window.SG_CATEGORY_ID, Cells: collectCells()
+    });
     document.getElementById("sgExportForm").submit();
   });
   var resetBtn = document.getElementById("sgReset");
-  if (resetBtn) resetBtn.addEventListener("click", function () { rows = clone(origRows); buildOnce(); });
+  if (resetBtn) resetBtn.addEventListener("click", function () {
+    rows.forEach(function (r) { r.Cells.forEach(function (c) { c.s = c.bs; c.n = c.bn; }); });   // reset ALL cells to current
+    buildOnce();
+  });
   var loadSel = document.getElementById("sgLoad");
   if (loadSel) loadSel.addEventListener("change", function () {
-    window.location = window.SG_LOAD_URL + "?snapshotId=" + window.SG_SNAPSHOT + "&mode=" + window.SG_MODE + (this.value ? "&planId=" + this.value : "");
+    try { sessionStorage.setItem("sgScroll", String(window.pageYOffset || window.scrollY || 0)); } catch (e) { }
+    var q = "?snapshotId=" + window.SG_SNAPSHOT + "&mode=" + window.SG_MODE;
+    if (window.SG_RECORD_ID != null) q += "&recordId=" + window.SG_RECORD_ID;     // keep the current filter
+    if (window.SG_CATEGORY_ID != null) q += "&categoryId=" + window.SG_CATEGORY_ID;
+    if (this.value) q += "&planId=" + this.value;
+    window.location = window.SG_LOAD_URL + q;
   });
 
   bindActions();   // attach the delegated click handler exactly once
   buildOnce();
+
+  // restore the scroll position after a scenario-load reload, so the page doesn't jump to the top
+  try {
+    var _sy = sessionStorage.getItem("sgScroll");
+    if (_sy !== null) { sessionStorage.removeItem("sgScroll"); window.scrollTo(0, parseInt(_sy, 10) || 0); }
+  } catch (e) { }
 })();

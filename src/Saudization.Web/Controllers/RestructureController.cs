@@ -86,6 +86,20 @@ public class RestructureController : Controller
         return View(rows.OrderBy(r => r.Name).ToList());
     }
 
+    // Table-based structure editor: view a version and edit each employee's Division / Department /
+    // Direct Manager, then Save as a new version (reuses the same Save action + OrgModelDto).
+    public async Task<IActionResult> Assignments(int? versionId, CancellationToken ct = default)
+    {
+        var versions = await _db.OrgVersions.OrderByDescending(v => v.Id).ToListAsync(ct);
+        var vm = new RestructureViewModel { Versions = versions };
+        if (versions.Count == 0) return View(vm);
+        var vid = versionId ?? versions.First().Id;
+        if (versions.All(v => v.Id != vid)) vid = versions.First().Id;
+        vm.HasData = true;
+        vm.Model = await LoadModelAsync(vid, ct);
+        return View(vm);
+    }
+
     public IActionResult Import() => View();
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -97,7 +111,7 @@ public class RestructureController : Controller
         {
             await using var s = file.OpenReadStream();
             var res = await _importer.ImportAsync(s, string.IsNullOrWhiteSpace(label) ? "Original " + DateTime.UtcNow.ToString("yyyy-MM-dd") : label!, User?.Identity?.Name, ct);
-            TempData["ok"] = $"Imported {res.Employees} employees, {res.Divisions} divisions, {res.Departments} departments.";
+            TempData["ok"] = $"Imported {res.Employees} employees, {res.Divisions} divisions, {res.Departments} departments" + (res.Heads > 0 ? $", {res.Heads} department heads (HOD sheet)." : ".") + (res.Warnings.Count > 0 ? " " + string.Join(" ", res.Warnings) : "");
             return RedirectToAction(nameof(Index), new { versionId = res.VersionId });
         }
         catch (Exception ex) { TempData["err"] = "Import failed: " + ex.Message; return RedirectToAction(nameof(Import)); }
@@ -155,16 +169,49 @@ public class RestructureController : Controller
         return Json(new { versionId = version.Id });
     }
 
+    // Save the Structure-Editor edits IN PLACE onto the currently loaded version (division/department/manager
+    // per employee). Structural entities are untouched — only each employee's assignment is updated.
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteVersion(int id, CancellationToken ct)
+    [RequestSizeLimit(64 * 1024 * 1024)]
+    public async Task<IActionResult> UpdateAssignments(string payload, CancellationToken ct)
     {
+        OrgModelDto? m;
+        try { m = System.Text.Json.JsonSerializer.Deserialize<OrgModelDto>(payload); }
+        catch (Exception ex) { return BadRequest(ex.Message); }
+        if (m is null || m.VersionId <= 0) return BadRequest("Empty model.");
+
+        var vid = m.VersionId;
+        var deptIds = (await _db.OrgDepartments.Where(d => d.OrgVersionId == vid).Select(d => d.Id).ToListAsync(ct)).ToHashSet();
+        var jobIds = (await _db.OrgJobs.Where(j => j.OrgVersionId == vid).Select(j => j.Id).ToListAsync(ct)).ToHashSet();
+        var byId = (await _db.OrgEmployees.Where(e => e.OrgVersionId == vid).ToListAsync(ct)).ToDictionary(e => e.Id);
+
+        int updated = 0;
+        foreach (var em in m.Employees)
+        {
+            if (!byId.TryGetValue(em.Id, out var e)) continue;
+            if (deptIds.Contains(em.DepartmentId)) e.OrgDepartmentId = em.DepartmentId;   // only accept this version's departments
+            e.OrgJobId = (em.JobId is int jid && jobIds.Contains(jid)) ? jid : null;
+            e.DirectManagerCode = string.IsNullOrWhiteSpace(em.ManagerCode) ? null : em.ManagerCode!.Trim();
+            updated++;
+        }
+        await _db.SaveChangesAsync(ct);
+        return Json(new { versionId = vid, updated });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteVersion(int id, string? back, CancellationToken ct)
+    {
+        var v = await _db.OrgVersions.FindAsync(new object[] { id }, ct);
         // ordered delete (all FKs are NoAction)
+        await _db.DepartmentHeads.Where(x => x.OrgVersionId == id).ExecuteDeleteAsync(ct);
         await _db.OrgEmployees.Where(x => x.OrgVersionId == id).ExecuteDeleteAsync(ct);
         await _db.OrgJobs.Where(x => x.OrgVersionId == id).ExecuteDeleteAsync(ct);
         await _db.OrgDepartments.Where(x => x.OrgVersionId == id).ExecuteDeleteAsync(ct);
         await _db.OrgDivisions.Where(x => x.OrgVersionId == id).ExecuteDeleteAsync(ct);
         await _db.OrgVersions.Where(x => x.Id == id).ExecuteDeleteAsync(ct);
-        TempData["ok"] = "Version deleted.";
+        TempData["ok"] = $"Deleted version “{v?.Label ?? id.ToString()}”.";
+        if (string.Equals(back, "chart", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Chart", "OrgView");
         return RedirectToAction(nameof(Index));
     }
 
