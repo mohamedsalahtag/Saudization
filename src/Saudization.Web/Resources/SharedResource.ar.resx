@@ -231,7 +231,7 @@
   <data name="Common_Search"><value>بحث</value></data>
 
   <data name="Import_Title"><value>استيراد ملف إكسل</value></data>
-  <data name="Import_Intro"><value>ارفع ملفاً بنفس بنية dashboard.xlsx. تُقرأ الأوراق المرجعية وورقة لكل رقم منشأة وتُدمج في قاعدة البيانات.</value></data>
+  <data name="Import_Intro"><value>ارفع الملف الأسبوعي: الأوراق المرجعية (السجلات، الفئات، دليل المهن، الفئة الخاصة، ذوي الاحتياجات) وورقة لكل منشأة باسم رقم المنشأة. أوراق الموظفين تحتوي الأعمدة: رقم الهوية · اسم الموظف · الجنسية · المهنة · الجنس · تاريخ الميلاد · الملاحظات. الملفات بالتنسيق السابق ما زالت مقبولة.</value></data>
   <data name="Import_Choose"><value>اختر ملفاً</value></data>
   <data name="Import_Run"><value>استيراد</value></data>
   <data name="Import_UpdateMaster"><value>تحديث البيانات الأساسية أيضاً (الفئات، المهن، السجلات) من هذا الملف</value></data>
@@ -785,4 +785,7 @@
   <data name="OrgA_Col_toJob"><value>المسمى الحالي</value></data>
   <data name="OrgA_Col_wasManagerOf"><value>كان مديراً لـ</value></data>
   <data name="OrgA_F_missingSite_P"><value>عندما يحتوي ملف الموارد البشرية على عمود الموقع</value></data>
+  <data name="Emp_Gender"><value>الجنس</value></data>
+  <data name="Emp_BirthDate"><value>تاريخ الميلاد</value></data>
+  <data name="Emp_Notes"><value>الملاحظات</value></data>
 </root>

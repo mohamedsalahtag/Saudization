@@ -230,7 +230,7 @@
   <data name="Common_Search"><value>Search</value></data>
 
   <data name="Import_Title"><value>Import Excel workbook</value></data>
-  <data name="Import_Intro"><value>Upload a dashboard.xlsx-shaped workbook. Reference sheets and one sheet per facility code are read and merged into the database.</value></data>
+  <data name="Import_Intro"><value>Upload the weekly workbook: the reference sheets (registrations, categories, occupation guide, special, disability) and one sheet per facility, named by its facility number. Employee sheets use the columns رقم الهوية · اسم الموظف · الجنسية · المهنة · الجنس · تاريخ الميلاد · الملاحظات. Files in the earlier layout are still accepted.</value></data>
   <data name="Import_Choose"><value>Choose file</value></data>
   <data name="Import_Run"><value>Import</value></data>
   <data name="Import_UpdateMaster"><value>Also update master data (categories, occupations, registrations) from this file</value></data>
@@ -784,4 +784,7 @@
   <data name="OrgA_Col_toJob"><value>Position now</value></data>
   <data name="OrgA_Col_wasManagerOf"><value>Was manager of</value></data>
   <data name="OrgA_F_missingSite_P"><value>once the HR export includes a Site column</value></data>
+  <data name="Emp_Gender"><value>Gender</value></data>
+  <data name="Emp_BirthDate"><value>Birth date</value></data>
+  <data name="Emp_Notes"><value>Notes</value></data>
 </root>

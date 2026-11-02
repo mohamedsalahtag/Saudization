@@ -21,7 +21,7 @@ public class EmployeesController : Controller
             .Include(e => e.Nationality).Include(e => e.Occupation)
             .Where(e => e.FacilityId == facilityId && e.SnapshotId == sid);
         if (!string.IsNullOrWhiteSpace(q))
-            query = query.Where(e => e.Name.Contains(q) || (e.WorkerNo != null && e.WorkerNo.Contains(q)));
+            query = query.Where(e => e.Name.Contains(q) || (e.IqamaNo != null && e.IqamaNo.Contains(q)) || (e.WorkerNo != null && e.WorkerNo.Contains(q)));
 
         ViewBag.Facility = fac;
         ViewBag.Query = q;
@@ -86,6 +86,7 @@ public class EmployeesController : Controller
         e.BorderNo = model.BorderNo; e.IqamaNo = model.IqamaNo;
         e.OccupationId = model.OccupationId; e.OccupationRaw = model.OccupationRaw;
         e.IqamaExpiry = model.IqamaExpiry; e.EntryDate = model.EntryDate; e.WorkerType = model.WorkerType;
+        e.Gender = model.Gender; e.BirthDate = model.BirthDate; e.Notes = model.Notes;
         // SnapshotId is intentionally not changed on edit — an employee stays in its version.
         await _db.SaveChangesAsync(ct);
         TempData["ok"] = "Employee saved.";

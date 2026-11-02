@@ -71,6 +71,22 @@
         </div>
     </div>
 
+    <div class="row3">
+        <div class="field">
+            <label asp-for="Gender">@T["Emp_Gender"]</label>
+            <input asp-for="Gender" list="genderlist" dir="rtl" />
+            <datalist id="genderlist"><option value="ذكر"></option><option value="انثى"></option></datalist>
+        </div>
+        <div class="field">
+            <label asp-for="BirthDate">@T["Emp_BirthDate"]</label>
+            <input asp-for="BirthDate" placeholder="1985-01-31" />
+        </div>
+        <div class="field">
+            <label asp-for="Notes">@T["Emp_Notes"]</label>
+            <input asp-for="Notes" dir="rtl" />
+        </div>
+    </div>
+
     <div class="form-actions">
         <button class="btn" type="submit">@T["Common_Save"]</button>
         <a class="btn btn-soft" asp-action="Index" asp-route-facilityId="@Model.FacilityId">@T["Common_Cancel"]</a>

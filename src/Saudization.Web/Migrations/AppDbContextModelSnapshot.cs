@@ -187,6 +187,10 @@ namespace Saudization.Web.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BirthDate")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("BorderNo")
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
@@ -203,6 +207,10 @@ namespace Saudization.Web.Migrations
 
                     b.Property<int>("FacilityId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("IqamaExpiry")
                         .HasMaxLength(40)
@@ -223,6 +231,10 @@ namespace Saudization.Web.Migrations
 
                     b.Property<int?>("NationalityId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<int?>("OccupationId")
                         .HasColumnType("int");

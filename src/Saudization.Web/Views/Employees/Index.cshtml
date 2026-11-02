@@ -1,6 +1,7 @@
 @model List<Employee>
 @{
-    var fac = ViewBag.Facility as Facility;
+        var showWorkerNo = Model.Any(x => !string.IsNullOrWhiteSpace(x.WorkerNo));   // the current template has no worker numbers
+var fac = ViewBag.Facility as Facility;
     ViewData["Title"] = T["Emp_Title"].Value;
     var q = ViewBag.Query as string;
     var sid = (int)(ViewBag.SnapshotId ?? 0);
@@ -35,11 +36,12 @@
 <table class="grid">
     <thead>
         <tr>
-            <th>@T["Emp_WorkerNo"]</th>
+            @if (showWorkerNo) { <th>@T["Emp_WorkerNo"]</th> }
             <th>@T["Emp_Name"]</th>
             <th>@T["Emp_Nationality"]</th>
             <th>@T["Emp_Occupation"]</th>
             <th>@T["Emp_Iqama"]</th>
+            <th>@T["Emp_Notes"]</th>
             <th class="center">@T["Common_Actions"]</th>
         </tr>
     </thead>
@@ -47,13 +49,14 @@
     @foreach (var e in Model)
     {
         <tr>
-            <td>@e.WorkerNo</td>
+            @if (showWorkerNo) { <td>@e.WorkerNo</td> }
             <td>@e.Name</td>
             <td>@(e.Nationality?.NameAr)
                 @if (e.Nationality?.IsSaudi == true) { <span class="pill" style="background:var(--highgreen-bg);color:#1e6b2b">@T["Dash_Saudi"]</span> }
             </td>
             <td>@e.OccupationRaw</td>
             <td>@e.IqamaNo</td>
+            <td>@e.Notes</td>
             <td class="center">
                 <a class="btn btn-sm btn-soft" asp-action="Edit" asp-route-id="@e.Id">@T["Common_Edit"]</a>
                 <form asp-action="Delete" asp-route-id="@e.Id" method="post" style="display:inline"

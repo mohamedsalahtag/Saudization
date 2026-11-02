@@ -36,7 +36,7 @@ public class SnapshotDiff
 /// and the people who joined, left or changed can be listed.</summary>
 public class SnapshotComparer
 {
-    private const string HashVersion = "v2:";   // bump when the fingerprint definition changes; old hashes are recomputed
+    private const string HashVersion = "v3:";   // bump when the fingerprint definition changes; old hashes are recomputed
     private readonly AppDbContext _db;
     public SnapshotComparer(AppDbContext db) => _db = db;
 
@@ -76,12 +76,14 @@ public class SnapshotComparer
             e.Occupation?.Category?.NameAr, e.CountsAsSaudiSpecial, e.DisabilityCountAs)).ToList();
 
     private static string Sig(PersonRow r) =>
-        $"{r.WorkerNo?.Trim()}|{r.Facility}|{r.Nationality}|{r.Occupation}|{r.Special}|{r.Disability}";
+        $"{r.Facility}|{r.Nationality}|{r.Occupation}|{r.Special}|{r.Disability}";   // no worker number: the current template has none
 
     public static string Hash(IEnumerable<PersonRow> rows)
     {
         var lines = rows.Select(r => r.Key + "#" + Sig(r)).OrderBy(s => s, StringComparer.Ordinal);
-        return HashVersion + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", lines))));
+        // Snapshot.ContentHash is nvarchar(64): the version prefix + the hash must fit
+        var hex = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", lines))));
+        return HashVersion + hex[..(64 - HashVersion.Length)];
     }
 
     /// <summary>Computes and stores the fingerprint of a saved version.</summary>
@@ -117,7 +119,8 @@ public class SnapshotComparer
         {
             if (!b.TryGetValue(now.Key, out var was)) continue;
             var f = new List<string>();
-            if (!Same(was.WorkerNo, now.WorkerNo)) f.Add("WorkerNo");
+            // only when both sides have one — the current template no longer carries worker numbers
+            if (!string.IsNullOrWhiteSpace(was.WorkerNo) && !string.IsNullOrWhiteSpace(now.WorkerNo) && !Same(was.WorkerNo, now.WorkerNo)) f.Add("WorkerNo");
             if (!Same(was.Facility, now.Facility)) f.Add(Same(was.Registration, now.Registration) ? "Facility" : "Registration");
             if (!Same(was.Nationality, now.Nationality)) f.Add("Nationality");
             if (!Same(was.Occupation, now.Occupation)) f.Add(Same(was.Category, now.Category) ? "Occupation" : "Category");

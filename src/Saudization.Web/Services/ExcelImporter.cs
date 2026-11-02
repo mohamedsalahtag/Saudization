@@ -392,7 +392,7 @@ public class ExcelImporter
         foreach (var f in _db.ChangeTracker.Entries<Facility>().Select(e => e.Entity))
             facByCode[Normalize(f.Code)] = f;   // include facilities added in this same session
         var natByName = (await _db.Nationalities.ToListAsync(ct)).GroupBy(n => Normalize(n.NameAr)).ToDictionary(g => g.Key, g => g.First());
-        var seen = new Dictionary<string, string>();   // worker identity → sheet, to drop duplicates within the file
+        var seen = new Dictionary<string, (string sheet, string? occ)>();   // worker identity → where first read, to drop duplicates within the file
         int dupes = 0;
         var recByNorm = recByLabel.ToDictionary(kv => Normalize(kv.Key), kv => kv.Value);
 
@@ -425,18 +425,25 @@ public class ExcelImporter
             int sheetRows = 0, noName = 0;
 
             var h = HeaderIndex(ws);
+            // Current template: رقم الهوية · اسم الموظف · الجنسية · المهنة · الجنس · تاريخ الميلاد · الملاحظات.
+            // The earlier layout (رقم العامل · اسم العامل · … · نوع العامل) is still read, so old files can be re-imported.
             int cWorker = Col(h, "رقم العامل");
-            int cName = Col(h, "اسم العامل");
+            int cName = Col(h, "اسم الموظف", "اسم العامل");
             int cNat = Col(h, "الجنسية");
             int cLoc = Col(h, "الشركة");
             int cFacNo = Col(h, "رقم المنشأة");
             int cFacName = Col(h, "إسم المنشأة", "اسم المنشأة");
             int cBorder = Col(h, "رقم الحدود");
-            int cIqama = Col(h, "الإقامة - البطاقة", "الاقامة - البطاقة", "الإقامة", "الاقامة");
+            int cIqama = Col(h, "رقم الهوية", "الإقامة - البطاقة", "الاقامة - البطاقة", "الإقامة", "الاقامة");
             int cOcc = Col(h, "المهنة");
             int cExp = Col(h, "تاريخ انتهاء الاقامة", "تاريخ انتهاء الإقامة");
             int cEntry = Col(h, "تاريخ دخول المملكة");
             int cType = Col(h, "نوع العامل");
+            // exact only: a fuzzy "الجنس" would pick up the الجنسية column on older files
+            int cGender = h.TryGetValue(Normalize("الجنس"), out var gi) ? gi : -1;
+            int cBirth = Col(h, "تاريخ الميلاد");
+            int cNotes = Col(h, "الملاحظات", "ملاحظات");
+            int sheetRepeats = 0;
 
             foreach (var row in DataRows(ws))
             {
@@ -460,13 +467,16 @@ public class ExcelImporter
 
                 // the same person twice in one file (pasted twice / listed on two facility sheets) is counted once
                 var who = SnapshotComparer.WorkerKey(Str(row, cIqama), Str(row, cWorker), name);
-                if (seen.TryGetValue(who, out var firstSheet))
+                if (seen.TryGetValue(who, out var first))
                 {
+                    // the ministry export repeats some people on consecutive rows; summarised per sheet below.
+                    // Worth a line of its own: the same person on another sheet, or repeated with another occupation.
+                    if (first.sheet == ws.Name && Normalize(first.occ ?? "") == Normalize(Str(row, cOcc) ?? "")) { sheetRepeats++; continue; }
                     dupes++;
-                    if (dupes <= 20) res.Warnings.Add($"Duplicate skipped: {name} ({Str(row, cIqama) ?? Str(row, cWorker)}) on sheet \"{ws.Name}\" — already read from sheet \"{firstSheet}\".");
+                    if (dupes <= 20) res.Warnings.Add($"Duplicate skipped: {name} ({Str(row, cIqama) ?? Str(row, cWorker)}) on sheet \"{ws.Name}\" ({Str(row, cOcc)}) — already read from sheet \"{first.sheet}\" ({first.occ}).");
                     continue;
                 }
-                seen[who] = ws.Name;
+                seen[who] = (ws.Name, Str(row, cOcc));
 
                 var natName = Str(row, cNat);
                 Nationality? nat = null;
@@ -505,13 +515,18 @@ public class ExcelImporter
                     OccupationRaw = occRaw,
                     IqamaExpiry = Str(row, cExp),
                     EntryDate = Str(row, cEntry),
-                    WorkerType = Str(row, cType)
+                    WorkerType = Str(row, cType),
+                    Gender = Str(row, cGender),
+                    BirthDate = DateStr(row, cBirth),
+                    Notes = Str(row, cNotes)
                 });
                 res.Employees++; sheetRows++;
             }
             res.SheetEmployees[ws.Name] = sheetRows;
             if (cName < 0)
-                res.Warnings.Add($"Sheet \"{ws.Name}\": no \"اسم العامل\" column found in the header row — no employees read.");
+                res.Warnings.Add($"Sheet \"{ws.Name}\": no \"اسم الموظف\" column found in the header row — no employees read.");
+            if (sheetRepeats > 0)
+                res.Warnings.Add($"Sheet \"{ws.Name}\": {sheetRepeats} repeated row(s) of the same person ignored — each ID is counted once.");
             else if (noName > 0)
                 res.Warnings.Add($"Sheet \"{ws.Name}\": {sheetRows} employees read, {noName} row(s) skipped because the worker name was empty.");
         }
@@ -589,6 +604,14 @@ public class ExcelImporter
         return AutoTableHeader.IsMatch(v) ? null : v;
     }
     private static readonly Regex AutoTableHeader = new(@"^Column\d+$", RegexOptions.Compiled);
+
+    // a real Excel date cell becomes yyyy-MM-dd, the same text the export uses
+    private static string? DateStr(IXLRow row, int col)
+    {
+        if (col < 1) return null;
+        var cell = row.Cell(col);
+        return cell.DataType == XLDataType.DateTime ? cell.GetDateTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : Str(row, col);
+    }
 
     private static decimal? Num(IXLRow row, int col)
     {

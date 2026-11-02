@@ -223,6 +223,16 @@ public class Employee
     [MaxLength(100)]
     public string? WorkerType { get; set; }        // نوع العامل
 
+    // ---- columns of the employee sheets since the November 2026 template ----
+    [MaxLength(20)]
+    public string? Gender { get; set; }            // الجنس
+
+    [MaxLength(20)]
+    public string? BirthDate { get; set; }         // تاريخ الميلاد (yyyy-MM-dd text, as exported)
+
+    [MaxLength(300)]
+    public string? Notes { get; set; }             // الملاحظات (e.g. بدون عقد)
+
     // ---- Saudization weighting, resolved per snapshot from the special/disability sheets (§4, §5) ----
 
     /// <summary>الفئة الخاصة — counts as Saudi in BOTH general and occupation % even if the nationality isn't Saudi.</summary>

@@ -14,11 +14,9 @@ public class ExcelTemplateService
     private readonly AppDbContext _db;
     public ExcelTemplateService(AppDbContext db) => _db = db;
 
-    private static readonly string[] EmpHeaders =
-    {
-        "رقم العامل","اسم العامل","الجنسية","الشركة","رقم المنشأة","إسم المنشأة",
-        "رقم الحدود","الإقامة - البطاقة","المهنة","تاريخ انتهاء الاقامة","تاريخ دخول المملكة","نوع العامل"
-    };
+    // the November 2026 layout of the employee sheets
+    private static readonly string[] EmpHeaders = { "رقم الهوية", "اسم الموظف", "الجنسية", "المهنة", "الجنس", "تاريخ الميلاد", "الملاحظات" };
+    private const string FacilityHeader = "رقم المنشأة";   // extra column when one sheet holds several facilities
 
     /// <summary>limit: -1 = all current data · 0 = headers only (empty) · N = headers + up to N example rows (sample).</summary>
     public async Task<byte[]> BuildAsync(ImportSheetRule rule, int limit = -1, CancellationToken ct = default)
@@ -79,26 +77,22 @@ public class ExcelTemplateService
         { WriteRow(wsD, dr, dr - 1, e.IqamaNo, e.Name, e.DisabilityCountAs, e.Facility?.Code, e.OccupationRaw); dr++; }
 
         // ---- employee sheets per the chosen rule ----
-        if (limit == 0)
+        // every template has one sheet per facility / registration (the sheet name is how rows are placed);
+        // the mode only decides how many employee rows each sheet gets
+        if (rule == ImportSheetRule.PerRegistration)
         {
-            // empty template — a single employee sheet with headers only
-            var ws = wb.Worksheets.Add(SheetName(rule == ImportSheetRule.PerRegistration ? "Registration" : "Employees", used));
-            WriteHeaders(ws);
-        }
-        else if (rule == ImportSheetRule.PerRegistration)
-        {
-            foreach (var rec in Cap(records))
+            foreach (var rec in records)
             {
                 var ws = wb.Worksheets.Add(SheetName(rec.RegistrationLabel, used));
-                WriteHeaders(ws);
+                WriteHeaders(ws, withFacility: true);
                 int row = 2;
                 foreach (var e in Cap(employees.Where(e => e.Facility?.RecordId == rec.Id).OrderBy(e => e.Name)))
-                    WriteEmployee(ws, row++, e);
+                    WriteEmployee(ws, row++, e, withFacility: true);
             }
         }
         else
         {
-            foreach (var (rec, f) in Cap(recFac))
+            foreach (var (rec, f) in recFac)
             {
                 var ws = wb.Worksheets.Add(SheetName(f.Code, used));
                 WriteHeaders(ws);
@@ -145,16 +139,16 @@ public class ExcelTemplateService
         return ms.ToArray();
     }
 
-    private static void WriteHeaders(IXLWorksheet ws)
+    private static void WriteHeaders(IXLWorksheet ws, bool withFacility = false)
     {
         for (int i = 0; i < EmpHeaders.Length; i++) ws.Cell(1, i + 1).Value = EmpHeaders[i];
+        if (withFacility) ws.Cell(1, EmpHeaders.Length + 1).Value = FacilityHeader;
         ws.Row(1).Style.Font.Bold = true;
     }
 
-    private static void WriteEmployee(IXLWorksheet ws, int row, Employee e)
+    private static void WriteEmployee(IXLWorksheet ws, int row, Employee e, bool withFacility = false)
     {
-        WriteRow(ws, row, e.WorkerNo, e.Name, e.Nationality?.NameAr, e.Location, e.Facility?.Code,
-            e.Facility?.NameAr, e.BorderNo, e.IqamaNo, e.OccupationRaw, e.IqamaExpiry, e.EntryDate, e.WorkerType);
+        WriteRow(ws, row, e.IqamaNo, e.Name, e.Nationality?.NameAr, e.OccupationRaw, e.Gender, e.BirthDate, e.Notes, withFacility ? e.Facility?.Code : null);
     }
 
     private static void WriteRow(IXLWorksheet ws, int row, params object?[] values)
